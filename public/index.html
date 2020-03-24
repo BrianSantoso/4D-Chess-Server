@@ -104,6 +104,14 @@
 						moveManager.updateSelectability();
 						uiProxy.exitMenu();
 					})
+					
+					const gameID = window.location.pathname.substring(1);
+					if (gameID.match(/g[A-Za-z0-9]{7}/)) {
+						socket.emit('join', gameID)
+						console.log('attempting to join: ', gameID)
+					}
+					
+					
 				} catch(e) {
 					console.error('socket.io failed to initialize')
 					socket = {
@@ -482,7 +490,7 @@
 					return (
 						<div className="overlay">
 							<h1 className="text" id="gameTitle">4D Chess </h1>
-							<h1 className="text" id="gameSubTitle"> (Offline) </h1>
+							<h1 className="text" id="gameSubTitle"> Online </h1>
 							<PlayButton id="playButton" text="Play" handleClick={this.createPrivateGame}/>
 							<PlayButton id="privateRoomButton" text="Create Private Game" handleClick={this.createPrivateGame}/>
 						</div>

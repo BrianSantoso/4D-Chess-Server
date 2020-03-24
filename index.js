@@ -7,11 +7,12 @@ const io = require('socket.io')(server);
 
 const public = path.join(__dirname, 'public');
 
-let requestedGameID;
+//let requestedGameID;
 app.get('/:gameID(g[A-Za-z0-9]{7})', (req, res) => {
 //	console.log('url gameID: ', req.params)
-	requestedGameID = req.params.gameID;
-	console.log('accessed thru url gameID: ', requestedGameID)
+//	let requestedGameID = req.params.gameID;
+//	console.log('accessed thru url gameID: ', requestedGameID)
+//	res.json({requestedGameID: requestedGameID})
 	res.sendFile(path.join(public, 'index.html'));
 });
 app.use(express.static('public'));
@@ -60,9 +61,9 @@ io.on('connect', (socket) => {
         io.to(room).emit('chat message', message);
     });
 	
-	if(requestedGameID) {
-		joinGameRoom(requestedGameID);
-	}
+//	if(requestedGameID) {
+//		joinGameRoom(requestedGameID);
+//	}
 });
 
 server.listen(PORT, () => {
