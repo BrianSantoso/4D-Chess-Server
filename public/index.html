@@ -101,8 +101,22 @@
 					socket.on('player assignment', (playerAssignment) => {
 						console.log('player assignment: ', playerAssignment)
 						moveManager.clientTeam = playerAssignment.clientTeam;
+						
+						if (!moveManager.ready) {
+							moveManager.ready = playerAssignment.ready;
+						}
+						moveManager.updateUI();
 						moveManager.updateSelectability();
+//						moveManager.setSelectability(playerAssignment.clientTeam, playerAssignment.ready);
 						uiProxy.exitMenu();
+					})
+					
+					socket.on('player joined', (playerAssignment) => {
+						if (!moveManager.ready) {
+							moveManager.ready = playerAssignment.ready;
+						}
+						moveManager.updateUI();
+						moveManager.updateSelectability();
 					})
 					
 					const gameID = window.location.pathname.substring(1);
@@ -519,7 +533,7 @@
 //						whoseTurn: 0,
 //						totalMoves: 0,
 //						mode: 0
-						text: ""
+						text: "Waiting for opponent..."
 					}
 					
 					moveManager.updateUI();

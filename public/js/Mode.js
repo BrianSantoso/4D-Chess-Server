@@ -102,12 +102,21 @@ Mode.ONLINE_MULTIPLAYER = new Mode(
 	},
 	
 	function canMove(team) {
+		if (!this.ready) {
+			return false;
+		}
 		return this.whoseTurn() == this.clientTeam;
 	},
 	
 	function updateSelectability() {
-		this.setSelectability(this.clientTeam, this.viewingMostRecentMove() && this.canMove(this.clientTeam));
-		this.setSelectability(1 - this.clientTeam, false);
+		if (this.ready) {
+			this.setSelectability(this.clientTeam, this.viewingMostRecentMove() && this.canMove(this.clientTeam));
+			this.setSelectability(1 - this.clientTeam, false);
+		} else {
+			this.setSelectability(0, false);
+			this.setSelectability(1, false);
+		}
+		
 	},
 	
 	function moveStatus() {

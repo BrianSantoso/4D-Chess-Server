@@ -34,7 +34,7 @@ io.on('connect', (socket) => {
 			gameRooms[room] = new GameRoom(gameID);
 		}
 		const playerAssignment = gameRooms[room].addSocket(socket);
-		
+		socket.broadcast.to(room).emit('player joined', playerAssignment);
 		socket.emit('player assignment', playerAssignment);
 	}
 	socket.on('join', joinGameRoom);
@@ -90,12 +90,14 @@ function GameRoom(gameID) {
 		if (this.players.length < 2) {
 			this.players.push(socket)
 			Object.assign(playerAssignment, {
-				clientTeam: this.players.length - 1
+				clientTeam: this.players.length - 1,
+				ready: this.players.length == 2
 			})
 		} else {
 			this.spectators.push(socket)
 			Object.assign(playerAssignment, {
-				clientTeam: -1
+				clientTeam: -1,
+				ready: true
 			})
 		}
 		return playerAssignment;
