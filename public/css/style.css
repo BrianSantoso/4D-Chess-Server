@@ -13,8 +13,9 @@ body {
 	font-family: 'Source Code Pro', monospace;
 /*	font-family: 'Ubuntu Mono', monospace;*/
 	color: #3f3f3f;
-	font-size: 3.8em;
+/*	font-size: 3.8em;*/
 /*	font-size: 7.6vh;*/
+	font-size: 9.6vh;
 /*	font-weight: 700;*/
 /*    letter-spacing: 4px;*/
 }
@@ -176,7 +177,7 @@ body {
 }
 
 #playOptionsMenu {
-	padding-top: 1em;
+/*	padding-top: 1vh;*/
 	text-align: center;
 }
 
