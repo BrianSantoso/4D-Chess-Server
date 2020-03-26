@@ -188,11 +188,21 @@ function DMoveList(gameBoard, curr){
 }
 
 DMoveList.prototype = {
-	add: function(x0, y0, z0, w0, x1, y1, z1, w1, metaData){
+	add: function(x0, y0, z0, w0, x1, y1, z1, w1, metaData, appendToEnd=false){
+		console.log(appendToEnd)
 		const newMoveHistoryNode = new MoveHistoryNode(new Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData));
-		newMoveHistoryNode.prev = this.curr;
-		this.curr.next = newMoveHistoryNode;
-		this.curr = newMoveHistoryNode;
+		if (appendToEnd) {
+			let end = this.curr;
+			while(end.next != null) {
+				end = end.next;
+			}
+			newMoveHistoryNode.prev = end;
+			end.next = newMoveHistoryNode;
+		} else {
+			newMoveHistoryNode.prev = this.curr;
+			this.curr.next = newMoveHistoryNode;
+			this.curr = newMoveHistoryNode;
+		}
 		return newMoveHistoryNode;
 	},
 	

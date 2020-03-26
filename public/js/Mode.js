@@ -81,19 +81,20 @@ Mode.LOCAL_MULTIPLAYER = new Mode(
 );
 
 Mode.ONLINE_MULTIPLAYER = new Mode(
-	function move(x0, y0, z0, w0, x1, y1, z1, w1, receiving=false) {
-		const movingPiece = this.gameBoard.pieces[x0][y0][z0][w0];
-		const capturedPiece = this.gameBoard.pieces[x1][y1][z1][w1];
-		const metaData = this.gameBoard.move(x0, y0, z0, w0, x1, y1, z1, w1);
+	function move(x0, y0, z0, w0, x1, y1, z1, w1, receiving=false, metaData={}) {
+		if (this.viewingMostRecentMove()) {
+			const movingPiece = this.gameBoard.pieces[x0][y0][z0][w0];
+			const capturedPiece = this.gameBoard.pieces[x1][y1][z1][w1];
+			metaData = this.gameBoard.move(x0, y0, z0, w0, x1, y1, z1, w1);
+		}
 		
-		const moveHistoryNode = this.moveHistory.add(x0, y0, z0, w0, x1, y1, z1, w1, metaData);
+		const moveHistoryNode = this.moveHistory.add(x0, y0, z0, w0, x1, y1, z1, w1, metaData, !this.viewingMostRecentMove());
 		this.updateSelectability();
 		
 		this.updateUI();
 		
-		const move = moveHistoryNode.move.package();
-		
 		if (!receiving) {
+			const move = moveHistoryNode.move.package();
 			console.log('sending move to server: packaged:', move)
 			console.log('unpackaged: ', moveHistoryNode.move)
 			socket.emit('submit move', move);

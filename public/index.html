@@ -96,7 +96,7 @@
 					socket.on('serve move', (move) => {
 						console.log('received move', move)
 						moveManager.move(move.x0, move.y0, move.z0, move.w0,
-										move.x1, move.y1, move.z1, move.w1, true)
+										move.x1, move.y1, move.z1, move.w1, true, move.metaData)
 					});
 					socket.on('player assignment', (playerAssignment) => {
 						console.log('player assignment: ', playerAssignment)
