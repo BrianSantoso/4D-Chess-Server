@@ -36,14 +36,8 @@
 			 * TODO BEFORE PRODUCTION BUILD: 
 				- Replace all CDNs
 				BUGS:
-				- work on Piece.update -- undoing a pawn's hasMoved/justMovedTwoSpaces does not undo the state.
+				- check to see if piece state is undone correctly when calling moveManager.undo()
 			 */
-//            try {
-//				const socket = io()
-//			socket.emit('HW message', 'hello from html!')
-//			} catch(err) {
-//				console.warn('Socket.io lib not found')
-//			}        
 			window.onload = function(){
                 if(Detector.webgl){
 					main();
@@ -86,7 +80,7 @@
 				initGameBoard();
                 initPointer();
 				initReact();
-                // begin the simulation loop
+                // begin the game loop
                 requestAnimationFrame(frame);
             }
 
@@ -121,9 +115,15 @@
 					
 					const gameID = window.location.pathname.substring(1);
 					if (gameID.match(/g[A-Za-z0-9]{7}/)) {
-						socket.emit('join', gameID)
+						socket.emit('join', gameID);
 						console.log('attempting to join: ', gameID)
 					}
+					
+					 /*else if(gameID.match('/sandbox')) {
+						uiProxy._ui.createSandboxGame();
+					} else if(gameID.match('/localGame')) {
+						uiProxy._ui.createLocalGame();
+					}*/
 					
 					
 				} catch(e) {
@@ -136,13 +136,8 @@
 			}
 
 			function initReact() {
-//				uiProxy = SERVER ? new EmptyUI() : new UI();
 				uiProxy = new EmptyUI(); // will be changed when component mounts
 				toolbarProxy = new EmptyUI();
-//				ReactDOM.render(
-//				  <App ref={(ourComponent) => {uiProxy = new UI(ourComponent)}} />,
-//				  document.getElementById('gui')
-//				);
 				ReactDOM.render(
 				  <App />,
 				  document.getElementById('gui')
@@ -151,11 +146,8 @@
 
 			function initGameBoard() {
 				
-//				backendBoard = new GameBoard(4, EmptyBoardGraphics);
-//				backendMoveManager = new MoveManager(backendBoard, 0, Mode.SANDBOX, false);
 				gameBoard = new GameBoard(4, SERVER ? EmptyBoardGraphics : BoardGraphics);
 				moveManager = new MoveManager(gameBoard, 0, Mode.ONLINE_MULTIPLAYER, true);
-				
 				
 				if (SERVER) {
 					return;
@@ -400,16 +392,6 @@
 
 			  return result;
 			}
-			
-			function w() {
-				socket.emit('join', 'gf2fe9ec4')
-			}
-
-			function b() {
-				socket.emit('join', 'gf2fe9ec4')
-				moveManager.clientTeam = 1
-				moveManager.updateSelectability();
-			}
 
 			function genGameId() {
 				return 'gxxxxxxx'.replace(/[x]/g, function(character) {
@@ -425,20 +407,14 @@
 	</head>
     <body>
 		<div id="gui" class="overlay"></div>
-<!--
-		<div id="gui" class="overlay">
-			<a class="button" id="redoButton" onclick="moveManager.redo();"><img src="./icons/arrow_forward_ios-24px.svg"></a>
-			<a class="button" id="undoButton" onclick="moveManager.undo();"><img src="./icons/arrow_back_ios-24px.svg"></a>
-		</div>
--->
 		<script type="text/babel">
 
 			function EmptyUI() {
 				this.setState = function(state) {
-					console.log('ui not initialized')
+					console.warn('proxy setState called before react component mounted')
 				}
 				this.exitMenu = function() {
-					
+					console.warn('proxy exitMenu called before react component mounted')
 				}
 				
 			}
@@ -466,6 +442,7 @@
 					this.backToMenu = this.backToMenu.bind(this)
 					
 					this.playButtonClick = this.playButtonClick.bind(this)
+					this.matchmake = this.matchmake.bind(this)
 					this.createSandboxGame = this.createSandboxGame.bind(this)
 					this.createLocalGame = this.createLocalGame.bind(this)
 				}
@@ -487,9 +464,14 @@
 					const smoothness = 3/300;
 					const squaredEpsilon = 100;
 					const interpolatedCoords = CameraAnimation.smoothLerp(camera.position, cameraDestination, smoothness, squaredEpsilon);
-//					console.log(interpolatedCoords);
 					CameraAnimation.addToQueue(animationQueue, camera, interpolatedCoords)
 					this.swapState(ClientState.GAME_STATE);
+				}
+				
+				matchmake() {
+					socket.emit('matchmake');
+					// TODO: Show matchmaking screen
+					uiProxy.exitMenu();
 				}
 				
 				createPrivateGame() {
@@ -531,11 +513,6 @@
 				
 				menu() {
 					console.log('MENU')
-//					return (
-//						<div className="overlay">
-//							<PlayButton id="playButton" text="Play" handleClick={this.playButtonClick}/>
-//						</div>
-//					);
 					return (
 						<div className="overlay">
 							<h1 className="text" id="gameTitle">4D Chess </h1>
@@ -560,7 +537,7 @@
 						<div className="overlay">
 							<div id="playOptionsMenu">
 								<h1 className="text"> Pick a Game Mode</h1>
-								<PlayOption id="matchmakingButton" text="Online Matchmaking" handleClick={this.createPrivateGame}></PlayOption>
+								<PlayOption id="matchmakingButton" text="Online Matchmaking" handleClick={this.matchmake}></PlayOption>
 								<PlayOption id="localMultiplayerButton" text="Local Multiplayer" handleClick={this.createLocalGame}></PlayOption>
 								<PlayOption id="sandboxButton" text="Free Play" handleClick={this.createSandboxGame}></PlayOption>
 								<PlayOption id="backToMenuButton" text="Back To Menu" handleClick={this.backToMenu}></PlayOption>
@@ -631,7 +608,7 @@
 				render() {
 					return (<button onClick={this.handleClick} className="text rectButton" id={this.id}>
 								{this.text}
-							</button>)
+							</button>);
 				}
 			}
 

@@ -3,59 +3,9 @@
 function MoveManager(gameBoard, clientTeam, mode, main=false) {
 	this.gameBoard = gameBoard;
 	this.clientTeam = 0;
-//	this.turn = 0; // team number. White: 0, Black: 1
 	this.players = [new PlayerData(0, 300), new PlayerData(1, 300)];
 	this.moveHistory = new DMoveList(gameBoard);
 	this.main = main;
-	
-//	this.move = function(x0, y0, z0, w0, x1, y1, z1, w1){
-//		const movingPiece = this.gameBoard.pieces[x0][y0][z0][w0];
-//		if(!this.canMove(movingPiece.team)){
-//			console.error('It is not that pieces turn!', movingPiece, x0, y0, z0, w0)
-//			return;
-//		}
-//		const capturedPiece = this.gameBoard.pieces[x1][y1][z1][w1];
-//		
-//		const metaData = this.gameBoard.move(x0, y0, z0, w0, x1, y1, z1, w1);
-//		
-//		this.moveHistory.add(x0, y0, z0, w0, x1, y1, z1, w1, capturedPiece, metaData);
-////		this.turn = 1 - this.turn;
-//		this.setMode(this.mode); // updates team abilities
-//		if(main) backendMoveManager.move(x0, y0, z0, w0, x1, y1, z1, w1);
-//		
-//		this.updateUI();
-//	}
-//	
-//	this.undo = function(){
-//		this.moveHistory.undo();
-//		if (this.mode != MoveManager.ONLINE_MULTIPLAYER) {
-////			this.turn = 1 - this.turn;
-//		}
-//		this.setMode(this.mode);
-//		if(main) backendMoveManager.undo();
-//		
-//		this.updateUI();
-//	}
-//	
-//	this.redo = function(){
-//		this.moveHistory.redo();
-//		if (this.mode != MoveManager.ONLINE_MULTIPLAYER) {
-////			this.turn = 1 - this.turn;
-//		}
-//		this.setMode(this.mode);
-//		if(main) backendMoveManager.redo();
-//		
-//		this.updateUI();
-//	}
-//	
-//	this.canMove = function(team){
-//		if(this.mode === MoveManager.SANDBOX){
-//			return true;
-//		} else {
-//			return team == this.whoseTurn();
-//		}
-//		if(main) backendMoveManager.canMove(team);
-//	}
 	
 	this.move = function(x0, y0, z0, w0, x1, y1, z1, w1, receiving=false) {
 		this.mode.move.call(this, x0, y0, z0, w0, x1, y1, z1, w1, receiving);
@@ -116,21 +66,6 @@ function MoveManager(gameBoard, clientTeam, mode, main=false) {
 		this.gameBoard.setSelectability(team, canSelect);
 	}
 	
-//	this.setMode = function(mode){
-//		this.mode = mode;
-//		if (this.mode === MoveManager.SANDBOX) {
-//			this.gameBoard.setSelectability(0, true);
-//			this.gameBoard.setSelectability(1, true);
-//		} else if (this.mode === MoveManager.LOCAL_MULTIPLAYER) {
-//			this.gameBoard.setSelectability(0, this.canMove(0));
-//			this.gameBoard.setSelectability(1, this.canMove(1));
-//		} else if (this.mode === MoveManager.ONLINE_MULTIPLAYER) {
-//			this.gameBoard.setSelectability(this.clientTeam, this.canMove(this.clientTeam));
-//			this.gameBoard.setSelectability(1 - this.clientTeam, false);
-//		}
-//		if(main) backendMoveManager.setMode(mode);
-//	}
-	
 	this.setMode = function(mode) {
 		this.mode = mode;
 		this.mode.updateSelectability.call(this);
@@ -184,7 +119,6 @@ function DMoveList(gameBoard, curr){
 
 DMoveList.prototype = {
 	add: function(x0, y0, z0, w0, x1, y1, z1, w1, metaData, appendToEnd=false){
-		console.log(appendToEnd)
 		const newMoveHistoryNode = new MoveHistoryNode(new Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData));
 		if (appendToEnd) {
 			let end = this.curr;

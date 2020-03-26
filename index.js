@@ -16,75 +16,62 @@ app.get('/:gameID(g[A-Za-z0-9]{7})', (req, res) => {
 	res.sendFile(path.join(public, 'index.html'));
 });
 app.use(express.static('public'));
+app.use('/sandbox', express.static('public'));
+app.use('/localGame', express.static('public'));
 
 let gameRooms = {}
+let matchmaker = new MatchMaker();
+let socketsOnline = 0;
+
 io.on('connect', (socket) => {
+	// add custom event listeners here
 	console.log('socket connected: ', socket.id)
-  	// add custom event listeners here
-	let room; // capture the room in our closure
+	socketsOnline += 1;
 	
-	function joinGameRoom(gameID) {
-		console.log('\tLeaving previous room: ', room)
-		socket.leave(room)
-        room = `room_${gameID}`;
-		console.log('\trequested to join: ', gameID, room);
-		
-		if (!gameRooms[room]) {
-			console.log('RoomID ', room, 'not found. Creating new GameRoom')
-			gameRooms[room] = new GameRoom(gameID);
-		}
-		const playerAssignment = gameRooms[room].addSocket(socket);
-		socket.broadcast.to(room).emit('player joined', playerAssignment);
-		socket.emit('player assignment', playerAssignment);
-	}
-	socket.on('join', joinGameRoom);
+	socket.on('join', (gameID) => {
+		GameRoom.join(socket, gameID)
+	});
 	
-//	socket.on('join', (gameID) => {
-//		console.log('\tLeaving previous room: ', room)
-//		socket.leave(room)
-//        room = `room_${gameID}`;
-//		console.log('\trequested to join: ', gameID, room);
-//		
-//		if (!gameRooms[room]) {
-//			gameRooms[room] = new GameRoom(gameID);
-//		}
-//		const playerAssignment = gameRooms[room].addSocket(socket);
-//		
-//		socket.emit('player assignment', playerAssignment);
-//    });
+	socket.on('matchmake', () => {
+		matchmaker.matchmake(socket)
+	});
+	
 	socket.on('submit move', (move) => {
-		console.log(room, 'received move', move)
-//		gameRooms[room]
-		socket.broadcast.to(room).emit('serve move', move);
+		console.log(socket.room, 'received move', move)
+		socket.broadcast.to(socket.room).emit('serve move', move);
 	})
+	
 	socket.on('chat message', (message) => {
         console.log('got message', message);
-        io.to(room).emit('chat message', message);
+        io.to(socket.room).emit('chat message', message);
     });
 	
-//	if(requestedGameID) {
-//		joinGameRoom(requestedGameID);
-//	}
+	socket.on('disconnect', () => {
+		console.log('socket disconnected ', socket.id)
+		matchmaker.remove(socket);
+		GameRoom.disconnect(socket);
+		socketsOnline -= 1;
+	});
 });
 
 server.listen(PORT, () => {
 	console.log('\t :: Express :: Listening on port ' + PORT );
 });
 
-function genGameId() {
-	return 'gxxxxxxx'.replace(/[x]/g, function(character) {
-		const r = Math.random() * 16 | 0
-		const v = character == 'x' ? r : (r & 0x3 | 0x8);
-		return v.toString(16);
-	});
-}
+
 
 function GameRoom(gameID) {
+	
+	// TODO: close gameroom on disconnects
 	this.roomID = `room_${gameID}`;
 	this.players = []
 	this.spectators = []
+	this.numSockets = 0;
 	
 	this.addSocket = function(socket) {
+		GameRoom.disconnect(socket);
+		
+		socket.room = this.roomID;
 		socket.join(this.roomID);
 		console.log('\tsocket ', socket.id, 'joined room ', this.roomID)
 		let playerAssignment = {}
@@ -101,17 +88,98 @@ function GameRoom(gameID) {
 				ready: true
 			})
 		}
+		this.numSockets += 1;
 		return playerAssignment;
+	}
+	
+	this.removeSocket = function(socket) {
+		this.numSockets -= 1;
+		if (this.numSockets <= 0) {
+			console.log('disbanding game room: ', this.roomID);
+			delete gameRooms[this.roomID]
+		}
 	}
 }
 
-GameRoom.join = function(gameID, socket) {
-	
+GameRoom.new = function() {
+	const gameID = GameRoom.genGameId();
+	const room = `room_${gameID}`;
+	gameRooms[room] = new GameRoom(gameID);
+	return gameRooms[room];
 }
 
-console.log(genGameId())
-console.log(genGameId())
-console.log(genGameId())
+GameRoom.disconnect = function(socket) {
+	console.log('\tLeaving previous room: ', socket.room)
+	// removes socket from its current room
+	const gameRoom = gameRooms[socket.room];
+	if (gameRoom) {
+		gameRoom.removeSocket(socket);
+	}
+	socket.leave(socket.room);
+}
+
+GameRoom.genGameId = function() {
+	return 'gxxxxxxx'.replace(/[x]/g, function(character) {
+		const r = Math.random() * 16 | 0
+		const v = character == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
+}
+
+GameRoom.join = function(socket, gameID) {
+	console.log('\trequested to join: ', gameID);
+	const room = `room_${gameID}`;
+	if (!gameRooms[room]) {
+		console.log('RoomID ', room, 'not found. Creating new room')
+		gameRooms[room] = new GameRoom(gameID);
+	}
+	
+	const playerAssignment = gameRooms[room].addSocket(socket);
+	socket.broadcast.to(room).emit('player joined', playerAssignment);
+	socket.emit('player assignment', playerAssignment);
+}
+
+function MatchMaker() {
+	this.q = []
+	
+	this.matchmake = function(socket) {
+		this.addToQ(socket);
+		console.log('adding socket ', socket.id, 'to matchmaking queue')
+		while (this.q.length >= 2) {
+			const socket1 = this.q[0];
+			const socket2 = this.q[1];
+			const newRoom = GameRoom.new();
+			this.remove(socket1);
+			this.remove(socket2);
+			
+			const playerAssignment1 = newRoom.addSocket(socket1);
+			socket1.broadcast.to(newRoom.roomID).emit('player joined', playerAssignment1);
+			socket1.emit('player assignment', playerAssignment1);
+			
+			const playerAssignment2 = newRoom.addSocket(socket2);
+			socket2.broadcast.to(newRoom.roomID).emit('player joined', playerAssignment2);
+			socket2.emit('player assignment', playerAssignment2);
+			
+			console.log('match found! roomID: ', newRoom.roomID, newRoom)
+			console.log('socket1 room: ', socket1.rooms)
+			console.log('socket2 room: ', socket2.rooms)
+		}
+	}
+	
+	this.addToQ = function(socket) {
+		this.q.push(socket);
+	}
+	
+	this.remove = function(socket) {
+		const index = this.q.indexOf(socket);
+		if (index >= 0) {
+			this.q.splice(index, 1);
+			console.log('\removed socket ', socket.id, 'from matchmaking queue')
+			return true;
+		}
+		return false;
+	}
+}
 //app.get('/[A-Za-z0-9].*', function (req, res) {
 //	res.send('GET request to the homepage')
 //	console.log('stuff after slash found')

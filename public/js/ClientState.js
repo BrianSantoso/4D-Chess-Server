@@ -1,8 +1,7 @@
-function ClientState(keyInputs, update, render, isMenu) {
+function ClientState(keyInputs, update, render) {
 	this.keyInputs = keyInputs;
 	this.update = update;
 	this.render = render;
-	this.isMenu = isMenu;
 }
 
 // Render the simulation
@@ -61,15 +60,13 @@ ClientState.GAME_STATE = new ClientState(
 		
 
 	},
-	render,
-	false
+	render
 );
 
 ClientState.PAUSE = new ClientState(
 	function keyInputs() {},
 	function update() {},
-	function render() {},
-	false
+	function render() {}
 );
 
 ClientState.MENU = new ClientState(
@@ -91,8 +88,7 @@ ClientState.MENU = new ClientState(
 		}
 	})(),
 	function update() {},
-	render,
-	true
+	render
 );
 
 ClientState.PLAY_OPTIONS = new ClientState(
@@ -115,13 +111,11 @@ ClientState.PLAY_OPTIONS = new ClientState(
 		}
 	})(),
 	function update() {},
-	render,
-	true
+	render
 );
 
 ClientState.SERVER = new ClientState(
 	function keyInputs() {},
 	function update() {},
-	function render() {},
-	false
+	function render() {}
 );
