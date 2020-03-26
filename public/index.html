@@ -139,8 +139,12 @@
 //				uiProxy = SERVER ? new EmptyUI() : new UI();
 				uiProxy = new EmptyUI(); // will be changed when component mounts
 				toolbarProxy = new EmptyUI();
+//				ReactDOM.render(
+//				  <App ref={(ourComponent) => {uiProxy = new UI(ourComponent)}} />,
+//				  document.getElementById('gui')
+//				);
 				ReactDOM.render(
-				  <App ref={(ourComponent) => {uiProxy = new UI(ourComponent)}} />,
+				  <App />,
 				  document.getElementById('gui')
 				);
 			}
@@ -431,11 +435,12 @@
 
 			function EmptyUI() {
 				this.setState = function(state) {
-					
+					console.log('ui not initialized')
 				}
 				this.exitMenu = function() {
 					
 				}
+				
 			}
 
 			function UI(reactComponent) {
@@ -444,6 +449,8 @@
 //					console.log(state)
 					this._ui.setState(state);
 				}
+				
+				
 				this.exitMenu = function() {
 					this._ui.exitMenu();
 				}
@@ -456,6 +463,7 @@
 					this.state = {clientState: stateManager.state};
 					this.swapState = this.swapState.bind(this)
 					this.exitMenu = this.exitMenu.bind(this)
+					this.backToMenu = this.backToMenu.bind(this)
 					
 					this.playButtonClick = this.playButtonClick.bind(this)
 					this.createSandboxGame = this.createSandboxGame.bind(this)
@@ -487,9 +495,6 @@
 				createPrivateGame() {
 					const gameID = genGameId()
 					socket.emit('join', gameID);
-					toolbarProxy.setState({
-						text: 'GameID: ' + gameID
-					});
 					history.pushState({}, null, gameID);
 //					uiProxy.exitMenu();
 				}
@@ -508,6 +513,10 @@
 					moveManager.updateUI();
 					moveManager.updateSelectability();
 					this.exitMenu();
+				}
+				
+				componentDidMount() {
+					uiProxy = new UI(this);
 				}
 				
 				render() {
@@ -529,11 +538,6 @@
 //					);
 					return (
 						<div className="overlay">
-							<div></div>
-							<div></div>
-							<div></div>
-							<div></div>
-							<div></div>
 							<h1 className="text" id="gameTitle">4D Chess </h1>
 							<h1 className="text" id="gameSubTitle"> Online </h1>
 							<PlayButton id="playButton" text="Play" handleClick={this.playButtonClick}/>
@@ -546,14 +550,20 @@
 					this.swapState(ClientState.PLAY_OPTIONS);
 				}
 				
+				backToMenu() {
+					this.swapState(ClientState.MENU);
+				}
+				
 				playOptions() {
 					console.log('PLAY OPTIONS')
 					return (
 						<div className="overlay">
 							<div id="playOptionsMenu">
+								<h1 className="text"> Pick a Game Mode</h1>
 								<PlayOption id="matchmakingButton" text="Online Matchmaking" handleClick={this.createPrivateGame}></PlayOption>
 								<PlayOption id="localMultiplayerButton" text="Local Multiplayer" handleClick={this.createLocalGame}></PlayOption>
 								<PlayOption id="sandboxButton" text="Free Play" handleClick={this.createSandboxGame}></PlayOption>
+								<PlayOption id="backToMenuButton" text="Back To Menu" handleClick={this.backToMenu}></PlayOption>
 							</div>
 						</div>
 					);
@@ -561,11 +571,22 @@
 				
 				game() {
 					console.log('GAME')
+//					return (
+//						<div className="overlay">
+//							<div id="toolbar">
+//								<UndoButton/>
+//								<MoveStatus ref={(ourComponent) => {toolbarProxy = new UI(ourComponent)}}></MoveStatus>
+//								<RedoButton/>
+//							</div>
+//						</div>
+//					);
 					return (
 						<div className="overlay">
 							<div id="toolbar">
 								<UndoButton/>
-								<MoveStatus ref={(ourComponent) => {toolbarProxy = new UI(ourComponent)}}></MoveStatus>
+								<MoveStatus ref={(ourComponent) => {
+//										toolbarProxy = new UI(ourComponent)
+									}}></MoveStatus>
 								<RedoButton/>
 							</div>
 						</div>
@@ -577,16 +598,17 @@
 				constructor(props) {
 					super(props)
 					this.state = {
-//						mostRecentMove: true,
-//						turn: 0,
-//						whoseTurn: 0,
-//						totalMoves: 0,
-//						mode: 0
-						text: "Waiting for opponent..."
+						text: ""
 					}
 					
 					moveManager.updateUI();
+					
 				}
+				
+				componentDidMount() {
+					toolbarProxy = new UI(this);
+					moveManager.updateUI();
+			  	}
 				
 				render() {
 					return (
@@ -596,9 +618,6 @@
 					)
 				}
 				
-//				turnString() {
-//					return ("Move " + this.state.turn + "/" + this.state.totalMoves);
-//				}
 			}
 
 			class RectMenuButton extends React.Component {

@@ -176,7 +176,8 @@ body {
 }
 
 #playOptionsMenu {
-	padding-top: 12%;
+	padding-top: 1em;
+	text-align: center;
 }
 
 .playOptionButton {
@@ -204,6 +205,18 @@ body {
 }
 
 #matchmakingButton {
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+}
+
+#localMultiplayerButton {
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+}
+
+#sandboxButton {
+	background-color: #f6f6f6;
+	color: #3f3f3f;
 }
 
 #privateRoomButton {

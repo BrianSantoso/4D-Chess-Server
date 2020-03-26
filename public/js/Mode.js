@@ -123,6 +123,11 @@ Mode.ONLINE_MULTIPLAYER = new Mode(
 	},
 	
 	function moveStatus() {
+		
+		if (!this.ready) {
+			return "Waiting for opponent..."
+		}
+		
 		if (this.viewingMostRecentMove()) {
 			return this.whoseTurn() === 0 ? "White to Move" : "Black to Move";
 		} else {
