@@ -2,15 +2,17 @@ function Mode(move, canMove, updateSelectability, moveStatus, config) {
 	this.move = move;
 	
 	this.undo = function undo() {
-		this.moveHistory.undo();
-		this.updateSelectability();
-		this.updateUI();
+		if (this.moveHistory.undo()) {
+			this.updateSelectability();
+			this.updateUI();
+		}
 	}
 	
 	this.redo = function redo() {
-		this.moveHistory.redo();
-		this.updateSelectability();
-		this.updateUI();
+		if (this.moveHistory.redo()) {
+			this.updateSelectability();
+			this.updateUI();
+		}
 	}
 	
 	this.canMove = canMove;

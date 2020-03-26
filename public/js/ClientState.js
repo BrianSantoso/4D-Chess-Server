@@ -1,7 +1,8 @@
-function ClientState(keyInputs, update, render) {
+function ClientState(keyInputs, update, render, isMenu) {
 	this.keyInputs = keyInputs;
 	this.update = update;
 	this.render = render;
+	this.isMenu = isMenu;
 }
 
 // Render the simulation
@@ -48,8 +49,9 @@ ClientState.GAME_STATE = new ClientState(
 		controls.noPan = false;
 		controls.update();
 		fixControlsTargetToBox()
-		
-		debugSphere.position.set(controls.target.x, controls.target.y, controls.target.z);
+		if (debugSphere) {
+			//		debugSphere.position.set(controls.target.x, controls.target.y, controls.target.z);
+		}
 		pointer.keyInputs(scene, camera, gameBoard)
 	},
 
@@ -59,16 +61,41 @@ ClientState.GAME_STATE = new ClientState(
 		
 
 	},
-	render
+	render,
+	false
 );
 
 ClientState.PAUSE = new ClientState(
 	function keyInputs() {},
 	function update() {},
-	function render() {}
+	function render() {},
+	false
 );
 
 ClientState.MENU = new ClientState(
+	(() => {
+		let idleMenuRotateVel = 0.5
+		return function keyInputs() {
+	//		controls.noPan = true;
+			pointer.clicks = false;
+			pointer.updateDragVector();
+			const dragVector = pointer.dragVector;
+			if (dragVector.x != 0) {
+				const direction = dragVector.x / Math.abs(dragVector.x);
+				idleMenuRotateVel = 0.5 * direction;
+			}
+			if (dragVector.x == 0 && dragVector.y == 0) {
+				rotateCameraAbout(camera, controls.target, idleMenuRotateVel * step * -1)
+			}
+			controls.update();
+		}
+	})(),
+	function update() {},
+	render,
+	true
+);
+
+ClientState.PLAY_OPTIONS = new ClientState(
 	(() => {
 		let idleMenuRotateVel = 0.5
 		return function keyInputs() {
@@ -84,19 +111,17 @@ ClientState.MENU = new ClientState(
 			if (dragVector.x == 0 && dragVector.y == 0) {
 				rotateCameraAbout(camera, controls.target, idleMenuRotateVel * step * -1)
 			}
-
-	//		rotateCameraAbout(camera, new THREE.Vector3(0,0,0), step)
 			controls.update();
-		
-		
 		}
 	})(),
 	function update() {},
-	render
+	render,
+	true
 );
 
 ClientState.SERVER = new ClientState(
 	function keyInputs() {},
 	function update() {},
-	function render() {}
+	function render() {},
+	false
 );

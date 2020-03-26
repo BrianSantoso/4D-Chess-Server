@@ -166,7 +166,7 @@
 				camera.position.set(coolPos.x, coolPos.y, coolPos.z);
 				controls.target.set(coolTar.x, coolTar.y, coolTar.z);
 				
-				debugSphere = DEBUG(controls.target, 0, 0);
+//				debugSphere = DEBUG(controls.target, 1.0, 0);
 				
 //				let boundingBox = gameBoard.graphics.getBoundingBox();
 //				DEBUG(boundingBox.bottomLeft);
@@ -453,22 +453,20 @@
 				
 				constructor(props) {
 					super(props);
-					this.state = {menu: true};
+					this.state = {clientState: stateManager.state};
 					this.swapState = this.swapState.bind(this)
 					this.exitMenu = this.exitMenu.bind(this)
+					
+					this.playButtonClick = this.playButtonClick.bind(this)
+					this.createSandboxGame = this.createSandboxGame.bind(this)
+					this.createLocalGame = this.createLocalGame.bind(this)
 				}
 				
 				swapState(clientState) {
 					console.log("App.swapState called")
-					if (clientState == ClientState.GAME_STATE) {
-						this.setState({
-							menu: false
-						});
-					} else if(clientState == ClientState.MENU) {
-						this.setState({
-							menu: true
-						});
-					}
+					this.setState({
+						clientState: clientState
+					})
 					stateManager.swapState(clientState);
 				}
 				
@@ -496,22 +494,73 @@
 //					uiProxy.exitMenu();
 				}
 				
+				createSandboxGame() {
+					history.pushState({}, null, 'sandbox');
+					moveManager.setMode(Mode.SANDBOX);
+					moveManager.updateUI();
+					moveManager.updateSelectability();
+					this.exitMenu();
+				}
+				
+				createLocalGame() {
+					history.pushState({}, null, 'localGame');
+					moveManager.setMode(Mode.LOCAL_MULTIPLAYER);
+					moveManager.updateUI();
+					moveManager.updateSelectability();
+					this.exitMenu();
+				}
+				
 				render() {
-					return this.state.menu ? this.menu() : this.game();
+					if (this.state.clientState === ClientState.MENU) {
+						return this.menu();
+					} else if(this.state.clientState === ClientState.PLAY_OPTIONS) {
+						return this.playOptions();
+					} else {
+						return this.game();
+					}
 				}
 				
 				menu() {
+					console.log('MENU')
+//					return (
+//						<div className="overlay">
+//							<PlayButton id="playButton" text="Play" handleClick={this.playButtonClick}/>
+//						</div>
+//					);
 					return (
 						<div className="overlay">
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
 							<h1 className="text" id="gameTitle">4D Chess </h1>
 							<h1 className="text" id="gameSubTitle"> Online </h1>
-							<PlayButton id="playButton" text="Play" handleClick={this.createPrivateGame}/>
+							<PlayButton id="playButton" text="Play" handleClick={this.playButtonClick}/>
 							<PlayButton id="privateRoomButton" text="Create Private Game" handleClick={this.createPrivateGame}/>
 						</div>
 					);
 				}
 				
+				playButtonClick() {
+					this.swapState(ClientState.PLAY_OPTIONS);
+				}
+				
+				playOptions() {
+					console.log('PLAY OPTIONS')
+					return (
+						<div className="overlay">
+							<div id="playOptionsMenu">
+								<PlayOption id="matchmakingButton" text="Online Matchmaking" handleClick={this.createPrivateGame}></PlayOption>
+								<PlayOption id="localMultiplayerButton" text="Local Multiplayer" handleClick={this.createLocalGame}></PlayOption>
+								<PlayOption id="sandboxButton" text="Free Play" handleClick={this.createSandboxGame}></PlayOption>
+							</div>
+						</div>
+					);
+				}
+				
 				game() {
+					console.log('GAME')
 					return (
 						<div className="overlay">
 							<div id="toolbar">
@@ -555,6 +604,9 @@
 			class RectMenuButton extends React.Component {
 				constructor(props) {
 					super(props)
+					this.handleClick = this.props.handleClick;
+					this.text = this.props.text;
+					this.id = this.props.id;
 				}
 				
 				render() {
@@ -564,12 +616,25 @@
 				}
 			}
 
+			
+
 			class PlayButton extends RectMenuButton {
 				constructor(props) {
 					super(props)
-					this.handleClick = this.props.handleClick;
-					this.text = this.props.text;
-					this.id = this.props.id;
+					
+				}
+				
+			}
+
+			class PlayOption extends RectMenuButton {
+				constructor(props) {
+					super(props)
+					
+				}
+				render() {
+					return (<button onClick={this.handleClick} className="text rectButton playOptionButton" id={this.id}>
+								{this.text}
+							</button>)
 				}
 			}
 

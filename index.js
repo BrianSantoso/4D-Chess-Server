@@ -54,6 +54,7 @@ io.on('connect', (socket) => {
 //    });
 	socket.on('submit move', (move) => {
 		console.log(room, 'received move', move)
+//		gameRooms[room]
 		socket.broadcast.to(room).emit('serve move', move);
 	})
 	socket.on('chat message', (message) => {
