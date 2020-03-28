@@ -64,6 +64,7 @@
 			let stateManager = new ClientStateManager(SERVER ? ClientState.SERVER : ClientState.MENU);
 			let uiProxy;
 			let toolbarProxy;
+let pon;
 			
 
 			function main() {
@@ -137,6 +138,7 @@
 			}
 
 			function initReact() {
+				pon = pointer;
 				uiProxy = new EmptyUI(); // will be changed when component mounts
 				toolbarProxy = new EmptyUI();
 				ReactDOM.render(

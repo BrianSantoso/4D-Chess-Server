@@ -22,8 +22,8 @@ function Pointer(scene, camera, gameBoard, moveManager){
     this.possibleMoves;
 	this.dragging = false;
     
-    this.pieceSelector = new PieceSelector(this, scene, camera, gameBoard, gameBoard.graphics.piecesContainer.children)
-    this.moveSelector = new MoveSelector(this, scene, camera, gameBoard, gameBoard.graphics.possibleMovesContainer.children)
+    this.pieceSelector = new PieceSelector(this, scene, camera, this.gameBoard)
+    this.moveSelector = new MoveSelector(this, scene, camera, this.gameBoard)
     this.keyInputs = function(scene, camera, gameBoard){
         
 		this.updateDragVector();
@@ -37,7 +37,6 @@ function Pointer(scene, camera, gameBoard, moveManager){
         // check for clicking on possible move
         this.moveSelector.run(this.rayCaster, this.pos)
         this.moveSelector.select()
-        
         // if possible move is clicked...
         if(this.moveSelector.SELECTED){
             // move the piece
@@ -185,7 +184,7 @@ function Pointer(scene, camera, gameBoard, moveManager){
         if (ev.target == renderer.domElement) {
             // If the mouse moved since the mousedown then don't consider this a selection
             if (intentionalClick(ev, 5)) {
-				this.onClick(ev, gameBoard);
+				this.onClick(ev, this.gameBoard);
 			}
         }
     }.bind(this), false);
@@ -220,13 +219,13 @@ function Pointer(scene, camera, gameBoard, moveManager){
 Pointer.UNDO = 65;
 Pointer.REDO = 68;
 
-function Selector(pointer, scene, camera, gameBoard, designatedRayCastContainer){
+function Selector(pointer, scene, camera, gameBoard){
 	this.pointer = pointer
     this.scene = scene
     this.camera = camera
     this.gameBoard = gameBoard
     
-    this.designatedRayCastContainer = designatedRayCastContainer
+//    this.designatedRayCastContainer = designatedRayCastContainer
     this.INTERSECTED;// the object in the designatedRayCastContainer currently closest to the camera and intersected by the Ray projected from the mouse position  
     this.SELECTED;
 }
@@ -269,7 +268,10 @@ Selector.unhighlight = function(mesh){
 }
 
 Selector.rayCast = function(rayCaster, pos, objects, camera, gameBoard){
-    
+//	console.log(objects)
+	if(gameBoard.re) {
+		console.log(objects)
+	}
     const rayCastableObjects = objects.filter(o => o.canRayCast)
     rayCaster.setFromCamera(pos, camera); // update the picking ray with the camera and mouse position
     return rayCaster.intersectObjects(rayCastableObjects); // calculate objects intersecting the picking ray
@@ -292,7 +294,8 @@ Selector.prototype = {
         this.SELECTED = selected
     },
     rayCast: function(rayCaster, pos){
-        const pieceMeshes = this.designatedRayCastContainer
+//        const pieceMeshes = this.designatedRayCastContainer
+		const pieceMeshes = this.gameBoard.graphics.piecesContainer.children;
         const intersects = Selector.rayCast(rayCaster, pos, pieceMeshes, this.camera, this.gameBoard)
         return intersects
     },
@@ -325,8 +328,8 @@ Selector.prototype = {
     
 }
 
-function PieceSelector(pointer, scene, camera, gameBoard, designatedRayCastContainer){
-    Selector.call(this, pointer, scene, camera, gameBoard, designatedRayCastContainer);
+function PieceSelector(pointer, scene, camera, gameBoard){
+    Selector.call(this, pointer, scene, camera, gameBoard);
 }
 
 PieceSelector.prototype = Object.create(Selector.prototype)
@@ -396,10 +399,17 @@ PieceSelector.prototype.run = function(rayCaster, pos, highlight){
 
 
 
-function MoveSelector(pointer, scene, camera, gameBoard, designatedRayCastContainer){
-	Selector.call(this, pointer, scene, camera, gameBoard, designatedRayCastContainer)
+function MoveSelector(pointer, scene, camera, gameBoard){
+	Selector.call(this, pointer, scene, camera, gameBoard)
 }
 MoveSelector.prototype = Object.create(Selector.prototype)
+
+MoveSelector.prototype.rayCast = function(rayCaster, pos){
+//        const pieceMeshes = this.designatedRayCastContainer
+	const pieceMeshes = this.gameBoard.graphics.possibleMovesContainer.children;
+	const intersects = Selector.rayCast(rayCaster, pos, pieceMeshes, this.camera, this.gameBoard)
+	return intersects
+}
 
 //MoveSelector.prototype.select = function() {
 //	

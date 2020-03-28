@@ -448,7 +448,7 @@ BoardGraphics.prototype = {
 		}, materialScheme)
 		
         this.hidePossibleMoves();
-        
+		
         locations.forEach(pos => {
 			
 			coordinates = this.boardCoordinates(pos.x, pos.y, pos.z, pos.w)
@@ -477,7 +477,7 @@ BoardGraphics.prototype = {
       
         const locations = this.pieces[x][y][z][w].getPossibleMoves(this.pieces, x, y, z, w)
         
-        this.showPossibleMoves(locations, piece, materialScheme)
+        this.showPossibleMoves(locations, piece, materialScheme, true)
         
     },
     

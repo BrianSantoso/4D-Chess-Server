@@ -101,7 +101,8 @@ function MoveManager(gameBoard, clientTeam, mode) {
 		this.moveHistory = DMoveList.fromList(json.moveHistory, this.gameBoard);
 		this.gameBoard.loadPieces(json.pieces);
 		
-		pointer = new Pointer(scene, camera, gameBoard, moveManager)
+		pointer = new Pointer(scene, camera, this.gameBoard, this)
+		console.log(pointer)
 	}
 	
 	this.loadFromPlayerAssignment = function(playerAssignment) {
