@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "lodash": "^4.17.15",
     "path": "^0.12.7",
     "socket.io": "^2.3.0"
   }

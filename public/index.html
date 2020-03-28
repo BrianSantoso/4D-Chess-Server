@@ -94,18 +94,19 @@
 					});
 					socket.on('player assignment', (playerAssignment) => {
 						console.log('player assignment: ', playerAssignment)
-						moveManager.clientTeam = playerAssignment.clientTeam;
-						
-						if (!moveManager.ready) {
-							moveManager.ready = playerAssignment.ready;
-						}
-						moveManager.updateUI();
-						moveManager.updateSelectability();
-//						moveManager.setSelectability(playerAssignment.clientTeam, playerAssignment.ready);
-						uiProxy.exitMenu();
+						moveManager.loadFromPlayerAssignment(playerAssignment);
+//						moveManager.clientTeam = playerAssignment.clientTeam;
+//						
+//						if (!moveManager.ready) {
+//							moveManager.ready = playerAssignment.ready;
+//						}
+//						moveManager.updateUI();
+//						moveManager.updateSelectability();
+//						uiProxy.exitMenu();
 					})
 					
 					socket.on('player joined', (playerAssignment) => {
+						
 						if (!moveManager.ready) {
 							moveManager.ready = playerAssignment.ready;
 						}

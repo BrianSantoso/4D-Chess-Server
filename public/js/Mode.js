@@ -101,7 +101,7 @@ Mode.ONLINE_MULTIPLAYER = new Mode(
 			console.log('unpackaged: ', moveHistoryNode.move)
 			socket.emit('submit move', move);
 		}
-		
+		console.log(receiving)
 	},
 	
 	function canMove(team) {

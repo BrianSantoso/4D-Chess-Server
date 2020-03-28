@@ -1,11 +1,9 @@
-'use strict';
 
-function MoveManager(gameBoard, clientTeam, mode, main=false) {
+function MoveManager(gameBoard, clientTeam, mode) {
 	this.gameBoard = gameBoard;
 	this.clientTeam = 0;
 	this.players = [new PlayerData(0, 300), new PlayerData(1, 300)];
 	this.moveHistory = new DMoveList(gameBoard);
-	this.main = main;
 	
 	this.move = function(x0, y0, z0, w0, x1, y1, z1, w1, receiving=false) {
 		this.mode.move.call(this, x0, y0, z0, w0, x1, y1, z1, w1, receiving);
@@ -85,25 +83,39 @@ function MoveManager(gameBoard, clientTeam, mode, main=false) {
 	}
 	
 	this.package = function() {
+		// serialize data
 		// function mainly for server to send state of game to clients
-		const x = this.gameBoard.pieces;
-		const pieces = x.map(y => 
-			y.map(z => 
-				z.map(w => 
-					w.map(piece => piece.package())
-				)
-			)
-		);
 		
 		let data = {
-			moveHistory: this.moveHistory.package(),
+//			moveHistory: this.moveHistory.package(),
+			moveHistory: this.moveHistory.toList(),
 			players: this.players,
-			pieces: pieces
+			pieces: this.gameBoard.package()
 		}
 		return data
 	}
 	
+	this.loadFrom = function(json) {
+		Object.assign(this.players, json.players);
+//		let newMoveHistory = Move.convertFromJson(json.moveHistory)
+		this.moveHistory = DMoveList.fromList(json.moveHistory, this.gameBoard);
+		this.gameBoard.loadPieces(json.pieces);
+		
+		pointer = new Pointer(scene, camera, gameBoard, moveManager)
+	}
 	
+	this.loadFromPlayerAssignment = function(playerAssignment) {
+		this.clientTeam = playerAssignment.clientTeam;
+		if (!this.ready) {
+			this.ready = playerAssignment.ready;
+		}
+		if (playerAssignment.gameData) {
+			this.loadFrom(playerAssignment.gameData);
+		}
+		this.updateUI();
+		this.updateSelectability();
+		uiProxy.exitMenu();
+	}
 }
 
 
@@ -112,14 +124,18 @@ function MoveManager(gameBoard, clientTeam, mode, main=false) {
 //MoveManager.ONLINE_MULTIPLAYER = 2;
 
 function DMoveList(gameBoard, curr){
-	this.root = new MoveHistoryNode()
+	this.root = new MoveHistoryNode();
 	this.curr = curr || this.root;
 	this.gameBoard = gameBoard;
 }
 
 DMoveList.prototype = {
 	add: function(x0, y0, z0, w0, x1, y1, z1, w1, metaData, appendToEnd=false){
-		const newMoveHistoryNode = new MoveHistoryNode(new Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData));
+		return this.addMoveObj(new Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData));
+	},
+	
+	addMoveObj: function(move, appendToEnd=false) {
+		const newMoveHistoryNode = new MoveHistoryNode(move);
 		if (appendToEnd) {
 			let end = this.curr;
 			while(end.next != null) {
@@ -188,14 +204,35 @@ DMoveList.prototype = {
 		return this.indexOf(this.curr);
 	},
 	
-	package: function() {
-		const current = this.root;
-		const newDList = new DMoveList(null);
-		while(current) {
-			newDList.add(current.package());
+	toList: function() {
+		let list = []
+		let curr = this.root;
+		while (curr != null) {
+			list.push(curr.move)
+			curr = curr.next;
 		}
-		return newDList;
+		return list;
+	},
+	
+	package: function() {
+//		let current = this.root.next;
+//		const newDList = new DMoveList(null);
+//		while(current) {
+//			let movePackage = current.package();
+//			newDList.addMoveObj(movePackage);
+//			current = current.next;
+//		}
+//		return newDList;
+		return this.toList();
 	}
+}
+
+DMoveList.fromList = function(list, gameBoard) {
+	let newDMoveList = new DMoveList(gameBoard);
+	for (let i = 1; i < list.length; i++) {
+		newDMoveList.addMoveObj(list[i])
+	}
+	return newDMoveList;
 }
 
 function MoveHistoryNode(move){
@@ -218,6 +255,7 @@ function Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData){
 	this.z1 = z1;
 	this.w1 = w1;
 //	this.capturedPiece = capturedPiece;
+	
 	this.metaData = metaData || {promotion: false};
 	
 	this.package = function() {
@@ -245,3 +283,12 @@ function Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData){
 		}
 	}
 }
+//
+//Move.convertFromJson = function(jsonList) {
+//	return jsonList.map(function(move) {
+//		if (move.metaData.capturedPiece) {
+//			
+//		}
+//		return move;
+//	});
+//}

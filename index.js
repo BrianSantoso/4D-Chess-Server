@@ -4,16 +4,37 @@ const express = require('express');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
+const fs = require('fs');
+const publicPath = path.join(__dirname, 'public');
 
-const public = path.join(__dirname, 'public');
+let THREE = {
+	Vector3: function Vector3(x, y, z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+}
 
-//let requestedGameID;
+function EmptyUI() {
+	this.setState = function(state) {
+		console.warn('proxy setState called before react component mounted')
+	}
+	this.exitMenu = function() {
+		console.warn('proxy exitMenu called before react component mounted')
+	}
+
+}
+
+let toolbarProxy = new EmptyUI();
+eval(fs.readFileSync('./public/js/three.js')+'');
+eval(fs.readFileSync('./public/js/gameboard.js')+'');
+eval(fs.readFileSync('./public/js/movemanager.js')+'');
+eval(fs.readFileSync('./public/js/piece.js')+'');
+eval(fs.readFileSync('./public/js/mode.js')+'');
+
+
 app.get('/:gameID(g[A-Za-z0-9]{7})', (req, res) => {
-//	console.log('url gameID: ', req.params)
-//	let requestedGameID = req.params.gameID;
-//	console.log('accessed thru url gameID: ', requestedGameID)
-//	res.json({requestedGameID: requestedGameID})
-	res.sendFile(path.join(public, 'index.html'));
+	res.sendFile(path.join(publicPath, 'index.html'));
 });
 app.use(express.static('public'));
 app.use('/sandbox', express.static('public'));
@@ -38,6 +59,7 @@ io.on('connect', (socket) => {
 	
 	socket.on('submit move', (move) => {
 		console.log(socket.room, 'received move', move)
+		GameRoom.move(socket, move);
 		socket.broadcast.to(socket.room).emit('serve move', move);
 	})
 	
@@ -67,6 +89,7 @@ function GameRoom(gameID) {
 	this.players = []
 	this.spectators = []
 	this.numSockets = 0;
+	this.gameManager = new MoveManager(new GameBoard(4, EmptyBoardGraphics), -2, Mode.ONLINE_MULTIPLAYER);
 	
 	this.addSocket = function(socket) {
 		GameRoom.disconnect(socket);
@@ -74,7 +97,9 @@ function GameRoom(gameID) {
 		socket.room = this.roomID;
 		socket.join(this.roomID);
 		console.log('\tsocket ', socket.id, 'joined room ', this.roomID)
-		let playerAssignment = {}
+		let playerAssignment = {
+			gameData: this.gameManager.package()
+		}
 		if (this.players.length < 2) {
 			this.players.push(socket)
 			Object.assign(playerAssignment, {
@@ -89,6 +114,7 @@ function GameRoom(gameID) {
 			})
 		}
 		this.numSockets += 1;
+//		console.log(playerAssignment)
 		return playerAssignment;
 	}
 	
@@ -135,8 +161,15 @@ GameRoom.join = function(socket, gameID) {
 	}
 	
 	const playerAssignment = gameRooms[room].addSocket(socket);
+	console.log(playerAssignment)
 	socket.broadcast.to(room).emit('player joined', playerAssignment);
 	socket.emit('player assignment', playerAssignment);
+	
+}
+
+GameRoom.move = function(socket, move) {
+	const gameRoom = gameRooms[socket.room];
+	gameRoom.gameManager.move(move.x0, move.y0, move.z0, move.w0, move.x1, move.y1, move.z1, move.w1, true);
 }
 
 function MatchMaker() {
@@ -180,31 +213,3 @@ function MatchMaker() {
 		return false;
 	}
 }
-//app.get('/[A-Za-z0-9].*', function (req, res) {
-//	res.send('GET request to the homepage')
-//	console.log('stuff after slash found')
-//});
-//app.use(express.static('public'));
-//app.get(/[A-Za-z0-9].+/, function (req, res) {
-//	res.sendFile(__dirname + '/public/index.html');
-//	console.log('reeeeeeeeeeee')
-//});
-//app.use(/a/, express.static('public'))
-//app.use('/', express.static('public'))
-//app.use('/g', express.static('public'))
-//app.get('/', (req, res) => {
-//    res.send('An alligator approaches!');
-//	console.log('reeeeeeeeeeee')
-//});
-//app.use((req, res, next) => {
-//  const test = /\?[^]*\//.test(req.url);
-//  if (req.url.substr(-1) === '/' && req.url.length > 1 && !test)
-//    res.redirect(301, req.url.slice(0, -1));
-//  else
-//    next();
-//});
-
-//app.use('/css', express.static(path.join(public, 'css')))
-//app.use('/icons', express.static(path.join(public, 'icons')))
-//app.use('/js', express.static(path.join(public, 'js')))
-//app.use('/models', express.static(path.join(public, 'models')))
