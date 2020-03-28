@@ -259,16 +259,15 @@ Selector.highlight = function(mesh, color){
 }
     
 Selector.unhighlight = function(mesh){
-//        console.log(mesh.material.originalHex.getHex())
-    if(mesh && mesh.material.originalHex)
-        mesh.material.color.setHex(mesh.material.originalHex.getHex());
+    if (mesh && mesh.material.originalHex) {
+		mesh.material.color.setHex(mesh.material.originalHex.getHex());
+	}
     // remove previous intersection object reference
     //     by setting current intersection object to "nothing"
 
 }
 
 Selector.rayCast = function(rayCaster, pos, objects, camera, gameBoard){
-//	console.log(objects)
 	if(gameBoard.re) {
 		console.log(objects)
 	}
@@ -282,25 +281,25 @@ Selector.prototype = {
     setINTERSECTED: function(intersected, highlight){
         
         // reset the previous mesh's color
-        if(this.INTERSECTED && highlight) // prevent reset when selected
-            Selector.unhighlight(this.INTERSECTED)
-        
+        if (this.INTERSECTED && highlight) { // prevent reset when selected
+			Selector.unhighlight(this.INTERSECTED)
+		} 
+            
         this.INTERSECTED = intersected // closest intersected
         
-        if(this.INTERSECTED && highlight)
-            Selector.highlight(this.INTERSECTED, Selector.HOVER_COLOR)
+        if (this.INTERSECTED && highlight) {
+			Selector.highlight(this.INTERSECTED, Selector.HOVER_COLOR)
+		}
     },
     setSELECTED: function(selected){
         this.SELECTED = selected
     },
     rayCast: function(rayCaster, pos){
-//        const pieceMeshes = this.designatedRayCastContainer
 		const pieceMeshes = this.gameBoard.graphics.piecesContainer.children;
         const intersects = Selector.rayCast(rayCaster, pos, pieceMeshes, this.camera, this.gameBoard)
         return intersects
     },
     run: function(rayCaster, pos, highlight){
-//        console.log(highlight)
         const intersects = this.rayCast(rayCaster, pos)
         if(intersects.length > 0){
             const closest = intersects[0].object
@@ -311,18 +310,15 @@ Selector.prototype = {
         
     },
     select: function(){
-//        if(this.SELECTED != this.INTERSECTED)
-////            Selector.highlight(this.SELECTED, this.SELECTED.material.originalHex.getHex())
-//            Selector.unhighlight(this.SELECTED) // reset color of currently selected piece (if it exists, there's a safeguard)
-//            
         if(this.SELECTED != this.INTERSECTED){
             Selector.unhighlight(this.SELECTED)
         }
         
         this.setSELECTED(this.INTERSECTED)
         
-        if(this.SELECTED)
+        if (this.SELECTED) {
             Selector.highlight(this.SELECTED, Selector.SELECT_COLOR)
+		}
     }
     
     
@@ -336,20 +332,19 @@ PieceSelector.prototype = Object.create(Selector.prototype)
 
 PieceSelector.prototype.select = function() {
 	
-	// <NewCode>
-	if(this.INTERSECTED && !this.INTERSECTED.selectable){
+	if (this.INTERSECTED && !this.INTERSECTED.selectable) {
 		return;
 	}
-	// </NewCode>
 	
-	if(this.SELECTED != this.INTERSECTED){
-		Selector.unhighlight(this.SELECTED)
+	if (this.SELECTED != this.INTERSECTED) {
+		Selector.unhighlight(this.SELECTED);
 	}
 
-	this.setSELECTED(this.INTERSECTED)
+	this.setSELECTED(this.INTERSECTED);
 
-	if(this.SELECTED)
-		Selector.highlight(this.SELECTED, Selector.SELECT_COLOR)
+	if (this.SELECTED) {
+		Selector.highlight(this.SELECTED, Selector.SELECT_COLOR);
+	}
 }
 
 PieceSelector.prototype.run = function(rayCaster, pos, highlight){
@@ -396,32 +391,16 @@ PieceSelector.prototype.run = function(rayCaster, pos, highlight){
 
 }
 
-
-
-
 function MoveSelector(pointer, scene, camera, gameBoard){
 	Selector.call(this, pointer, scene, camera, gameBoard)
 }
 MoveSelector.prototype = Object.create(Selector.prototype)
 
 MoveSelector.prototype.rayCast = function(rayCaster, pos){
-//        const pieceMeshes = this.designatedRayCastContainer
 	const pieceMeshes = this.gameBoard.graphics.possibleMovesContainer.children;
 	const intersects = Selector.rayCast(rayCaster, pos, pieceMeshes, this.camera, this.gameBoard)
 	return intersects
 }
-
-//MoveSelector.prototype.select = function() {
-//	
-//	if(this.SELECTED != this.INTERSECTED){
-//		Selector.unhighlight(this.SELECTED)
-//	}
-//
-//	this.setSELECTED(this.INTERSECTED)
-//
-//	if(this.SELECTED)
-//		Selector.highlight(this.SELECTED, Selector.SELECT_COLOR)
-//}
 
 
 function initPointer(){

@@ -83,12 +83,11 @@ function MoveManager(gameBoard, clientTeam, mode) {
 	}
 	
 	this.package = function() {
-		// serialize data
-		// function mainly for server to send state of game to clients
-		
+		/*
+		 * Serialize data so server can send game state to clients
+		 */
 		let data = {
-//			moveHistory: this.moveHistory.package(),
-			moveHistory: this.moveHistory.toList(),
+			moveHistory: this.moveHistory.package(),
 			players: this.players,
 			pieces: this.gameBoard.package()
 		}
@@ -118,11 +117,6 @@ function MoveManager(gameBoard, clientTeam, mode) {
 		uiProxy.exitMenu();
 	}
 }
-
-
-//MoveManager.SANDBOX = 0;
-//MoveManager.LOCAL_MULTIPLAYER = 1;
-//MoveManager.ONLINE_MULTIPLAYER = 2;
 
 function DMoveList(gameBoard, curr){
 	this.root = new MoveHistoryNode();
@@ -216,14 +210,6 @@ DMoveList.prototype = {
 	},
 	
 	package: function() {
-//		let current = this.root.next;
-//		const newDList = new DMoveList(null);
-//		while(current) {
-//			let movePackage = current.package();
-//			newDList.addMoveObj(movePackage);
-//			current = current.next;
-//		}
-//		return newDList;
 		return this.toList();
 	}
 }
@@ -255,7 +241,6 @@ function Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData){
 	this.y1 = y1;
 	this.z1 = z1;
 	this.w1 = w1;
-//	this.capturedPiece = capturedPiece;
 	
 	this.metaData = metaData || {promotion: false};
 	
@@ -284,12 +269,3 @@ function Move(x0, y0, z0, w0, x1, y1, z1, w1, metaData){
 		}
 	}
 }
-//
-//Move.convertFromJson = function(jsonList) {
-//	return jsonList.map(function(move) {
-//		if (move.metaData.capturedPiece) {
-//			
-//		}
-//		return move;
-//	});
-//}
