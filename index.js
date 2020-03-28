@@ -27,10 +27,10 @@ function EmptyUI() {
 
 let toolbarProxy = new EmptyUI();
 eval(fs.readFileSync('./public/js/three.js')+'');
-eval(fs.readFileSync('./public/js/gameboard.js')+'');
-eval(fs.readFileSync('./public/js/movemanager.js')+'');
-eval(fs.readFileSync('./public/js/piece.js')+'');
-eval(fs.readFileSync('./public/js/mode.js')+'');
+eval(fs.readFileSync('./public/js/GameBoard.js')+'');
+eval(fs.readFileSync('./public/js/MoveManager.js')+'');
+eval(fs.readFileSync('./public/js/Piece.js')+'');
+eval(fs.readFileSync('./public/js/Mode.js')+'');
 
 
 app.get('/:gameID(g[A-Za-z0-9]{7})', (req, res) => {
