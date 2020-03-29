@@ -243,15 +243,21 @@
          		moveManager.undo();
          	}
          }
-         window.onload = function(){
-            console.log('window loaded')
-            if (Detector.webgl) {
-                main();
-            } else {
-                var warning = Detector.getWebGLErrorMessage();
-                document.getElementById('container').appendChild(warning);
-            }
-        };
+        if (Detector.webgl) {
+            main();
+        } else {
+            var warning = Detector.getWebGLErrorMessage();
+            document.getElementById('container').appendChild(warning);
+        }
+//         window.onload = function(){
+//            console.log('window loaded')
+//            if (Detector.webgl) {
+//                main();
+//            } else {
+//                var warning = Detector.getWebGLErrorMessage();
+//                document.getElementById('container').appendChild(warning);
+//            }
+//        };
       </script>
    </body>
 </html>
