@@ -2,15 +2,6 @@
  * TODO BEFORE PRODUCTION BUILD:
  * --remove all CDNs
  */
-window.onload = function(){
-    console.log('window loaded')
-	if (Detector.webgl) {
-		main();
-	} else {
-		var warning = Detector.getWebGLErrorMessage();
-		document.getElementById('container').appendChild(warning);
-	}
-};
 
 const SERVER = false;
 const BOARD_SIZE = 4;
