@@ -566,7 +566,6 @@ BoardGraphics.prototype = {
 function GameBoard(n=4, Graphics=BoardGraphics){
 	
     this.n = n;
-    this.position = new THREE.Vector3(0, 0, 0);
     
 	this.graphics = new Graphics(this);
     this.pieces = this.initPieces();

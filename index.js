@@ -7,35 +7,19 @@ const io = require('socket.io')(server);
 const fs = require('fs');
 const publicPath = path.join(__dirname, 'public');
 
-let THREE = {
-	Vector3: function Vector3(x, y, z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-}
-
-function EmptyUI() {
-	this.setState = function(state) {
-		console.warn('proxy setState called before react component mounted')
-	}
-	this.exitMenu = function() {
-		console.warn('proxy exitMenu called before react component mounted')
-	}
-
-}
-
-let toolbarProxy = new EmptyUI();
 eval(fs.readFileSync('./public/js/three.js')+'');
+eval(fs.readFileSync('./public/js/UI.js')+'');
 eval(fs.readFileSync('./public/js/GameBoard.js')+'');
 eval(fs.readFileSync('./public/js/MoveManager.js')+'');
 eval(fs.readFileSync('./public/js/Piece.js')+'');
 eval(fs.readFileSync('./public/js/Mode.js')+'');
 
+let toolbarProxy = new EmptyUI();
 
 app.get('/:gameID(g[A-Za-z0-9]{7})', (req, res) => {
 	res.sendFile(path.join(publicPath, 'index.html'));
 });
+
 app.use(express.static('public'));
 app.use('/sandbox', express.static('public'));
 app.use('/localGame', express.static('public'));
@@ -85,6 +69,7 @@ server.listen(PORT, () => {
 function GameRoom(gameID) {
 	
 	// TODO: close gameroom on disconnects
+	this.gameID = gameID;
 	this.roomID = `room_${gameID}`;
 	this.players = []
 	this.spectators = []
@@ -98,7 +83,8 @@ function GameRoom(gameID) {
 		socket.join(this.roomID);
 		console.log('\tsocket ', socket.id, 'joined room ', this.roomID)
 		let playerAssignment = {
-			gameData: this.gameManager.package()
+			gameData: this.gameManager.package(),
+			gameID: this.gameID
 		}
 		if (this.players.length < 2) {
 			this.players.push(socket)
@@ -114,7 +100,9 @@ function GameRoom(gameID) {
 			})
 		}
 		this.numSockets += 1;
-//		console.log(playerAssignment)
+		
+		socket.broadcast.to(this.roomID).emit('player joined', playerAssignment);
+		socket.emit('player assignment', playerAssignment);
 		return playerAssignment;
 	}
 	
@@ -159,12 +147,7 @@ GameRoom.join = function(socket, gameID) {
 		console.log('RoomID ', room, 'not found. Creating new room')
 		gameRooms[room] = new GameRoom(gameID);
 	}
-	
 	const playerAssignment = gameRooms[room].addSocket(socket);
-	console.log(playerAssignment)
-	socket.broadcast.to(room).emit('player joined', playerAssignment);
-	socket.emit('player assignment', playerAssignment);
-	
 }
 
 GameRoom.move = function(socket, move) {
@@ -185,13 +168,8 @@ function MatchMaker() {
 			this.remove(socket1);
 			this.remove(socket2);
 			
-			const playerAssignment1 = newRoom.addSocket(socket1);
-			socket1.broadcast.to(newRoom.roomID).emit('player joined', playerAssignment1);
-			socket1.emit('player assignment', playerAssignment1);
-			
-			const playerAssignment2 = newRoom.addSocket(socket2);
-			socket2.broadcast.to(newRoom.roomID).emit('player joined', playerAssignment2);
-			socket2.emit('player assignment', playerAssignment2);
+			newRoom.addSocket(socket1);
+			newRoom.addSocket(socket2);
 			
 			console.log('match found! roomID: ', newRoom.roomID, newRoom)
 			console.log('socket1 room: ', socket1.rooms)
