@@ -3,6 +3,7 @@
  * --remove all CDNs
  */
 window.onload = function(){
+    console.log('window loaded')
 	if (Detector.webgl) {
 		main();
 	} else {
