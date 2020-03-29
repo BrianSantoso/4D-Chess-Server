@@ -31,6 +31,10 @@
       <div id="gui" class="overlay"></div>
       <script type="text/babel">
 
+          if ("orientation" in screen) {
+              screen.orientation.lock('landscape');
+          }
+          
          class App extends React.Component {
          	
          	constructor(props) {

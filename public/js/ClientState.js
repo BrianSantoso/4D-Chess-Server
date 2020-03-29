@@ -71,7 +71,7 @@ ClientState.PAUSE = new ClientState(
 
 ClientState.MENU = new ClientState(
 	(() => {
-		let idleMenuRotateVel = 0.5
+		let idleMenuRotateVel = 0.5;
 		return function keyInputs() {
 			controls.noPan = true;
 			pointer.clicks = false;
@@ -95,8 +95,7 @@ ClientState.PLAY_OPTIONS = new ClientState(
 	(() => {
 		let idleMenuRotateVel = 0.5
 		return function keyInputs() {
-		
-	//		controls.noPan = true;
+			controls.noPan = true;
 			pointer.clicks = false;
 			pointer.updateDragVector();
 			const dragVector = pointer.dragVector;
