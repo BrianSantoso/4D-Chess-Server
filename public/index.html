@@ -237,6 +237,12 @@
            moveManager.undo();
          }
        }
+		if (Detector.webgl) {
+            main();
+        } else {
+            var warning = Detector.getWebGLErrorMessage();
+            document.getElementById('container').appendChild(warning);
+        }
     </script>
   </body>
 </html>
