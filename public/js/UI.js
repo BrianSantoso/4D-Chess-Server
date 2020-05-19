@@ -5,9 +5,6 @@ function EmptyUI() {
 	this.exitMenu = function() {
 		console.warn('proxy exitMenu called before react component mounted')
 	}
-    this.requestLandscape = function() {
-      console.warn('proxy requestLandscape called before react component mounted')
-    }
  }
 
  function UI(reactComponent) {

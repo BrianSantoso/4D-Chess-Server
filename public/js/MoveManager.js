@@ -21,6 +21,20 @@ function MoveManager(gameBoard, clientTeam, mode) {
 		return this.mode.canMove.call(this, team);
 	}
 	
+	this.inCheck = function() {
+		if (this.gameBoard.inCheck(0)) {
+			return 0;
+		} else if (this.gameBoard.inCheck(1)) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+	
+	this.winCondition = function() {
+		return this.gameBoard.winCondition();
+	}
+	
 	this.updateSelectability = function() {
 		this.mode.updateSelectability.call(this);
 	}

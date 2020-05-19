@@ -4,7 +4,6 @@ function Pointer(scene, camera, gameBoard, moveManager){
     // TODO: Fix window resize
     
     /*
-    
         https://threejs.org/examples/#webgl_raycast_sprite
             https://github.com/mrdoob/three.js/blob/master/examples/webgl_raycast_sprite.html
         https://stackoverflow.com/questions/38314521/change-color-of-mesh-using-mouseover-in-three-js

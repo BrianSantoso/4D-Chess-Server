@@ -95,6 +95,23 @@ GameBoard.prototype = {
 		this.graphics.moveMesh(originalPiece, move.x0, move.y0, move.z0, move.w0);
 	},
 	
+	inCheck: function(team) {
+		let attackers = Piece.inCheck(this.pieces, team);
+		return attackers.length > 0;
+	},
+	
+	winCondition: function() {
+		if (Piece.inCheckmate(this.pieces, 0)) {
+			return 1;
+		} else if (Piece.inCheckmate(this.pieces, 1)) {
+			return 0;
+		} else if (Piece.inStalemate(this.pieces, 0) || Piece.inStalemate(this.pieces, 1)){
+			return 2;
+		} else {
+			return -1;
+		}
+	},
+	
 	applyToAll: function(f){
 		for(let x = 0; x < this.pieces.length; x++){
 			for(let y = 0; y < this.pieces[0].length; y++){

@@ -19,7 +19,6 @@ function Mode(move, canMove, updateSelectability, moveStatus, config) {
 	this.updateSelectability = updateSelectability;
 	this.config = config;
 	this.moveStatus = moveStatus;
-	
 }
 
 Mode.SANDBOX = new Mode(
@@ -44,6 +43,22 @@ Mode.SANDBOX = new Mode(
 	},
 	
 	function moveStatus() {
+	
+		const winStatus = this.winCondition();
+		if (winStatus == 0) {
+			return "Checkmate! White wins!";
+		} else if (winStatus == 1) {
+			return "Checkmate! Black wins!";
+		} else if (winStatus == 2) {
+			return "Stalemate! It's a draw!";
+		}
+		const checked = this.inCheck();
+		if (checked == 0) {
+			return "White is in check!";
+		} else if (checked == 1) {
+			return "Black is in check!";
+		}
+		
 		return this.turnString();
 	},
 	
@@ -72,6 +87,22 @@ Mode.LOCAL_MULTIPLAYER = new Mode(
 	},
 	
 	function moveStatus() {
+		
+		const winStatus = this.winCondition();
+		if (winStatus == 0) {
+			return "Checkmate! White wins!";
+		} else if (winStatus == 1) {
+			return "Checkmate! Black wins!";
+		} else if (winStatus == 2) {
+			return "Stalemate! It's a draw!";
+		}
+		const checked = this.inCheck();
+		if (checked == 0) {
+			return "White is in check!";
+		} else if (checked == 1) {
+			return "Black is in check!";
+		}
+		
 		if (this.viewingMostRecentMove()) {
 			return this.whoseTurn() === 0 ? "White to Move" : "Black to Move";
 		} else {
@@ -123,9 +154,23 @@ Mode.ONLINE_MULTIPLAYER = new Mode(
 	},
 	
 	function moveStatus() {
-		
 		if (!this.ready) {
 			return "Waiting for opponent..."
+		}
+		
+		const winStatus = this.winCondition();
+		if (winStatus == 0) {
+			return "Checkmate! White wins!";
+		} else if (winStatus == 1) {
+			return "Checkmate! Black wins!";
+		} else if (winStatus == 2) {
+			return "Stalemate! It's a draw!";
+		}
+		const checked = this.inCheck();
+		if (checked == 0) {
+			return "White is in check!";
+		} else if (checked == 1) {
+			return "Black is in check!";
 		}
 		
 		if (this.viewingMostRecentMove()) {
