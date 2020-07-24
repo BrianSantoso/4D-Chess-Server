@@ -1,4 +1,4 @@
-function EmptyUI() {
+export function EmptyUI() {
 	this.setState = function(state) {
 		console.warn('proxy setState called before react component mounted')
 	}
@@ -7,7 +7,7 @@ function EmptyUI() {
 	}
  }
 
- function UI(reactComponent) {
+ export default function UI(reactComponent) {
 	this._ui = reactComponent;
 	this.setState = function(state) {
 		this._ui.setState(state);

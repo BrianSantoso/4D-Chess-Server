@@ -1,3 +1,5 @@
+import * as THREE from './three.js'
+
 /**
  * @author Eberhard Graether / http://egraether.com/
  * @author Mark Lundin 	/ http://mark-lundin.com
@@ -626,3 +628,5 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
+
+export default THREE.TrackballControls;

@@ -11,6 +11,14 @@
 ////		document.getElementById('container').appendChild(warning);
 ////	}
 //};
+import ReactDOM from "react-dom";
+
+import ClientStateManager from "./ClientStateManager.js";
+import ClientState from "./ClientState.js";
+import Models from "./Models.js";
+import * as THREE from "./three.js";
+import TrackballControls from "./TrackballControls.js";
+import GameBoard from "./GameBoard.js";
 
 const SERVER = false;
 const BOARD_SIZE = 4;
@@ -33,7 +41,7 @@ let toolbarProxy;
 /**
  * Load Models then call init()
  */
-function main() {
+export function main() {
 	const modelLoadProm = Models.loadModels();
 	modelLoadProm.then(init, function() {
 		console.error("Could not load models.");
@@ -201,7 +209,8 @@ function initControls(){
 		return;
 	}
 
-	controls = new THREE.TrackballControls( camera, renderer.domElement );
+    console.log(TrackballControls)
+	controls = new TrackballControls( camera, renderer.domElement );
 
 	controls.rotateSpeed = 1.8; // set rotation/zoom/pan speeds
 	controls.zoomSpeed = 1.5;

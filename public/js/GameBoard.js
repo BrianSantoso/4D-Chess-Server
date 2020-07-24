@@ -740,3 +740,5 @@ function EmptyBoardGraphics(gameBoard) {
 
 }
 
+export default { GameBoard };
+export { BoardGraphics, EmptyBoardGraphics };

@@ -1,3 +1,5 @@
+import * as THREE from "./three.js";
+
 const Models = {
     
     SCALE_FACTOR: 9,
@@ -208,3 +210,5 @@ const Models = {
     }
     
 }
+
+export default Models;

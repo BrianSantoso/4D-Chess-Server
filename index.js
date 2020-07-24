@@ -1,18 +1,45 @@
+
+
+import path from 'path';
+import express from 'express';
+import http from 'http';
+import sio from 'socket.io';
+import fs from 'fs';
+
+
 const PORT = process.env.PORT || 3000;
-const path = require('path');
-const express = require('express');
-const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
-const fs = require('fs');
+// ES6 substitute for CJS __dirname 
+// https://techsparx.com/nodejs/esnext/dirname-es-modules.html
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const publicPath = path.join(__dirname, 'public');
 
-eval(fs.readFileSync('./public/js/three.js')+'');
-eval(fs.readFileSync('./public/js/UI.js')+'');
-eval(fs.readFileSync('./public/js/GameBoard.js')+'');
-eval(fs.readFileSync('./public/js/MoveManager.js')+'');
-eval(fs.readFileSync('./public/js/Piece.js')+'');
-eval(fs.readFileSync('./public/js/Mode.js')+'');
+const app = express();
+const server = http.Server(app);
+const io = sio(server);
+
+
+//const path = require('path');
+//const express = require('express');
+//const app = express();
+//const server = require('http').Server(app);
+//const io = require('socket.io')(server);
+//const fs = require('fs');
+
+
+
+//eval(fs.readFileSync('./public/js/three.js')+'');
+//eval(fs.readFileSync('./public/js/UI.js')+'');
+//eval(fs.readFileSync('./public/js/GameBoard.js')+'');
+//eval(fs.readFileSync('./public/js/MoveManager.js')+'');
+//eval(fs.readFileSync('./public/js/Piece.js')+'');
+//eval(fs.readFileSync('./public/js/Mode.js')+'');
+//import * as THREE from './public/js/three.js';
+import { EmptyUI } from './public/js/UI.js';
+import GameBoard, { EmptyBoardGraphics } from './public/js/GameBoard.js';
+//import MoveManager from './public/js/MoveManager.js';
+//import Piece from './public/js/Piece.js';
+//import Mode from './public/js/Mode.js';
+
 
 let toolbarProxy = new EmptyUI();
 

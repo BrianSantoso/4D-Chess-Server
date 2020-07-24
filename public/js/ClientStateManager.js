@@ -1,4 +1,4 @@
-function ClientStateManager(state) {
+export default function ClientStateManager(state) {
 	this.state = state;
 	this.swapState = function(newState) {
 		this.state = newState;

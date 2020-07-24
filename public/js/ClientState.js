@@ -118,3 +118,5 @@ ClientState.SERVER = new ClientState(
 	function update() {},
 	function render() {}
 );
+
+export default ClientState;
