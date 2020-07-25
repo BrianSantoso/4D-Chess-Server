@@ -182,3 +182,5 @@ Mode.ONLINE_MULTIPLAYER = new Mode(
 	
 	{}
 )
+
+export default Mode;

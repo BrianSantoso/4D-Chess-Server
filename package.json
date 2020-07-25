@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "4D Chess",
   "private": true,
-  "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "build": "webpack --mode=development --config webpack.config.cjs",
-    "test": "npm run build && npm run start ; google-chrome --incognito http://localhost:3000"
+    "start": "node build/bundle-back.js",
+    "buildfront": "webpack --mode=development --config webpack-front.config.cjs",
+    "buildback": "webpack --mode=development --config webpack-back.config.cjs",
+    "build": "npm run buildback && npm run buildfront",
+    "test": "npm run build && npm run start",
+    "open": "google-chrome --incognito http://localhost:3000"
   },
   "author": "Brian Santoso",
   "license": "ISC",
@@ -27,7 +29,8 @@
     "@babel/preset-react": "^7.10.4",
     "babel-loader": "^8.1.0",
     "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^2.5.0"
   },
   "presets": [
     "@babel/preset-env",

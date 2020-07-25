@@ -1,5 +1,3 @@
-
-
 import path from 'path';
 import express from 'express';
 import http from 'http';
@@ -10,8 +8,9 @@ import fs from 'fs';
 const PORT = process.env.PORT || 3000;
 // ES6 substitute for CJS __dirname 
 // https://techsparx.com/nodejs/esnext/dirname-es-modules.html
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const publicPath = path.join(__dirname, 'public');
+//const __dirname = path.dirname(new URL(import.meta.url).pathname);
+//const publicPath = path.join(__dirname, 'public');
+const publicPath = "./public"
 
 const app = express();
 const server = http.Server(app);
@@ -101,7 +100,7 @@ function GameRoom(gameID) {
 	this.players = []
 	this.spectators = []
 	this.numSockets = 0;
-	this.gameManager = new MoveManager(new GameBoard(4, EmptyBoardGraphics), -2, Mode.ONLINE_MULTIPLAYER);
+	this.gameManager = new MoveManager(new GameBoard(4, EmptyBoardGraphics, null), -2, Mode.ONLINE_MULTIPLAYER);
 	
 	this.addSocket = function(socket) {
 		GameRoom.disconnect(socket);

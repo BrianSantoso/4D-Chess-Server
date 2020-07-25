@@ -1,5 +1,8 @@
 import * as THREE from "three";
-
+import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
+import { rotateObject } from "./Utils.js";
+//import Models from "./Models.js";
+console.log(THREE.Vector3)
 /*
 
     Board Scale: 3 --> 300 x 300
@@ -529,7 +532,7 @@ BoardGraphics.prototype = {
 	},
 	
 	createMesh: function(typeString, team, x, y, z, w, addToContainer=true){ 
-		
+//		console.log(new THREE.Vector3)
 		// Create mesh (without game object), add it to the scene, and return the mesh
 		const worldPos = this.boardCoordinates(x, y, z, w)
 		const material = team === 0 ? Models.materials.white : Models.materials.black
@@ -572,17 +575,16 @@ BoardGraphics.prototype = {
 	},
 	
 	abandon: function() {
-		scene.remove(this.mesh)
+		this.scene.remove(this.mesh)
 	}
 	
 }
 
 
-function GameBoard(n=4, Graphics=BoardGraphics){
+function GameBoard(n=4, Graphics, scene){
 	
     this.n = n;
-    
-	this.graphics = new Graphics(this);
+	this.graphics = new Graphics(this, scene);
     this.pieces = this.initPieces();
     
     let halfN = Math.floor((this.n - 1) / 2)
@@ -595,11 +597,13 @@ function GameBoard(n=4, Graphics=BoardGraphics){
 //			piece.mesh.selectable = canMove
 		}.bind(this), team)
 	};
+	
+	
 }
 
-function BoardGraphics(gameBoard) {
-//	EmptyBoardGraphics.call(this, gameBoard);
+function BoardGraphics(gameBoard, scene) {
 	this.gameBoard = gameBoard;
+	this.scene = scene;
 	this.n = gameBoard.n;
 	this.squareSize = 50
 	this.boardSize = this.squareSize * this.n;
@@ -621,13 +625,15 @@ function BoardGraphics(gameBoard) {
 	this.mesh.add(this.boardContainer)
 	this.mesh.add(this.piecesContainer)
 	this.mesh.add(this.possibleMovesContainer)
-	scene.add(this.mesh);
+	this.scene.add(this.mesh);
 	
 	let bottom = 0;
 	let left = 0;
 	for (let w = 0; w < this.n; w++){
 		for(let i = 0; i < this.n; i++){
-			let checker = BoardGraphics.checkerboard3d(this.n, this.n * this.squareSize, z=i, w, opacity=0.4, this.boardHeight) // Construct 2D checkerboard planes
+			let z = i;
+			let opacity = 0.4;
+			let checker = BoardGraphics.checkerboard3d(this.n, this.n * this.squareSize, z, w, opacity, this.boardHeight) // Construct 2D checkerboard planes
 			checker.position.set(0, bottom + i*this.verticalIncrement, left - w*this.horizontalIncrement)
 			rotateObject(checker, -90, 0, 0)
 			this.boardContainer.add(checker)
@@ -654,8 +660,8 @@ BoardGraphics.checkerboard = function(segments=8, boardSize=100, z=0, w=0, opaci
 
     for(let x = 0; x < segments; x++){
       for(let y = 0; y < segments; y++){
-          i = x * segments + y
-          j = i * 2
+          let i = x * segments + y
+          let j = i * 2
           geometry.faces[j].materialIndex = geometry.faces[j + 1].materialIndex = (x + y + z + w) % 2
       }
     }
@@ -684,8 +690,8 @@ BoardGraphics.checkerboard3d = function(segments=8, boardSize=100, z=0, w=0, opa
     });
 	for(let x = 0; x < segments; x++){
       for(let y = 0; y < segments; y++){
-          i = x * segments + y;
-          j = i * 2;
+          let i = x * segments + y;
+          let j = i * 2;
           topGeometry.faces[j].materialIndex = topGeometry.faces[j + 1].materialIndex = (x + y + z + w) % 2;
 		  bottomGeometry.faces[j].materialIndex = bottomGeometry.faces[j + 1].materialIndex = (x + y + z + w) % 2
       }
@@ -704,8 +710,8 @@ BoardGraphics.checkerboard3d = function(segments=8, boardSize=100, z=0, w=0, opa
     });
 	for(let x = 0; x < segments; x++){
       for(let y = 0; y < 1; y++){
-          i = x * 1 + y;
-          j = i * 2;
+          let i = x * 1 + y;
+          let j = i * 2;
           sideGeometry.faces[j].materialIndex = sideGeometry.faces[j + 1].materialIndex = ((x + y + z + w) % 2) ^ (segments % 2);
       }
     }
@@ -734,7 +740,7 @@ BoardGraphics.checkerboard3d = function(segments=8, boardSize=100, z=0, w=0, opa
 	
 }
 
-function EmptyBoardGraphics(gameBoard) {
+function EmptyBoardGraphics(gameBoard, scene) {
 
 }
 

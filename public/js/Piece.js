@@ -1,4 +1,3 @@
-
 function Piece(team=-1){
     
     this.team = team
@@ -616,3 +615,6 @@ Piece.from = function(json) {
 	Object.assign(newPiece, json);
 	return newPiece;
 }
+
+export default Piece;
+export { Pawn, Rook, Knight, Bishop, King, Queen };
