@@ -16,9 +16,9 @@ import ReactDOM from "react-dom";
 import ClientStateManager from "./ClientStateManager.js";
 import ClientState from "./ClientState.js";
 import Models from "./Models.js";
-import * as THREE from "./three.js";
+import * as THREE from "three";
 import TrackballControls from "./TrackballControls.js";
-import GameBoard from "./GameBoard.js";
+import GameBoard, { BoardGraphics, EmptyBoardGraphics } from "./GameBoard.js";
 
 const SERVER = false;
 const BOARD_SIZE = 4;
@@ -208,8 +208,6 @@ function initControls(){
 	if (SERVER) {
 		return;
 	}
-
-    console.log(TrackballControls)
 	controls = new TrackballControls( camera, renderer.domElement );
 
 	controls.rotateSpeed = 1.8; // set rotation/zoom/pan speeds

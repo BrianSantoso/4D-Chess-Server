@@ -1,3 +1,4 @@
+// Use local copy of three that supports legacy JSON loader
 import * as THREE from "./three.js";
 
 const Models = {

@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 /*
 
     Board Scale: 3 --> 300 x 300
@@ -6,10 +8,6 @@
     Horizontal Increment: 450, but Space between boards: 150
 
 */
-
-
-
-
 
 GameBoard.prototype = {
     
@@ -740,5 +738,5 @@ function EmptyBoardGraphics(gameBoard) {
 
 }
 
-export default { GameBoard };
+export default GameBoard;
 export { BoardGraphics, EmptyBoardGraphics };
