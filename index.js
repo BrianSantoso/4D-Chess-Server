@@ -17,15 +17,6 @@ const server = http.Server(app);
 const io = sio(server);
 
 
-//const path = require('path');
-//const express = require('express');
-//const app = express();
-//const server = require('http').Server(app);
-//const io = require('socket.io')(server);
-//const fs = require('fs');
-
-
-
 //eval(fs.readFileSync('./public/js/three.js')+'');
 //eval(fs.readFileSync('./public/js/UI.js')+'');
 //eval(fs.readFileSync('./public/js/GameBoard.js')+'');

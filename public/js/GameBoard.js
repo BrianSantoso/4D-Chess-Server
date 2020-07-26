@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
 import { rotateObject } from "./Utils.js";
-//import Models from "./Models.js";
-console.log(THREE.Vector3)
+import Models from "./Models.js";
 /*
 
     Board Scale: 3 --> 300 x 300
@@ -666,7 +665,7 @@ BoardGraphics.checkerboard = function(segments=8, boardSize=100, z=0, w=0, opaci
       }
     }
 	
-    return new THREE.Mesh(geometry, new THREE.MultiMaterial(materials))
+    return new THREE.Mesh(geometry, materials)
 //    return new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x000000}))
 }
 
@@ -697,8 +696,8 @@ BoardGraphics.checkerboard3d = function(segments=8, boardSize=100, z=0, w=0, opa
       }
     }
 	
-	let topMesh = new THREE.Mesh(topGeometry, new THREE.MultiMaterial(materialsTop));
-	let bottomMesh = new THREE.Mesh(bottomGeometry, new THREE.MultiMaterial(materialsBottom));
+	let topMesh = new THREE.Mesh(topGeometry, materialsTop);
+	let bottomMesh = new THREE.Mesh(bottomGeometry, materialsBottom);
 	bottomMesh.position.set(0, 0, -BOARD_HEIGHT);
 	
 	let sideGeometry = new THREE.PlaneGeometry(BOARD_HEIGHT, boardSize, 1, segments);
@@ -715,10 +714,10 @@ BoardGraphics.checkerboard3d = function(segments=8, boardSize=100, z=0, w=0, opa
           sideGeometry.faces[j].materialIndex = sideGeometry.faces[j + 1].materialIndex = ((x + y + z + w) % 2) ^ (segments % 2);
       }
     }
-	let sideMesh1 = new THREE.Mesh(sideGeometry, new THREE.MultiMaterial(materialsSide));
-	let sideMesh2 = new THREE.Mesh(sideGeometry, new THREE.MultiMaterial(materialsSide));
-	let sideMesh3 = new THREE.Mesh(sideGeometry, new THREE.MultiMaterial(materialsSide));
-	let sideMesh4 = new THREE.Mesh(sideGeometry, new THREE.MultiMaterial(materialsSide));
+	let sideMesh1 = new THREE.Mesh(sideGeometry, materialsSide);
+	let sideMesh2 = new THREE.Mesh(sideGeometry, materialsSide);
+	let sideMesh3 = new THREE.Mesh(sideGeometry, materialsSide);
+	let sideMesh4 = new THREE.Mesh(sideGeometry, materialsSide);
 	rotateObject(sideMesh1, 0, 90, 0) //front
 	rotateObject(sideMesh2, 90, 0, 90) //left
 	rotateObject(sideMesh3, 180, -90, 0) //back

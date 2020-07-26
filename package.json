@@ -8,6 +8,8 @@
     "buildfront": "webpack --mode=development --config webpack-front.config.cjs",
     "buildback": "webpack --mode=development --config webpack-back.config.cjs",
     "build": "npm run buildback && npm run buildfront",
+    "testf": "npm run buildfront && npm run start",
+    "testb": "npm run buildback && npm run start",
     "test": "npm run build && npm run start",
     "open": "google-chrome --incognito http://localhost:3000"
   },
@@ -21,7 +23,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "socket.io": "^2.3.0",
-    "three": "^0.118.3"
+    "three": "^0.118.3",
+    "three-gltf-loader": "^1.111.0"
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",

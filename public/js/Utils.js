@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /*
  * Return a random integer in [lowerBound, upperBound]
  */
-function getRandomInteger(lowerBound, upperBound){
+export function getRandomInteger(lowerBound, upperBound){
 	//          [0, 1)                range                     
 	return Math.floor(Math.random() * (upperBound - lowerBound) + lowerBound);
 }
@@ -11,7 +11,7 @@ function getRandomInteger(lowerBound, upperBound){
 /*
  * Utility function to rotate camera about a point by theta radians
  */
-function rotateCameraAbout(camera, center, theta) {
+export function rotateCameraAbout(camera, center, theta) {
 	camera.position.sub(center);
 	let x = camera.position.x,
 		y = camera.position.y,
@@ -24,7 +24,7 @@ function rotateCameraAbout(camera, center, theta) {
 /*
  * Create a debug sphere and add it to the scene
  */
-function DEBUG(pos, color=0xff0000, opacity=0.5) {
+export function DEBUG(pos, color=0xff0000, opacity=0.5) {
 	const geometry = new THREE.SphereGeometry( 5, 32, 32 );
 	const material = new THREE.MeshBasicMaterial({color: color, transparent:true, opacity: opacity});
 	const DEBUG_SPHERE = new THREE.Mesh(geometry, material);
@@ -33,12 +33,12 @@ function DEBUG(pos, color=0xff0000, opacity=0.5) {
 	return DEBUG_SPHERE;
 }
 
-function removeEntity(objectName, scene=scene) {
+export function removeEntity(objectName, scene=scene) {
 	var selectedObject = scene.getObjectByName(objectName.name);
 	scene.remove(selectedObject);
 }
 
-function eq(a, b) {
+export function eq(a, b) {
 	return _.reduce(a, function(result, value, key) {
 		return _.isEqual(value, b[key]) ?
 			result : result.concat(key);
@@ -57,7 +57,7 @@ function eq(a, b) {
  * - If the loop finds a key that are both in obj1 and obj2, it compares
  *   the value. If it's the same value, the key is removed from the result.
  */
-function getObjectDiff(obj1, obj2) {
+export function getObjectDiff(obj1, obj2) {
 	const diff = Object.keys(obj1).reduce((result, key) => {
 		if (!obj2.hasOwnProperty(key)) {
 			result.push(key);
@@ -122,7 +122,9 @@ var compare = function (a, b) {
   return result;
 }
 
-function genGameId() {
+export { compare };
+
+export function genGameId() {
 	return 'gxxxxxxx'.replace(/[x]/g, function(character) {
 		const r = Math.random() * 16 | 0
 		const v = character == 'x' ? r : (r & 0x3 | 0x8);

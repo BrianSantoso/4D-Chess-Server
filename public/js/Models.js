@@ -1,6 +1,9 @@
 //// Use local copy of three that supports legacy JSON loader
-import * as THREE from "./three.js";
-//import * as THREE from 'three';
+//import * as THREE from "./three.js";
+import * as THREE from 'three';
+//import { GLTFLoader } from 'three/examples/js/loaders/GLTFLoader';
+//import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import GLTFLoader from 'three-gltf-loader';
 
 const Models = {
     
@@ -121,27 +124,27 @@ const Models = {
     pieceData: [
         {
             name: 'pawn',
-            fileName: 'Pawn.model.json',
+            fileName: 'Pawn.model.glb',
             rotation: new THREE.Vector3(0, 0, 0)
         }, {
             name: 'rook',
-            fileName: 'Rook.model.json',
+            fileName: 'Rook.model.glb',
             rotation: new THREE.Vector3(0, -90, 0)
         }, {
             name: 'bishop',
-            fileName: 'Bishop.model.json',
+            fileName: 'Bishop.model.glb',
             rotation: new THREE.Vector3(0, -90, 0)
         }, {
             name: 'knight',
-            fileName: 'Knight.model.json',
+            fileName: 'Knight.model.glb',
             rotation: new THREE.Vector3(0, 90, 0)
         }, {
             name: 'queen',
-            fileName: 'Queen.model.json',
+            fileName: 'Queen.model.glb',
             rotation: new THREE.Vector3(0, 0, 0)
         }, {
             name: 'king',
-            fileName: 'King.model.json',
+            fileName: 'King.model.glb',
             rotation: new THREE.Vector3(0, 0, 0)
         }
     ],
@@ -165,6 +168,7 @@ const Models = {
         
         const pieceData = Models.pieceData[Models.pieceIndices[piece]]
         const geometry = Models.geometries[piece]
+//		console.log("GEOMETRY:", geometry)
         let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(material))
 //        let mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial(material))
         mesh.position.set(0, 0, 0);
@@ -173,7 +177,8 @@ const Models = {
         mesh.receiveShadow = true;
 
 		mesh.scale.set(Models.SCALE_FACTOR, Models.SCALE_FACTOR, Models.SCALE_FACTOR)
-		const height = new THREE.Box3().setFromObject(mesh).max.y;
+//		console.log("MESH: ", mesh)
+//		const height = new THREE.Box3().setFromObject(mesh).max.y;
 //		const dHeight = height * (scale - 1)
 		
 		mesh.scale.multiplyScalar(scale)
@@ -205,31 +210,12 @@ const Models = {
 //		
 //		return Promise.all(promises);
 //	}
-    loadModels: function(){
-		return new Promise(function(resolve, reject) {
-			// Loads all chess models then calls init when finished
-			const manager = new THREE.LoadingManager();
-			manager.onLoad = resolve // Initialize game when finished loading
-			const loader = new THREE.JSONLoader(manager);
-
-			let index = 0;
-			Models.pieceData.forEach(piece => {
-
-				const path = Models.directory + piece.fileName
-				loader.load(path, function(geometry, materials) {
-					Models.geometries[piece.name] = geometry
-				});
-
-				Models.pieceIndices[piece.name] = index++
-			});
-		});
-    }
-//	loadModels: function(){
+//    loadModels: function(){
 //		return new Promise(function(resolve, reject) {
 //			// Loads all chess models then calls init when finished
 //			const manager = new THREE.LoadingManager();
 //			manager.onLoad = resolve // Initialize game when finished loading
-//			const loader = new THREE.LegacyJSONLoader(manager);
+//			const loader = new THREE.JSONLoader(manager);
 //
 //			let index = 0;
 //			Models.pieceData.forEach(piece => {
@@ -243,6 +229,45 @@ const Models = {
 //			});
 //		});
 //    }
+//	loadModels: function(){
+//		return new Promise(function(resolve, reject) {
+//			// Loads all chess models then calls init when finished
+//			const manager = new THREE.LoadingManager();
+//			manager.onLoad = resolve // Initialize game when finished loading
+//			const loader = new THREE.ObjectLoader(manager);
+//
+//			let index = 0;
+//			Models.pieceData.forEach(piece => {
+//
+//				const path = Models.directory + piece.fileName
+//				loader.load(path, function(geometry, materials) {
+//					Models.geometries[piece.name] = geometry
+//				});
+//
+//				Models.pieceIndices[piece.name] = index++
+//			});
+//		});
+//    }
+  	loadModels: function(){
+		// https://threejs.org/docs/#examples/en/loaders/GLTFLoader
+		return new Promise(function(resolve, reject) {
+			// Loads all chess models then calls init when finished
+			const manager = new THREE.LoadingManager();
+			manager.onLoad = resolve // Initialize game when finished loading
+			const loader = new GLTFLoader(manager);
+
+			let index = 0;
+			Models.pieceData.forEach(piece => {
+
+				const path = Models.directory + piece.fileName
+				loader.load(path, function(gltf) {
+					Models.geometries[piece.name] = gltf.scene.children[0].geometry;
+				});
+
+				Models.pieceIndices[piece.name] = index++
+			});
+		});
+    }
     
 }
 

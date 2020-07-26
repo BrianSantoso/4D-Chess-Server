@@ -1,5 +1,8 @@
+import Models from "./Models.js";
+import * as THREE from "three";
+
 let test = false
-function Pointer(scene, camera, gameBoard, moveManager){
+function Pointer(scene, camera, renderer, gameBoard, moveManager){
     
     // TODO: Fix window resize
     
@@ -23,7 +26,7 @@ function Pointer(scene, camera, gameBoard, moveManager){
     
     this.pieceSelector = new PieceSelector(this, scene, camera, this.gameBoard)
     this.moveSelector = new MoveSelector(this, scene, camera, this.gameBoard)
-    this.keyInputs = function(scene, camera, gameBoard){
+    this.keyInputs = function(){
         
 		this.updateDragVector();
         this.pieceSelector.run(this.rayCaster, this.pos, highlight=!this.pieceSelector.SELECTED)
@@ -401,12 +404,4 @@ MoveSelector.prototype.rayCast = function(rayCaster, pos){
 	return intersects
 }
 
-
-function initPointer(){
-    
-	if (SERVER) {
-		return;
-	}
-    pointer = new Pointer(scene, camera, gameBoard, moveManager)
-    
-}
+export default Pointer;

@@ -1,3 +1,5 @@
+import { rotateCameraAbout } from "./Utils.js";
+
 function ClientState(keyInputs, update, render) {
 	this.keyInputs = keyInputs;
 	this.update = update;
@@ -5,14 +7,13 @@ function ClientState(keyInputs, update, render) {
 }
 
 // Render the simulation
-function render() {
+function render(scene, camera, renderer, animationQueue) {
 	if(animationQueue.length > 0){
 		animationQueue[0].onAnimate()
 		animationQueue[0].execute()
 		animationQueue.shift()
 	}
-	// Render the scene using functionality provided by the three.js library
-	// https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene
+//	console.log(scene, camera)
 	renderer.render(scene, camera);
 }
 
@@ -43,7 +44,7 @@ function fixControlsTargetToBox() {
 
 ClientState.GAME_STATE = new ClientState(
 	// update mouse controls
-	function keyInputs() {
+	function keyInputs(step, controls, pointer, camera) {
 		pointer.clicks = true;
 		controls.noPan = false;
 		controls.update();
@@ -51,7 +52,7 @@ ClientState.GAME_STATE = new ClientState(
 		if (debugSphere) {
 			//		debugSphere.position.set(controls.target.x, controls.target.y, controls.target.z);
 		}
-		pointer.keyInputs(scene, camera, gameBoard)
+		pointer.keyInputs();
 	},
 
 	// update the simulation
@@ -64,7 +65,7 @@ ClientState.GAME_STATE = new ClientState(
 );
 
 ClientState.PAUSE = new ClientState(
-	function keyInputs() {},
+	function keyInputs(step, controls, pointer, camera) {},
 	function update() {},
 	function render() {}
 );
@@ -72,7 +73,7 @@ ClientState.PAUSE = new ClientState(
 ClientState.MENU = new ClientState(
 	(() => {
 		let idleMenuRotateVel = 0.5;
-		return function keyInputs() {
+		return function keyInputs(step, controls, pointer, camera) {
 			controls.noPan = true;
 			pointer.clicks = false;
 			pointer.updateDragVector();
@@ -94,7 +95,7 @@ ClientState.MENU = new ClientState(
 ClientState.PLAY_OPTIONS = new ClientState(
 	(() => {
 		let idleMenuRotateVel = 0.5
-		return function keyInputs() {
+		return function keyInputs(step, controls, pointer, camera) {
 			controls.noPan = true;
 			pointer.clicks = false;
 			pointer.updateDragVector();
@@ -114,7 +115,7 @@ ClientState.PLAY_OPTIONS = new ClientState(
 );
 
 ClientState.SERVER = new ClientState(
-	function keyInputs() {},
+	function keyInputs(step, controls, pointer, camera) {},
 	function update() {},
 	function render() {}
 );
