@@ -1,4 +1,5 @@
 import Models from "./Models.js";
+import Piece from "./Piece.js";
 import * as THREE from "three";
 
 let test = false
@@ -29,7 +30,7 @@ function Pointer(scene, camera, renderer, gameBoard, moveManager){
     this.keyInputs = function(){
         
 		this.updateDragVector();
-        this.pieceSelector.run(this.rayCaster, this.pos, highlight=!this.pieceSelector.SELECTED)
+        this.pieceSelector.run(this.rayCaster, this.pos, !this.pieceSelector.SELECTED)
 //        this.moveSelector.run(this.rayCaster, this.pos, highlight=false)
         
     }
@@ -405,3 +406,4 @@ MoveSelector.prototype.rayCast = function(rayCaster, pos){
 }
 
 export default Pointer;
+export { Selector };

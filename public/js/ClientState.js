@@ -48,10 +48,8 @@ ClientState.GAME_STATE = new ClientState(
 		pointer.clicks = true;
 		controls.noPan = false;
 		controls.update();
-		fixControlsTargetToBox()
-		if (debugSphere) {
-			//		debugSphere.position.set(controls.target.x, controls.target.y, controls.target.z);
-		}
+		// TODO: fix this
+//		fixControlsTargetToBox()
 		pointer.keyInputs();
 	},
 

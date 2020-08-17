@@ -1,6 +1,10 @@
+import Pointer from "./Pointer.js";
 
-function MoveManager(gameBoard, clientTeam, mode) {
+function MoveManager(gameBoard, clientTeam, mode, uiProxy, toolbarProxy, pointer) {
 	this.gameBoard = gameBoard;
+	this.uiProxy = uiProxy;
+	this.toolbarProxy = toolbarProxy;
+	this.pointer = pointer;
 	this.clientTeam = 0;
 	this.players = [new PlayerData(0, 300), new PlayerData(1, 300)];
 	this.moveHistory = new DMoveList(gameBoard);
@@ -44,7 +48,8 @@ function MoveManager(gameBoard, clientTeam, mode) {
 	}
 	
 	this.updateUI = function() {
-		toolbarProxy.setState({
+		console.log(this.toolbarProxy)
+		this.toolbarProxy.setState({
 			text: this.moveStatus()
 		});
 	}
@@ -114,8 +119,8 @@ function MoveManager(gameBoard, clientTeam, mode) {
 		this.moveHistory = DMoveList.fromList(json.moveHistory, this.gameBoard);
 		this.gameBoard.loadPieces(json.pieces);
 		
-		pointer = new Pointer(scene, camera, this.gameBoard, this)
-		console.log(pointer)
+//		this.pointer = new Pointer(scene, camera, this.gameBoard, this)
+//		console.log(pointer)
 	}
 	
 	this.loadFromPlayerAssignment = function(playerAssignment) {
@@ -128,7 +133,7 @@ function MoveManager(gameBoard, clientTeam, mode) {
 		}
 		this.updateUI();
 		this.updateSelectability();
-		uiProxy.exitMenu();
+		this.uiProxy.exitMenu();
 	}
 }
 

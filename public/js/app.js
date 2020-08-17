@@ -13,6 +13,7 @@
 //};
 import React from "react";
 import ReactDOM from "react-dom";
+import io from 'socket.io-client';
 
 import ClientStateManager from "./ClientStateManager.js";
 import ClientState from "./ClientState.js";
@@ -24,6 +25,8 @@ import MoveManager from "./MoveManager.js";
 import Mode from "./Mode.js";
 import Pointer from "./Pointer.js";
 import UI, { EmptyUI } from "./UI.js";
+import { CameraAnimation } from "./Animation.js";
+import { genGameId } from "./Utils.js";
 
 const SERVER = false;
 const BOARD_SIZE = 4;
@@ -59,10 +62,10 @@ export function main() {
 function init(){
 	initSocketIO();
 	initTHREE();
+	initReact();
 	initControls();
 	initGameBoard();
 	initPointer();
-	initReact();
 	// begin the game loop
 	console.log(scene)
 	requestAnimationFrame(frame);
@@ -126,8 +129,8 @@ function initReact() {
  */
 function initGameBoard() {
 
-	gameBoard = new GameBoard(4, BoardGraphics, scene);
-	moveManager = new MoveManager(gameBoard, 0, Mode.ONLINE_MULTIPLAYER, true);
+	gameBoard = new GameBoard(4, BoardGraphics, scene, animationQueue);
+	moveManager = new MoveManager(gameBoard, 0, Mode.ONLINE_MULTIPLAYER, uiProxy, toolbarProxy, pointer);
 
 	if (SERVER) {
 		return;
@@ -396,6 +399,7 @@ class MoveStatus extends React.Component {
 
   componentDidMount() {
     toolbarProxy = new UI(this);
+	moveManager.toolbarProxy = toolbarProxy;
     moveManager.updateUI();
   }
 

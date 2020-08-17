@@ -2,6 +2,8 @@ import * as THREE from "three";
 import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
 import { rotateObject } from "./Utils.js";
 import Models from "./Models.js";
+import { Selector } from "./Pointer.js";
+import Animation from "./Animation.js";
 /*
 
     Board Scale: 3 --> 300 x 300
@@ -182,7 +184,8 @@ GameBoard.prototype = {
 	loadPieces: function(piecesArr) {
 		this.graphics.abandon(); // remove all meshes from scene
 		const Graphics = (this.graphics instanceof BoardGraphics) ? BoardGraphics : EmptyBoardGraphics;
-		this.graphics = new Graphics(this) // create new graphics
+		this.graphics = new Graphics(this, this.graphics.scene, this.graphics.animationQueue);
+//		this.graphics = new Graphics(this) // create new graphics
 		
 		this.pieces = this.initPieces();
 		for (let x = 0; x < this.n; x++) {
@@ -468,7 +471,7 @@ BoardGraphics.prototype = {
 		
         locations.forEach(pos => {
 			
-			coordinates = this.boardCoordinates(pos.x, pos.y, pos.z, pos.w)
+			let coordinates = this.boardCoordinates(pos.x, pos.y, pos.z, pos.w)
 			let material;
 			let shadowPiece;
 			if(pos.possibleCapture){
@@ -512,10 +515,10 @@ BoardGraphics.prototype = {
         
         const frames = 12
         const interpolatedCoords = Animation.linearInterpolate(currentMeshCoords, newMeshCoords, frames)
-        Animation.addToQueue(animationQueue, piece.mesh, interpolatedCoords)
+        Animation.addToQueue(this.animationQueue, piece.mesh, interpolatedCoords)
         piece.mesh.canRayCast = false // temporarily disable piece's ability to be found in rayCast
         
-        animationQueue[animationQueue.length - 1].onAnimate = function(){
+        this.animationQueue[this.animationQueue.length - 1].onAnimate = function(){
             piece.mesh.canRayCast = true // re-enable piece's ability to be found in rayCast
             if(piece.type === 'pawn' && this.isOnPromotionSquare(x1, y1, z1, w1)){
 				// Normal capture logic and animation is still executed,
@@ -580,10 +583,10 @@ BoardGraphics.prototype = {
 }
 
 
-function GameBoard(n=4, Graphics, scene){
+function GameBoard(n=4, Graphics, scene, animationQueue){
 	
     this.n = n;
-	this.graphics = new Graphics(this, scene);
+	this.graphics = new Graphics(this, scene, animationQueue);
     this.pieces = this.initPieces();
     
     let halfN = Math.floor((this.n - 1) / 2)
@@ -600,9 +603,10 @@ function GameBoard(n=4, Graphics, scene){
 	
 }
 
-function BoardGraphics(gameBoard, scene) {
+function BoardGraphics(gameBoard, scene, animationQueue) {
 	this.gameBoard = gameBoard;
 	this.scene = scene;
+	this.animationQueue = animationQueue;
 	this.n = gameBoard.n;
 	this.squareSize = 50
 	this.boardSize = this.squareSize * this.n;

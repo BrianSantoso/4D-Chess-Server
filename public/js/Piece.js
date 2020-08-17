@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 function Piece(team=-1){
     
     this.team = team

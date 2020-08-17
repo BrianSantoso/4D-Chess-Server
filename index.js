@@ -26,15 +26,16 @@ const io = sio(server);
 //import * as THREE from './public/js/three.js';
 import { EmptyUI } from './public/js/UI.js';
 import GameBoard, { EmptyBoardGraphics } from './public/js/GameBoard.js';
+import MoveManager from './public/js/MoveManager.js';
 //import MoveManager from './public/js/MoveManager.js';
 //import Piece from './public/js/Piece.js';
-//import Mode from './public/js/Mode.js';
+import Mode from './public/js/Mode.js';
 
 
 let toolbarProxy = new EmptyUI();
 
 app.get('/:gameID(g[A-Za-z0-9]{7})', (req, res) => {
-	res.sendFile(path.join(publicPath, 'index.html'));
+	res.sendFile(path.join(publicPath, 'build', 'index.html'));
 });
 
 app.use(express.static('public'));
@@ -91,7 +92,7 @@ function GameRoom(gameID) {
 	this.players = []
 	this.spectators = []
 	this.numSockets = 0;
-	this.gameManager = new MoveManager(new GameBoard(4, EmptyBoardGraphics, null), -2, Mode.ONLINE_MULTIPLAYER);
+	this.gameManager = new MoveManager(new GameBoard(4, EmptyBoardGraphics, null), -2, Mode.ONLINE_MULTIPLAYER, null, toolbarProxy, null);
 	
 	this.addSocket = function(socket) {
 		GameRoom.disconnect(socket);

@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
   entry: './public/js/main.jsx',
   output: {
-    filename: 'bundle.js',
+    filename: 'bundle-front.js',
     path: path.resolve(__dirname, 'public', 'build'),
   },
   module: {
@@ -13,7 +13,14 @@ module.exports = {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: ['babel-loader']
-      }
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader',
+        ]
+      },
     ]
   }
 };

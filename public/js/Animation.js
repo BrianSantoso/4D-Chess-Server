@@ -82,3 +82,6 @@ CameraAnimation.addToQueue = function(queue, camera, positions) {
         queue.push(new CameraAnimation(camera, pos))
     });
 }
+
+export default Animation;
+export { CameraAnimation };
