@@ -1,11 +1,11 @@
 import * as THREE from "three";
+import ChessGame from "./ChessGame.js";
 import SceneManager from "./SceneManager.js";
 //import View2D from "./View2D";
 
 class GameManager {
 	constructor() {
-		this._game = null;
-//		this._view2D = new View2D();
+		this._game = new ChessGame();
 		this._view2D = null;
 		this._view3D = new SceneManager(document.getElementById("gameManager")); // TODO: Pass DOM Element to contain threejs canvas.
 		this._controller = null;
