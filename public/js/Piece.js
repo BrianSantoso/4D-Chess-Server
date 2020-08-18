@@ -25,6 +25,12 @@ class Piece {
 		return this.movement().concat(this.attack());
 	}
 	
+	attackRayCastParams() {
+		let behaviors = this.attack();
+		let params = behaviors.map(b => b.toRayCastParams()).flat();
+		return unique(params);
+	}
+	
 	rayCastParams() {
 		let behaviors = this.behavior();
 		let params = behaviors.map(b => b.toRayCastParams()).flat();
@@ -171,62 +177,62 @@ class PieceBehavior {
 			)
 		
 		let result = [[]];
-		this.axisRules.forEach(dir => {
-			if (dir == PieceBehavior.BIDIRECTIONAL) {
+		this.axisRules.forEach(rule => {
+			if (rule == PieceBehavior.BIDIRECTIONAL) {
 				let pos = appendToAll(result, PieceBehavior.FORWARD);
 				let neg = appendToAll(result, PieceBehavior.BACKWARD);
 				result = pos.concat(neg);
 			} else {
-				result = appendToAll(result, dir);
+				result = appendToAll(result, rule);
 			}
 		});
 		return result;
 	}
 	
 	_permuteReplace() {
-		// Gives all permutations of this.units on this.axisRules 
-		// Permute(directions, units)
+		// Returns all permutations of this.units on this.axisRules
+		// Permute(axisRules, units) = [...list of ray cast directions]
 		
 		// Insert an item to beginning of every array in a list of arrays
 		const insertToAll = (item, arrs) => 
 			arrs.map(inner => [item].concat(inner))
 		
-		const permuteReplace = (units, dirs) => {
-			if (dirs.length == 0) {
+		const permuteReplace = (units, axis) => {
+			if (axis.length == 0) {
 				if (units.length > 0) {
-					return []; // There are still items in units left, but no dirs, so invalidate
+					return []; // There are still items in units left, but no axis, so invalidate
 				} else {
-					return [[]]; // We reached the end of dirs, so construct a new list for this path
+					return [[]]; // We reached the end of axis, so construct a new list for this path
 				}
 			}
 			
-			if (dirs[0] == PieceBehavior.NONE) {
+			if (axis[0] == PieceBehavior.NONE) {
 				// Can't replace NONE, so skip
-				return insertToAll(0, permuteReplace(units, dirs.slice(1)));
+				return insertToAll(0, permuteReplace(units, axis.slice(1)));
 			}
 			
 			if (units.length == 0) {
-				// There are still some dirs left, so pad with 0's
-				return insertToAll(0, permuteReplace(units, dirs.slice(1)));
+				// There are still some axis left, so pad with 0's
+				return insertToAll(0, permuteReplace(units, axis.slice(1)));
 			}
 			
 			let result = []
-			// replace current slot (dir[0]) with one of each unit
+			// replace current slot (axis[0]) with one of each unit
 			for (let i = 0; i < units.length; i++) {
-				let unit = units[i] * dirs[0]; // inherit direction
+				let unit = units[i] * axis[0];
 				let rest = [...units]
 				rest.splice(i, 1);
-				result = result.concat(insertToAll(unit, permuteReplace(rest, dirs.slice(1))));
+				result = result.concat(insertToAll(unit, permuteReplace(rest, axis.slice(1))));
 			}
 			
 			// use none of the units to replace this slot, so skip
-			result = result.concat(insertToAll(0, permuteReplace(units, dirs.slice(1))));
+			result = result.concat(insertToAll(0, permuteReplace(units, axis.slice(1))));
 			return result;
 		}
 		
-		let axisDirs = this._expandAxisRules();
-		let directions = axisDirs.map(dir => {
-			let dirs = permuteReplace(this.units, dir);
+		let axisRules = this._expandAxisRules();
+		let directions = axisRules.map(axisRule => {
+			let dirs = permuteReplace(this.units, axisRule);
 			let uniqueDirs = unique(dirs)
 			return uniqueDirs;
 		});
@@ -247,9 +253,6 @@ PieceBehavior.ALL_DIRS = [
 	PieceBehavior.BIDIRECTIONAL, 
 	PieceBehavior.BIDIRECTIONAL
 ];
-
-//console.log(new PieceBehavior([1, 2], 1).toRayCastParams());
-console.log(new Knight().rayCastParams());
 
 
 export default Piece;

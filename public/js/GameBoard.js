@@ -2,6 +2,8 @@ import ChessGame from "./ChessGame.js";
 import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
 import Move from "./Move.js";
 
+import { unique } from "./ArrayUtils.js";
+
 class GameBoard {
 	constructor() {
 		this.n = 4;
@@ -26,33 +28,34 @@ class GameBoard {
 	
 	getPossibleMoves(x, y, z, w) {
 		let originPiece = this.get(x, y, z, w);
-		let behaviors = originPiece.behavior();
-		let moves = [];
-		behaviors.forEach(pieceBehavior => {
-			// TODO loop over all combinations of units and valid dirs
-			moves = Move.union(mvoes, this._rayCast(x, y, z, w, ));
+		let paramsList = originPiece.rayCastParams();
+		let result = [];
+		paramsList.forEach(args => {
+			let moves = this._rayCast(x, y, z, w, args.direction, 
+									  args.maxSteps, args.canCapture);
+			result.push(...moves);
 		});
-		// TODO: ...
+		return unique(result);
 	}
 	
-	_rayCast(x, y, z, w, directions, maxSteps, canCapture) {
+	_rayCast(x, y, z, w, direction, maxSteps, canCapture) {
 		let [startX, startY, startZ, startW] = [x, y, z, w];
 		let originPiece = this.get(x, y, z, w);
 		if (originPiece.isEmpty()) {
 			return null;
 		}
 		let team = originPiece.team;
-		let [dx, dy, dz, dw] = directions;
+		let [dx, dy, dz, dw] = direction;
 		let moves = [];
 		while(maxSteps-- > 0 && 
 			  this.inBounds(x += dx, y += dy, z += dz, w += dw)){
 			
 			let target = this.get(x, y, z, w);
 			if (originPiece.oppositeTeam(target) && canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, originPiece, target, null));
+				moves.push(new Move(x, y, z, w, startX, startY, startZ, startW, originPiece, target, null));
 				break;
-			} else if(targetPiece.isEmpty()) {
-				moves.push(new Move(startX, startY, startZ, startW, originPiece, target, null));
+			} else if(target.isEmpty()) {
+				moves.push(new Move(x, y, z, w, startX, startY, startZ, startW, originPiece, target, null));
 			} else if (originPiece.sameTeam(target)) {
 				break;
 			}
