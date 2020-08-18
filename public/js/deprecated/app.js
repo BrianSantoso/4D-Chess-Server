@@ -15,12 +15,14 @@ import React from "react";
 import ReactDOM from "react-dom";
 import io from 'socket.io-client';
 
+import SceneManager from "./SceneManager.js";
 import ClientStateManager from "./ClientStateManager.js";
 import ClientState from "./ClientState.js";
 import Models from "./Models.js";
 import * as THREE from "three";
 import TrackballControls from "./TrackballControls.js";
-import GameBoard, { BoardGraphics, EmptyBoardGraphics } from "./GameBoard.js";
+import GameBoard from "./GameBoard.js";
+import BoardGraphics, { EmptyBoardGraphics } from "./BoardGraphics.js";
 import MoveManager from "./MoveManager.js";
 import Mode from "./Mode.js";
 import Pointer from "./Pointer.js";
@@ -45,6 +47,7 @@ let debugSphere;
 let stateManager = new ClientStateManager(SERVER ? ClientState.SERVER : ClientState.MENU);
 let uiProxy;
 let toolbarProxy;
+let sceneManager;
 
 /**
  * Load Models then call init()
@@ -63,12 +66,11 @@ function init(){
 	initSocketIO();
 	initTHREE();
 	initReact();
-	initControls();
 	initGameBoard();
 	initPointer();
 	// begin the game loop
 	console.log(scene)
-	requestAnimationFrame(frame);
+	stateManager.gameLoop();
 }
 
 /**
@@ -146,81 +148,8 @@ function initGameBoard() {
 	controls.target.set(coolTar.x, coolTar.y, coolTar.z);
 }
 
-/**
- * Initialize three.js scene and camera
- */
-function initTHREE(){
-
-	if (SERVER) {
-		return;
-	}
-
-	// Code from three.js scene creation example.
-	// https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene
-	scene = new THREE.Scene(); // Create new scene
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 9000); 
-	renderer = new THREE.WebGLRenderer({antialias: true});
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.domElement.id = "myCanvas"
-	document.body.appendChild(renderer.domElement);
-
-	renderer.setClearColor(0xf7f7f7);
-	// Code from three.js ambient light example:
-	// https://threejs.org/docs/index.html#api/lights/AmbientLight
-	let ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
-	scene.add(ambientLight);
-
-	let lightPosition1 = new THREE.Vector3(70, 300, -50);
-	let lightPosition2 = new THREE.Vector3(-70, 300, -50);
-	let directionalLightIntensity = 0.4;
-	let directionalLightColour = 0xFFFFFF;
-	let shadowFrustum = 50;
-	let shadowMapWidth = 1024;
-	let shadowMapHeight = 1024;
-	let directionalLight1 = new THREE.DirectionalLight(directionalLightColour, directionalLightIntensity);
-	let directionalLight2 = new THREE.DirectionalLight(directionalLightColour, directionalLightIntensity);
-	directionalLight1.position.set(lightPosition1);
-
-	directionalLight1.position.copy(lightPosition1);
-	directionalLight1.castShadow = true;
-	directionalLight1.shadow.camera.right = shadowFrustum;
-	directionalLight1.shadow.camera.left = -shadowFrustum;
-	directionalLight1.shadow.camera.top = shadowFrustum;
-	directionalLight1.shadow.camera.bottom = -shadowFrustum;
-	directionalLight1.shadow.mapSize.width = shadowMapWidth;
-	directionalLight1.shadow.mapSize.height = shadowMapHeight;
-	scene.add(directionalLight1);
-
-	window.addEventListener('resize', onWindowResize, false);
-	function onWindowResize() {
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix();
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		controls.handleResize();
-	}
-}
-
-/*
- * Initialize TrackballControls
- */
-function initControls(){
-
-	if (SERVER) {
-		return;
-	}
-	controls = new TrackballControls( camera, renderer.domElement );
-
-	controls.rotateSpeed = 1.8; // set rotation/zoom/pan speeds
-	controls.zoomSpeed = 1.5;
-	controls.panSpeed = 0.45;
-
-	controls.noZoom = false; // enable zooming, panning, and smooth panning
-	controls.noPan = false;
-	controls.staticMoving = false;
-
-	controls.dynamicDampingFactor = 0.2; // set dampening factor
-	controls.minDistance = 100
-	controls.maxDistance = 1400
+function initTHREE() {
+	sceneManager = new SceneManager();
 }
 
 function initPointer(){
@@ -228,39 +157,6 @@ function initPointer(){
 		return;
 	}
     pointer = new Pointer(scene, camera, renderer, gameBoard, moveManager)
-}
-
-/**
- * Define the game loop
- */
-let last = 0;
-let now = window.performance.now();
-let dt;
-let accumulation = 0;
-const step = 1/60; // update simulation every 1/60 of a second (60 fps)
-
-/*
- * Game Loop
- */
-function frame() {
-
-	now = window.performance.now(); // store the time when the new frame starts
-	dt = now - last; // calculate the amount of time the last frame took
-	accumulation += Math.min(1, dt/1000);	// increase accumulation by the amount of time the last frame took and limit accumulation time to 1 second.
-
-	stateManager.keyInputs(step, controls, pointer, camera); // update mouse input
-
-	// if the accumulated time is larger than the fixed time-step, continue to
-	// update the simulation until it is caught up to real time
-	while(accumulation >= step){
-		stateManager.update(); // update the simulation
-		accumulation -= step;
-	}
-	// render the scene
-	stateManager.render(scene, camera, renderer, animationQueue);
-
-	last = now;
-	requestAnimationFrame(frame); // repeat the loop
 }
 
 class App extends React.Component {

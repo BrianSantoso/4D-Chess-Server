@@ -1,44 +1,63 @@
-export default function ClientStateManager(state) {
-	this.state = state;
-	this.swapState = function(newState) {
-		this.state = newState;
-	}
-	this.keyInputs = function(step, controls, pointer, camera) {
-		this.state.keyInputs(step, controls, pointer, camera);
-	}
-	this.update = function() {
-		this.state.update();
-	}
-	this.render = function(scene, camera, renderer, animationQueue) {
-		this.state.render(scene, camera, renderer, animationQueue);
+import * as THREE from "three";
+import SceneManager from "./SceneManager.js";
+//import View2D from "./View2D";
+
+class GameManager {
+	constructor() {
+		this._game = null;
+//		this._view2D = new View2D();
+		this._view2D = null;
+		this._view3D = new SceneManager(document.getElementById("gameManager")); // TODO: Pass DOM Element to contain threejs canvas.
+		this._controller = null;
 	}
 	
-	this.gameLoop = function() {
+	setGame(game) {
+		this.game = game;
+	}
+	
+	_keyInputs() {
+		
+	}
+	
+	_update() {
+		
+	}
+	
+	_draw() {
+		this._view3D.draw();
+	}
+	
+	_startLoop() {
 		let last = 0;
 		let now = window.performance.now();
 		let dt;
 		let accumulation = 0;
 		const step = 1/60; // update simulation every 1/60 of a second (60 fps)
 		
-		function frame() {
-
+		let frame = () => {
 			now = window.performance.now(); // store the time when the new frame starts
 			dt = now - last; // calculate the amount of time the last frame took
 			accumulation += Math.min(1, dt/1000);	// increase accumulation by the amount of time the last frame took and limit accumulation time to 1 second.
 
-			this.keyInputs(step, controls, pointer, camera); // update mouse input
+			// KEY INPUTS
+			this._keyInputs();
 
 			// if the accumulated time is larger than the fixed time-step, continue to
 			// update the simulation until it is caught up to real time
 			while(accumulation >= step){
-				this.update(); // update the simulation
+				// UPDATE
+				this._update();
 				accumulation -= step;
 			}
-			// render the scene
-			this.render(scene, camera, renderer, animationQueue);
+			
+			// DRAW
+			this._draw();
 
 			last = now;
 			requestAnimationFrame(frame); // repeat the loop
 		}
+		requestAnimationFrame(frame);
 	}
 }
+
+export default GameManager;

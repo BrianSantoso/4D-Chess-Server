@@ -1,8 +1,9 @@
+import React, { Component } from "react";
 import Detector from "./Detector.js";
-import App from "./App.js";
+import { main } from "./app.js";
 
 if (Detector.webgl) {
-    window.onload = App.main;
+    main();
 } else {
     var warning = Detector.getWebGLErrorMessage();
     document.getElementById('container').appendChild(warning);
