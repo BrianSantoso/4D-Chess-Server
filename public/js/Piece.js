@@ -5,6 +5,18 @@ class Piece {
 	constructor(team=-1) {
 		this.team = team;
 		this.metaData = null;
+		this.type = '';
+		this.x = -1;
+		this.y = -1;
+		this.z = -1;
+		this.w = -1;
+	}
+	
+	set(x, y, z, w) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.w = w;
 	}
 	
 	movement() {
@@ -63,6 +75,7 @@ class Pawn extends Piece {
 			hasMoved: false,
 			justMovedTwoSpaces: false
 		};
+		this.type = 'pawn';
 	}
 	
 	movement() {
@@ -107,6 +120,10 @@ class Pawn extends Piece {
 }
 
 class King extends Piece {
+	constructor(team) {
+		super(team);
+		this.type = 'king';
+	}
 	movement() {
 		let orthogonal = new PieceBehavior([1], 1);
 		let diagonal = new PieceBehavior([1, 1], 1);
@@ -115,6 +132,10 @@ class King extends Piece {
 }
 
 class Queen extends Piece {
+	constructor(team) {
+		super(team);
+		this.type = 'queen';
+	}
 	movement() {
 		let orthogonal = new PieceBehavior([1], Infinity);
 		let diagonal = new PieceBehavior([1, 1], Infinity);
@@ -123,6 +144,10 @@ class Queen extends Piece {
 }
 
 class Bishop extends Piece {
+	constructor(team) {
+		super(team);
+		this.type = 'bishop';
+	}
 	movement() {
 		let diagonal = new PieceBehavior([1, 1], Infinity);
 		return [diagonal];
@@ -130,6 +155,10 @@ class Bishop extends Piece {
 }
 
 class Knight extends Piece {
+	constructor(team) {
+		super(team);
+		this.type = 'knight';
+	}
 	movement() {
 		let L = new PieceBehavior([1, 2], 1);
 		return [L];
@@ -137,6 +166,10 @@ class Knight extends Piece {
 }
 
 class Rook extends Piece {
+	constructor(team) {
+		super(team);
+		this.type = 'rook';
+	}
 	movement() {
 		let orthogonal = new PieceBehavior([1], Infinity);
 		return [orthogonal];

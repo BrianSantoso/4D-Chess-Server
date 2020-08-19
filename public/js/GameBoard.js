@@ -11,8 +11,13 @@ class GameBoard {
 		this._init4D();
 	}
 	
+	getPieces() {
+		return this._pieces;
+	}
+	
 	set(x, y, z, w, piece) {
 		this._pieces[x][y][z][w] = piece;
+		piece.set(x, y, z, w);
 	}
 	
 	get(x, y, z, w) {

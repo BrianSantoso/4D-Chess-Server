@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import ChessGame from "./ChessGame.js";
 import SceneManager from "./SceneManager.js";
+import Models from "./Models.js";
 //import View2D from "./View2D";
 
 class GameManager {
@@ -13,6 +14,10 @@ class GameManager {
 		this.setGame(game);
 		
 		this._controller = null;
+		
+		Models.loadModels().then(() => {
+			this._game.initGraphics();
+		});
 	}
 	
 	setGame(game) {

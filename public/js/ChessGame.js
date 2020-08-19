@@ -11,6 +11,10 @@ class ChessGame {
 		this._controllers = [];
 	}
 	
+	initGraphics() {
+		this._boardGraphics.spawnPieces(this._board.getPieces());
+	}
+	
 	view3D() {
 		return this._boardGraphics.view3D();
 	}

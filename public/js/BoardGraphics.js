@@ -1,11 +1,15 @@
 import * as THREE from "three";
 import Animator from "./Animator.js";
 import { debugSphere, rotateObject } from "./Utils3D.js";
+import Models from "./Models.js";
+import ChessGame from "./ChessGame.js";
 
 class BoardGraphics {
 	constructor(n) {
 		this.n = n;
 		this._container = new THREE.Group();
+		this._pieces = new THREE.Group();
+		this._container.add(this._pieces);
 		this._animator = new Animator();
 		
 		this._squareSize = 25;
@@ -37,6 +41,30 @@ class BoardGraphics {
 		this._container.add(BoardGraphics.checkerboard4D(this.n, square, square * 3, square * 1.5));
 		
 		console.log('BoardGraphics', this._container);
+		
+//		Models.loadModels().then(() => {
+//			this._container.add(Models.createMesh('pawn', 'white'));
+//		});
+	}
+	
+	_spawnMesh(pieceObj) {
+		if (pieceObj.type === '') {
+			return null;
+		}
+		let material = pieceObj.team === ChessGame.WHITE ? 'white' : 'black';
+		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
+		let pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
+		let mesh = Models.createMesh(pieceObj.type, material, pos);
+		rotateObject(mesh, 0, rotation, 0);
+		this._pieces.add(mesh);
+		return mesh;
+	}
+	
+	spawnPieces(pieces, removeCurrent=false) {
+		this._container.remove(this._pieces);
+		this._pieces = new THREE.Group();
+		pieces.flat(3).forEach(this._spawnMesh.bind(this));
+		this._container.add(this._pieces);
 	}
 }
 
