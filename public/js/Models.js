@@ -42,7 +42,7 @@ const Models = {
 			color: 0x818181,
 			reflectivity: 0.1,
 			shininess: 20,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: false,
 			opacity: 1.0
 		},
@@ -51,7 +51,7 @@ const Models = {
 			color: 0xFCF6E3,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: false,
 			opacity: 1.0
 		},
@@ -60,7 +60,7 @@ const Models = {
 			color: 0xFF0000,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: true,
 			opacity: 0.6,
 		},
@@ -69,7 +69,7 @@ const Models = {
 			color: 0x90EE90,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: true,
 			opacity: 0.6,
 		},
@@ -78,7 +78,7 @@ const Models = {
 			color: 0x006400,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: true,
 			opacity: 0.6,
 		},
@@ -87,7 +87,7 @@ const Models = {
 			color: 0x42f5aa,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: true,
 			opacity: 0.6,
 		},
@@ -96,7 +96,7 @@ const Models = {
 			color: 0xFFA500,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: true,
 			opacity: 0.4,
 		},
@@ -105,7 +105,7 @@ const Models = {
 			color: 0x00B9FF,
 			reflectivity: 10,
 			shininess: 25,
-			shading: THREE.SmoothShading,
+			flatShading: THREE.SmoothShading,
 			transparent: true,
 			opacity: 0.4,
 		},
@@ -117,20 +117,18 @@ const Models = {
 			material = Models.materials[material];
 		}
 		
-		console.log(piece)
 		const modelData = Models.modelData[piece];
 		const geometry = modelData.geometry;
 		let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(material))
+		
 		mesh.position.set(0, 0, 0);
 		mesh.rotation.set(modelData.rotation.x, modelData.rotation.y, modelData.rotation.z);
 		mesh.castShadow = true;
 		mesh.receiveShadow = true;
 		mesh.scale.set(Models.SCALE_FACTOR, Models.SCALE_FACTOR, Models.SCALE_FACTOR)
-
 		mesh.scale.multiplyScalar(scale)
 		mesh.position.set(pos.x, pos.y, pos.z)
-		// TODO: is this native?
-		mesh.canRayCast = canRayCast;
+//		mesh.canRayCast = canRayCast;
 
 		return mesh
 	},

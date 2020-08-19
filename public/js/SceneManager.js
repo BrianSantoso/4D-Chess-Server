@@ -10,17 +10,38 @@ class SceneManager {
 		this._scene = null;
 		this._camera = null;
 		this._renderer = null;
+		this._rayCaster = null;
 		this._controls = null;
 		this._initScene();
 		this._initControls();
+		
+		this._subscribers = {
+			mouvemove: new Set(),
+			mousedown: new Set(),
+			mouseup: new Set()
+		}
+		
+		this._initEventListeners();
 	}
 	
 	remove(object) {
 		this._scene.remove(object);
+		// TODO: unsubscribe current game from mouse event handlers
 	}
 	
 	add(object) {
 		this._scene.add(object);
+		// TODO: subscribe current game from mouse event handlers
+	}
+	
+	subscribe(obj, event) {
+		this._subscribers[event].add(obj);
+	}
+	
+	unsubscribe(obj) {
+		Object.keys(this._subscribers).forEach(key => {
+			this._subscribers[key].delete(obj);
+		});
 	}
 	
 	_initScene() {
@@ -57,11 +78,6 @@ class SceneManager {
 		directionalLight1.shadow.mapSize.height = shadowMapHeight;
 		this._scene.add(directionalLight1);
 		
-		window.addEventListener('resize', () => {
-			this.onWindowResize();
-			// TODO: detach event listener
-		}, false);
-		
 //		this._scene.add(debugSphere(0, 0, 0));
 		
 		console.log('SceneManager', this._scene);
@@ -73,6 +89,40 @@ class SceneManager {
 		this._camera.updateProjectionMatrix();
 		this._renderer.setSize(window.innerWidth, window.innerHeight);
 		this._controls.handleResize();
+	}
+	
+	_initEventListeners() {
+		window.addEventListener('resize', () => {
+			this.onWindowResize();
+			// TODO: detach event listener
+		}, false);
+		
+		this._addEventListener('mousemove', (e) => { 
+			this._updateRayCaster(this._mouseCoords(e));
+		});
+		this._addEventListener('mousedown', () => {});
+		this._addEventListener('mouseup', () => {});
+	}
+	
+	_addEventListener(event, f) {
+		this._renderer.domElement.addEventListener(event, (e) => {
+			e.preventDefault(); // TODO: this may be problematic
+			f(e);
+			e.rayCaster = this._rayCaster;
+			this._subscribers[event].forEach(subscriber => {
+//				subscriber.keyInputs();
+			});
+		}, false);
+		if (!(event in this._subscribers)) {
+			this._subscribers[event] = new Set();
+		}
+	}
+	
+	_mouseCoords(event) {
+		let mouse = new THREE.Vector2();
+		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+		return mouse;
 	}
 	
 	_initControls() {
@@ -95,6 +145,16 @@ class SceneManager {
 		this._controls = controls;
 		
 		console.log('Controls', controls)
+		
+		this._rayCaster = new THREE.Raycaster();
+	}
+	
+	_updateRayCaster(pos2D) {
+		this._rayCaster.setFromCamera(pos2D, this._camera);
+	}
+	
+	getRayCaster() {
+		return this._rayCaster;
 	}
 	
 	keyInputs() {

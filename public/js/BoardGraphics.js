@@ -9,7 +9,15 @@ class BoardGraphics {
 		this.n = n;
 		this._container = new THREE.Group();
 		this._pieces = new THREE.Group();
+		this._white = new THREE.Group();
+		this._black = new THREE.Group();
+		this._ghost = new THREE.Group();
+		this._pieces.add(this._white);
+		this._pieces.add(this._black);
+		this._pieces.add(this._ghost);
+		
 		this._container.add(this._pieces);
+		
 		this._animator = new Animator();
 		
 		this._squareSize = 25;
@@ -43,24 +51,83 @@ class BoardGraphics {
 		console.log('BoardGraphics', this._container);
 	}
 	
-	_spawnMesh(pieceObj) {
-		if (pieceObj.type === '') {
+	_spawnMesh(pieceObj, material=null, pos=null) {
+		if (pieceObj.isEmpty()) {
 			return null;
 		}
-		let material = pieceObj.team === ChessGame.WHITE ? 'white' : 'black';
-		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
-		let pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
+		if (!material) {
+			material = pieceObj.team === ChessGame.WHITE ? 'white' : 'black';
+		}
+		
+		if (!pos) {
+			pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
+		}
 		let mesh = Models.createMesh(pieceObj.type, material, pos);
+		
+		// bind associated piece to mesh
+		mesh.piece = pieceObj;
+		
+		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
-		this._pieces.add(mesh);
+		if (pieceObj.team === ChessGame.WHITE) {
+			this._white.add(mesh);
+		} else if (pieceObj.team === ChessGame.BLACK) {
+			this._black.add(mesh);
+		} else {
+			this._ghost.add(mesh);
+		}
+		
 		return mesh;
 	}
 	
-	spawnPieces(pieces, removeCurrent=false) {
+	spawnPieces(pieces) {
 		this._container.remove(this._pieces);
 		this._pieces = new THREE.Group();
-		pieces.flat(3).forEach(this._spawnMesh.bind(this));
+		this._white = new THREE.Group();
+		this._black = new THREE.Group();
+		this._ghost = new THREE.Group();
+		this._pieces.add(this._white);
+		this._pieces.add(this._black);
+		this._pieces.add(this._ghost);
+		
+		pieces.flat(3).forEach(pieceObj => {
+			this._spawnMesh(pieceObj);
+		});
+		
 		this._container.add(this._pieces);
+	}
+	
+	showPossibleMoves(piece, moves) {
+		if (this._ghost.children.length) {
+			return;
+		}
+		
+		let team = piece.team; // TODO: this is gross
+		piece.team = ChessGame.GHOST;
+		moves.forEach(move => {
+			let material = move.capturedPiece.isEmpty() ? 'green' : 'red';
+			let pos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+			this._spawnMesh(piece, material, pos);
+//			console.log(move)
+		});
+		piece.team = team;
+	}
+	
+	hidePossibleMoves() {
+		this._ghost.remove(...this._ghost.children);
+	}
+	
+	rayCast(rayCaster) {
+		let group;
+		let candidates = this._white.children
+							.concat(this._black.children)
+							.concat(this._ghost.children);
+		let intersects = rayCaster.intersectObjects(candidates);
+		if (intersects.length > 0) {
+			return intersects[0].object;
+		} else {
+			return null;
+		}
 	}
 }
 

@@ -9,6 +9,8 @@ class GameBoard {
 		this.n = n;
 		this._pieces = null;
 		this._init4D();
+		
+		console.log(this.getPossibleMoves(0, 0, 1, 1))
 	}
 	
 	getPieces() {
@@ -57,10 +59,10 @@ class GameBoard {
 			
 			let target = this.get(x, y, z, w);
 			if (originPiece.oppositeTeam(target) && canCapture) {
-				moves.push(new Move(x, y, z, w, startX, startY, startZ, startW, originPiece, target, null));
+				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, null));
 				break;
-			} else if(target.isEmpty()) {
-				moves.push(new Move(x, y, z, w, startX, startY, startZ, startW, originPiece, target, null));
+			} else if(target.isEmpty() && !canCapture) {
+				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, null));
 			} else if (originPiece.sameTeam(target)) {
 				break;
 			}

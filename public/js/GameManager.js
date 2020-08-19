@@ -1,23 +1,29 @@
-import * as THREE from "three";
-import ChessGame from "./ChessGame.js";
+import * as THREE from "three"
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 //import View2D from "./View2D";
 
 class GameManager {
 	constructor() {
+		
+	}
+	
+	setGame(game) {
+		this._game = game;
+	}
+}
+
+class ClientGameManager extends GameManager {
+	constructor() {
+		super();
 		this._view2D = null;
 		// TODO: Pass DOM Element to contain threejs canvas.
 		this._view3D = new SceneManager(document.getElementById("gameManager")); 
 		
-		let game = new ChessGame(4);
-		this.setGame(game);
-		
 		this._controller = null;
 		
-		Models.loadModels().then(() => {
-			this._game.initGraphics();
-		});
+//		Models.loadModels();
+		
 	}
 	
 	setGame(game) {
@@ -25,14 +31,20 @@ class GameManager {
 		if (this._game) {
 			// Decouple current game from Scene Manager
 			this._view3D.remove(this._game.view3D());
+			// TODO: unsubscribe current game from mouse event handlers
 		}
 		
-		this._game = game;
 		this._view3D.add(game.view3D());
+		
+		super.setGame(game);
+		
+		game.initGraphics();
+		game.setRayCaster(this._view3D.getRayCaster());
 	}
 	
 	_keyInputs() {
 		this._view3D.keyInputs();
+		this._game.keyInputs();
 	}
 	
 	_update() {
@@ -77,3 +89,4 @@ class GameManager {
 }
 
 export default GameManager;
+export { ClientGameManager }
