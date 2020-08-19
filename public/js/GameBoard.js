@@ -84,25 +84,101 @@ class GameBoard {
 		let a = this.n - 1; // Last Rank
 		let b = this.n - 2; // Penultimate Rank
 		
-		this.set(0, 0, 0, 0, new Rook(ChessGame.WHITE));
-		this.set(1, 0, 0, 0, new Knight(ChessGame.WHITE));
-		this.set(2, 0, 0, 0, new Knight(ChessGame.WHITE));
-		this.set(3, 0, 0, 0, new Rook(ChessGame.WHITE));
+		const initTeam = (team, a, b) => {
+			// a: back rank
+			// b: penultimate rank
+			this.set(0, 0, a, a, new Rook(team));
+			this.set(1, 0, a, a, new Knight(team));
+			this.set(2, 0, a, a, new Knight(team));
+			this.set(3, 0, a, a, new Rook(team));
+
+			this.set(0, 1, a, a, new Bishop(team));
+			this.set(1, 1, a, a, new Pawn(team));
+			this.set(2, 1, a, a, new Pawn(team));
+			this.set(3, 1, a, a, new Bishop(team));
+
+			this.set(0, 2, a, a, new Bishop(team));
+			this.set(1, 2, a, a, new Queen(team));
+			this.set(2, 2, a, a, new King(team));
+			this.set(3, 2, a, a, new Bishop(team));
+
+			this.set(0, 3, a, a, new Rook(team));
+			this.set(1, 3, a, a, new Knight(team));
+			this.set(2, 3, a, a, new Knight(team));
+			this.set(3, 3, a, a, new Rook(team));
+			
+			
+			
+			
+
+			this.set(0, 0, b, a, new Pawn(team));
+			this.set(1, 0, b, a, new Pawn(team));
+			this.set(2, 0, b, a, new Pawn(team));
+			this.set(3, 0, b, a, new Pawn(team));
+
+			this.set(0, 1, b, a, new Pawn(team));
+			this.set(1, 1, b, a, new Pawn(team));
+			this.set(2, 1, b, a, new Pawn(team));
+			this.set(3, 1, b, a, new Pawn(team));
+
+			this.set(0, 2, b, a, new Pawn(team));
+			this.set(1, 2, b, a, new Pawn(team));
+			this.set(2, 2, b, a, new Pawn(team));
+			this.set(3, 2, b, a, new Pawn(team));
+
+			this.set(0, 3, b, a, new Pawn(team));
+			this.set(1, 3, b, a, new Pawn(team));
+			this.set(2, 3, b, a, new Pawn(team));
+			this.set(3, 3, b, a, new Pawn(team));
+			
+			
+			
+			
+			this.set(0, 0, a, b, new Pawn(team));
+			this.set(1, 0, a, b, new Pawn(team));
+			this.set(2, 0, a, b, new Pawn(team));
+			this.set(3, 0, a, b, new Pawn(team));
+
+			this.set(0, 1, a, b, new Pawn(team));
+			this.set(1, 1, a, b, new Pawn(team));
+			this.set(2, 1, a, b, new Pawn(team));
+			this.set(3, 1, a, b, new Pawn(team));
+
+			this.set(0, 2, a, b, new Pawn(team));
+			this.set(1, 2, a, b, new Pawn(team));
+			this.set(2, 2, a, b, new Pawn(team));
+			this.set(3, 2, a, b, new Pawn(team));
+
+			this.set(0, 3, a, b, new Pawn(team));
+			this.set(1, 3, a, b, new Pawn(team));
+			this.set(2, 3, a, b, new Pawn(team));
+			this.set(3, 3, a, b, new Pawn(team));
+			
+			
+			
+			this.set(0, 0, b, b, new Pawn(team));
+			this.set(1, 0, b, b, new Pawn(team));
+			this.set(2, 0, b, b, new Pawn(team));
+			this.set(3, 0, b, b, new Pawn(team));
+
+			this.set(0, 1, b, b, new Pawn(team));
+			this.set(1, 1, b, b, new Pawn(team));
+			this.set(2, 1, b, b, new Pawn(team));
+			this.set(3, 1, b, b, new Pawn(team));
+
+			this.set(0, 2, b, b, new Pawn(team));
+			this.set(1, 2, b, b, new Pawn(team));
+			this.set(2, 2, b, b, new Pawn(team));
+			this.set(3, 2, b, b, new Pawn(team));
+
+			this.set(0, 3, b, b, new Pawn(team));
+			this.set(1, 3, b, b, new Pawn(team));
+			this.set(2, 3, b, b, new Pawn(team));
+			this.set(3, 3, b, b, new Pawn(team));
+		}
 		
-		this.set(0, 1, 0, 0, new Bishop(ChessGame.WHITE));
-		this.set(1, 1, 0, 0, new Pawn(ChessGame.WHITE));
-		this.set(2, 1, 0, 0, new Pawn(ChessGame.WHITE));
-		this.set(3, 1, 0, 0, new Bishop(ChessGame.WHITE));
-		
-		this.set(0, 2, 0, 0, new Bishop(ChessGame.WHITE));
-		this.set(1, 2, 0, 0, new Queen(ChessGame.WHITE));
-		this.set(2, 2, 0, 0, new King(ChessGame.WHITE));
-		this.set(3, 2, 0, 0, new Bishop(ChessGame.WHITE));
-		
-		this.set(0, 3, 0, 0, new Rook(ChessGame.WHITE));
-		this.set(1, 3, 0, 0, new Knight(ChessGame.WHITE));
-		this.set(2, 3, 0, 0, new Knight(ChessGame.WHITE));
-		this.set(3, 3, 0, 0, new Rook(ChessGame.WHITE));
+		initTeam(ChessGame.WHITE, 0, 1);
+		initTeam(ChessGame.BLACK, a, b);
 	}
 	
 }

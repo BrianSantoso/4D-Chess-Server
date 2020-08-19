@@ -41,10 +41,6 @@ class BoardGraphics {
 		this._container.add(BoardGraphics.checkerboard4D(this.n, square, square * 3, square * 1.5));
 		
 		console.log('BoardGraphics', this._container);
-		
-//		Models.loadModels().then(() => {
-//			this._container.add(Models.createMesh('pawn', 'white'));
-//		});
 	}
 	
 	_spawnMesh(pieceObj) {
