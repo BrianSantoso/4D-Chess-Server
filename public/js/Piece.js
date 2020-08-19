@@ -243,17 +243,17 @@ class PieceBehavior {
 }
 
 
-PieceBehavior.FORWARD = 1;
+
 PieceBehavior.BACKWARD = -1;
-PieceBehavior.BIDIRECTIONAL = 2;
 PieceBehavior.CANT_MOVE = 0;
+PieceBehavior.FORWARD = 1;
+PieceBehavior.BIDIRECTIONAL = 2;
 PieceBehavior.ALL_DIRS = [
 	PieceBehavior.BIDIRECTIONAL, 
 	PieceBehavior.BIDIRECTIONAL, 
 	PieceBehavior.BIDIRECTIONAL, 
 	PieceBehavior.BIDIRECTIONAL
 ];
-
 
 export default Piece;
 export { Pawn, Rook, Knight, Bishop, King, Queen };

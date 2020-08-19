@@ -3,3 +3,5 @@ class Animator {
 		this._queue;
 	}
 }
+
+export default Animator;

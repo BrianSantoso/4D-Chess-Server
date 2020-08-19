@@ -67,6 +67,8 @@ BoardGraphics.checkerboard = function(segments=8, boardSize=100, z=0, w=0, opaci
 
 BoardGraphics.checkerboard3d = function(segments=8, boardSize=100, z=0, w=0, opacity=0.5, boardHeight=5){
 	
+	
+	
 	const BOARD_HEIGHT = boardHeight;
 	
 	let topGeometry = new THREE.PlaneGeometry(boardSize, boardSize, segments, segments);

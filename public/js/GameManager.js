@@ -5,18 +5,29 @@ import SceneManager from "./SceneManager.js";
 
 class GameManager {
 	constructor() {
-		this._game = new ChessGame();
 		this._view2D = null;
-		this._view3D = new SceneManager(document.getElementById("gameManager")); // TODO: Pass DOM Element to contain threejs canvas.
+		// TODO: Pass DOM Element to contain threejs canvas.
+		this._view3D = new SceneManager(document.getElementById("gameManager")); 
+		
+		let game = new ChessGame(4);
+		this.setGame(game);
+		
 		this._controller = null;
 	}
 	
 	setGame(game) {
-		this.game = game;
+		
+		if (this._game) {
+			// Decouple current game from Scene Manager
+			this._view3D.remove(this._game.view3D());
+		}
+		
+		this._game = game;
+		this._view3D.add(game.view3D());
 	}
 	
 	_keyInputs() {
-		
+		this._view3D.keyInputs();
 	}
 	
 	_update() {

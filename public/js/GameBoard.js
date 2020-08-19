@@ -5,8 +5,8 @@ import Move from "./Move.js";
 import { unique } from "./ArrayUtils.js";
 
 class GameBoard {
-	constructor() {
-		this.n = 4;
+	constructor(n) {
+		this.n = n;
 		this._pieces = null;
 		this._init4D();
 	}

@@ -14,9 +14,18 @@ class SceneManager {
 		this._initControls();
 	}
 	
+	remove(object) {
+		this._scene.remove(object);
+	}
+	
+	add(object) {
+		this._scene.add(object);
+	}
+	
 	_initScene() {
 		this._scene = new THREE.Scene();
 		this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 9000); 
+		this._camera.position.set(0, 0, 0);
 		this._renderer = new THREE.WebGLRenderer({antialias: true});
 		this._renderer.setSize(window.innerWidth, window.innerHeight);
 		this._renderer.domElement.id = "three-canvas";
@@ -51,6 +60,16 @@ class SceneManager {
 			this.onWindowResize();
 			// TODO: detach event listener
 		}, false);
+		
+		
+		const geometry = new THREE.SphereGeometry( 5, 32, 32 );
+		const material = new THREE.MeshBasicMaterial({color: 'red', transparent:true, opacity: 0.5});
+		const DEBUG_SPHERE = new THREE.Mesh(geometry, material);
+		DEBUG_SPHERE.position.set(0, 0, -10);
+		this._scene.add(DEBUG_SPHERE);
+		
+		console.log('SceneManager', this._scene);
+		console.log('camera', this._camera)
 	}
 	
 	onWindowResize() {
@@ -75,7 +94,15 @@ class SceneManager {
 		controls.minDistance = 100;
 		controls.maxDistance = 1400;
 		
+		controls.target.set(0, 0, -200);
+		
 		this._controls = controls;
+		
+		console.log('Controls', controls)
+	}
+	
+	keyInputs() {
+		this._controls.update();
 	}
 	
 	draw() {
