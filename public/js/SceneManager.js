@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import TrackballControls from "./TrackballControls.js";
+import { debugSphere } from "./Utils3D.js";
 
 class SceneManager {
 	
@@ -61,12 +62,7 @@ class SceneManager {
 			// TODO: detach event listener
 		}, false);
 		
-		
-		const geometry = new THREE.SphereGeometry( 5, 32, 32 );
-		const material = new THREE.MeshBasicMaterial({color: 'red', transparent:true, opacity: 0.5});
-		const DEBUG_SPHERE = new THREE.Mesh(geometry, material);
-		DEBUG_SPHERE.position.set(0, 0, -10);
-		this._scene.add(DEBUG_SPHERE);
+//		this._scene.add(debugSphere(0, 0, 0));
 		
 		console.log('SceneManager', this._scene);
 		console.log('camera', this._camera)

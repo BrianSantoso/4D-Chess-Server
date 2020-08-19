@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import Animator from "./Animator.js";
+import { debugSphere, rotateObject } from "./Utils3D.js";
 
 class BoardGraphics {
 	constructor(n) {
@@ -7,7 +8,20 @@ class BoardGraphics {
 		this._container = new THREE.Group();
 		this._animator = new Animator();
 		
+		this._squareSize = 25;
+		this._deltaY = this._squareSize * 3;
+		this._deltaW = this._squareSize * 1.5;
+		
 		this._init();
+	}
+	
+	to3D(x, y, z, w) {
+		// Board Coordinates to World Coords
+		let boardSize = this._squareSize * this.n;
+		let newZ = (this._deltaW + boardSize) * w + z * this._squareSize
+		return new THREE.Vector3(x * this._squareSize, 
+								 y * this._deltaY, 
+								 -newZ).add(this._container.position);
 	}
 	
 	update() {
@@ -27,12 +41,6 @@ class BoardGraphics {
 }
 
 BoardGraphics.checkerboard = function(n=4, squareSize=25, y=0, w=0){
-	
-	const rotateObject = (object, degreeX=0, degreeY=0, degreeZ=0) => {
-		object.rotateX(THREE.MathUtils.degToRad(degreeX));
-		object.rotateY(THREE.MathUtils.degToRad(degreeY));
-		object.rotateZ(THREE.MathUtils.degToRad(degreeZ));
-	}
 	const thickness = 2;
 	const opacity = 0.5;
 	const boardSize = n * squareSize;
@@ -106,6 +114,8 @@ BoardGraphics.checkerboard4D = function(n, squareSize, deltaY, deltaW) {
 			board4D.add(board2D);
 		}
 	}
+	// Make Origin the center of the first square
+	board4D.position.set(squareSize * 1.5, 0, -squareSize * 1.5);
 	return board4D;
 };
 
