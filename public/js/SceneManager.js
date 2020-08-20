@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import TrackballControls from "./TrackballControls.js";
 import { debugSphere } from "./Utils3D.js";
 
@@ -150,25 +151,30 @@ class SceneManager {
 	}
 	
 	_initControls() {
-		let controls = new TrackballControls(this._camera, this._renderer.domElement);
-
-		controls.rotateSpeed = 1.8; // set rotation/zoom/pan speeds
-		controls.zoomSpeed = 1.5;
-		controls.panSpeed = 0.45;
-
-		controls.noZoom = false; // enable zooming, panning, and smooth panning
-		controls.noPan = false;
-		controls.staticMoving = false;
-
-		controls.dynamicDampingFactor = 0.2; // set dampening factor
-		controls.minDistance = 100;
-		controls.maxDistance = 1400;
+		this._camera.position.set( 0, 20, 100 );
 		
-		controls.target.set(0, 0, -200);
+		const minDistance = 100;
+		const maxDistance = 500;
 		
-		this._controls = controls;
+		// https://threejs.org/docs/#examples/en/controls/OrbitControls
+		this._controls = new OrbitControls(this._camera, this._renderer.domElement);
+		this._controls.enableDamping = true;
+		this._controls.dampingFactor = 0.1;
+		this._controls.screenSpacePanning = true;
+		this._controls.enableZoom = false;
+		this._controls.rotateSpeed = 0.5;
+		this._controls.minDistance = minDistance;
+		this._controls.maxDistance = maxDistance;
 		
-		console.log('Controls', controls)
+		
+		
+		this._controls2 = new TrackballControls(this._camera, this._renderer.domElement);
+		this._controls2.noRotate = true;
+		this._controls2.noPan = true;
+		this._controls2.noZoom = false;
+		this._controls2.zoomSpeed = 1.5;
+		this._controls2.minDistance = minDistance;
+		this._controls2.maxDistance = maxDistance;
 		
 		this._rayCaster = new THREE.Raycaster();
 	}
@@ -183,6 +189,10 @@ class SceneManager {
 	
 	keyInputs() {
 		this._controls.update();
+		
+		let target = this._controls.target;
+		this._controls2.target.set(target.x, target.y, target.z);
+		this._controls2.update();
 	}
 	
 	draw() {
