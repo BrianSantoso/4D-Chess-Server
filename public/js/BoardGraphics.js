@@ -51,31 +51,43 @@ class BoardGraphics {
 		console.log('BoardGraphics', this._container);
 	}
 	
-	_spawnMesh(pieceObj, material=null, pos=null) {
+	_spawnMeshFromPiece(pieceObj) {
 		if (pieceObj.isEmpty()) {
 			return null;
 		}
-		if (!material) {
-			material = pieceObj.team === ChessGame.WHITE ? 'white' : 'black';
-		}
-		
-		if (!pos) {
-			pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
-		}
+		let material = pieceObj.team === ChessGame.WHITE ? 'white' : 'black';
+		let pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
 		let mesh = Models.createMesh(pieceObj.type, material, pos);
-		
-		// bind associated piece to mesh
-		mesh.piece = pieceObj;
-		
 		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
 		if (pieceObj.team === ChessGame.WHITE) {
 			this._white.add(mesh);
 		} else if (pieceObj.team === ChessGame.BLACK) {
 			this._black.add(mesh);
-		} else {
-			this._ghost.add(mesh);
 		}
+		// bind associated piece to mesh
+		mesh.piece = pieceObj;
+		
+		return mesh;
+	}
+	
+	_spawnGhostMesh(pieceObj, move, preview) {
+		let pos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+		
+		let material; // TODO: implement some sort of materials scheme. this is kind of messy
+		if (preview) {
+			material = move.capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
+		} else {
+			material = move.capturedPiece.isEmpty() ? 'green' : 'red';
+		}
+		
+		let scale = move.capturedPiece.isEmpty() ? 1 : 1;
+		let mesh = Models.createMesh(pieceObj.type, material, pos, scale);
+		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
+		rotateObject(mesh, 0, rotation, 0);
+		this._ghost.add(mesh);
+		
+		mesh.move = move;
 		
 		return mesh;
 	}
@@ -91,26 +103,24 @@ class BoardGraphics {
 		this._pieces.add(this._ghost);
 		
 		pieces.flat(3).forEach(pieceObj => {
-			this._spawnMesh(pieceObj);
+			this._spawnMeshFromPiece(pieceObj);
 		});
 		
 		this._container.add(this._pieces);
 	}
 	
 	showPossibleMoves(piece, moves) {
-		if (this._ghost.children.length) {
-			return;
-		}
-		
-		let team = piece.team; // TODO: this is gross
-		piece.team = ChessGame.GHOST;
+		this.hidePossibleMoves();
 		moves.forEach(move => {
-			let material = move.capturedPiece.isEmpty() ? 'green' : 'red';
-			let pos = this.to3D(move.x1, move.y1, move.z1, move.w1);
-			this._spawnMesh(piece, material, pos);
-//			console.log(move)
+			this._spawnGhostMesh(piece, move, false);
 		});
-		piece.team = team;
+	}
+	
+	previewPossibleMoves(piece, moves) {
+		this.hidePossibleMoves();
+		moves.forEach(move => {
+			this._spawnGhostMesh(piece, move, true);
+		});
 	}
 	
 	hidePossibleMoves() {
@@ -197,8 +207,8 @@ BoardGraphics.checkerboard = function(n=4, squareSize=25, y=0, w=0){
 
 BoardGraphics.checkerboard4D = function(n, squareSize, deltaY, deltaW) {
 	let board4D = new THREE.Group();
-	for (let y = 0; y < 4; y++) {
-		for (let w = 0; w < 4; w++) {
+	for (let y = 0; y < n; y++) {
+		for (let w = 0; w < n; w++) {
 			let boardSize = n * squareSize;
 			let board2D = BoardGraphics.checkerboard(n, squareSize, y, w);
 			board2D.position.set(0, deltaY * y, -(boardSize + deltaW) * w);
@@ -206,7 +216,8 @@ BoardGraphics.checkerboard4D = function(n, squareSize, deltaY, deltaW) {
 		}
 	}
 	// Make Origin the center of the first square
-	board4D.position.set(squareSize * 1.5, 0, -squareSize * 1.5);
+	let distToEdge = squareSize * (n - 1) / 2;
+	board4D.position.set(distToEdge, 0, -distToEdge);
 	return board4D;
 };
 

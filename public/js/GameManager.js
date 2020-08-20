@@ -38,6 +38,7 @@ class ClientGameManager extends GameManager {
 		
 		super.setGame(game);
 		
+		this._view3D.subscribe(game, 'intentionalClick');
 		game.initGraphics();
 		game.setRayCaster(this._view3D.getRayCaster());
 	}

@@ -9,6 +9,10 @@ class ChessGame {
 		this._controllers = [];
 	}
 	
+	makeMove() {
+		
+	}
+	
 	board() {
 		return this._board;
 	}
@@ -38,6 +42,24 @@ class GraphicalChessGame extends ChessGame {
 		this._rayCaster = rayCaster;
 	}
 	
+	showPossibleMoves(piece) {
+		let moves = this.board().getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
+		this.boardGraphics().showPossibleMoves(piece, moves);
+	}
+	
+	previewPossibleMoves(piece) {
+		let moves = this.board().getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
+		this.boardGraphics().previewPossibleMoves(piece, moves);
+	}
+	
+	hidePossibleMoves() {
+		this.boardGraphics().hidePossibleMoves();
+	}
+	
+	rayCast() {
+		return this.boardGraphics().rayCast(this._rayCaster);
+	}
+	
 	boardGraphics() {
 		return this._boardGraphics;
 	}
@@ -48,6 +70,15 @@ class GraphicalChessGame extends ChessGame {
 	
 	update() {
 		this._boardGraphics.update();
+	}
+	
+	intentionalClick() {
+		
+	}
+	
+	makeMove() {
+		super.makeMove();
+		// TODO: tell graphics to move piece
 	}
 }
 
@@ -60,7 +91,13 @@ class LocalChessGame extends GraphicalChessGame {
 	
 	keyInputs() {
 		this.controllers.forEach(controller => {
-			controller.keyInputs(this._rayCaster)
+			controller.keyInputs();
+		});
+	}
+	
+	intentionalClick() {
+		this.controllers.forEach(controller => {
+			controller.onclick();
 		});
 	}
 }

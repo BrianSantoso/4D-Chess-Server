@@ -7,27 +7,103 @@ class ChessPlayer {
 	}
 }
 
+
 class Player3D extends ChessPlayer {
 	constructor(chessGame) {
 		super();
 		this._game = chessGame;
-		// uses gameBoard and boardGrahpics
-		// transmits directly to chessGame
+		
+		this._hovering = null;
+		this._selected = null;
+		
+		// State pattern: each behavior object defines behavior for a given state
+		this._unselectedBehavior = {
+			keyInputs: () => {
+				let intersected = this._game.rayCast();
+				this.setHovering(intersected);
+				let isPiece = this._isPiece(this.getHovering());
+				if (isPiece) {
+					let piece = this._getPiece(this.getHovering());
+					this._game.previewPossibleMoves(piece);
+				} else {
+					this._game.hidePossibleMoves();
+				}
+			},
+			
+			onclick: () => {
+				this.setSelected(this.getHovering());
+				
+				if (this.getSelected()) {
+					this.setBehavior(this._selectedBehavior);
+				}
+			}
+		};
+		
+		this._selectedBehavior = {
+			keyInputs: () => {
+				let intersected = this._game.rayCast();
+				this.setHovering(intersected);
+				
+				let piece = this._getPiece(this.getSelected()); // TODO: can optimize by putting in _unselectedBehavior.onclick();
+				this._game.showPossibleMoves(piece);
+			},
+			
+			onclick: () => {
+				if (this._isGhost(this.getHovering())) {
+					this._game.makeMove(this.getHovering().move);
+					this._game.hidePossibleMoves();
+				}
+				this.setSelected(null);
+				this.setBehavior(this._unselectedBehavior);
+			}
+		};
+		
+		this._behavior = this._unselectedBehavior;
 	}
 	
-	keyInputs(rayCaster) {
-		let gameBoard = this._game.board();
-		let boardGraphics = this._game.boardGraphics()
-		let intersected = boardGraphics.rayCast(rayCaster);
-		
-		if (intersected) {
-			let piece = intersected.piece;
-			let moves = gameBoard.getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
-			boardGraphics.showPossibleMoves(piece, moves);
-		} else {
-			boardGraphics.hidePossibleMoves();
-		}
-//		console.log(intersected)
+	_isPiece(mesh) {
+		return mesh && !!mesh.piece;
+	}
+	
+	_isGhost(mesh) {
+		mesh && !!mesh.move;
+	}
+	
+	_getPiece(mesh) {
+		return mesh.piece;
+	}
+	
+	_getMove(mesh) {
+		return mesh.move;
+	}
+	
+	onclick() {
+		this._behavior.onclick();
+	}
+	
+	keyInputs() {
+		this._behavior.keyInputs();
+	}
+	
+	setHovering(mesh) {
+		this._hovering = mesh;
+	}
+	
+	setSelected(mesh) {
+		this._selected = mesh;
+	}
+	
+	setBehavior(behavior) {
+		// Switches states
+		this._behavior = behavior;
+	}
+	
+	getHovering() {
+		return this._hovering;
+	}
+	
+	getSelected() {
+		return this._selected;
 	}
 }
 

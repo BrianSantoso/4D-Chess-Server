@@ -55,6 +55,24 @@ const Models = {
 			transparent: false,
 			opacity: 1.0
 		},
+		
+		darkGray: {
+			color: 0x818181,
+			reflectivity: 0.1,
+			shininess: 20,
+			flatShading: THREE.SmoothShading,
+			transparent: true,
+			opacity: 0.5
+		},
+		
+		lightGray: {
+			color: 0xFCF6E3,
+			reflectivity: 10,
+			shininess: 25,
+			flatShading: THREE.SmoothShading,
+			transparent: true,
+			opacity: 0.5
+		},
 
 		red: {
 			color: 0xFF0000,

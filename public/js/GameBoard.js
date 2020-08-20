@@ -79,7 +79,7 @@ class GameBoard {
 		};
 
 		// Create 4D array of Piece objects
-		this._pieces = rangeIn(new Array(this.n).fill(this.n))
+		this._pieces = rangeIn([this.n, this.n, this.n, this.n])
 		
 		console.log(this._pieces)
 		
@@ -95,8 +95,8 @@ class GameBoard {
 			this.set(3, 0, a, a, new Rook(team));
 
 			this.set(0, 1, a, a, new Bishop(team));
-			this.set(1, 1, a, a, new Pawn(team));
-			this.set(2, 1, a, a, new Pawn(team));
+			this.set(1, 1, a, a, new Queen(team));
+			this.set(2, 1, a, a, new Queen(team));
 			this.set(3, 1, a, a, new Bishop(team));
 
 			this.set(0, 2, a, a, new Bishop(team));

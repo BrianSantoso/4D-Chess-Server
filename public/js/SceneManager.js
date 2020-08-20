@@ -97,28 +97,52 @@ class SceneManager {
 			// TODO: detach event listener
 		}, false);
 		
+		const notAClick = 0.05;
+		let dragStart = new THREE.Vector2(0, 0);
+		
 		this._addEventListener('mousemove', (e) => { 
 			this._updateRayCaster(this._mouseCoords(e));
 		});
-		this._addEventListener('mousedown', () => {});
-		this._addEventListener('mouseup', () => {});
+		this._addEventListener('mousedown', (e) => {
+			dragStart = this._mouseCoords(e);
+		});
+		this._addEventListener('mouseup', (e) => {
+			let dragEnd = this._mouseCoords(e);
+			if (dragStart.distanceToSquared(dragEnd) < notAClick * notAClick) {
+				this._renderer.domElement.dispatchEvent(customEvent);
+			}
+		});
+		
+		const customEvent = new Event('intentionalClick');
+		this._addEventListener('intentionalClick', () => {});
+		
 	}
 	
 	_addEventListener(event, f) {
+		// https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
+		
 		this._renderer.domElement.addEventListener(event, (e) => {
+			
+			// TODO: May need to check if e.target is renderer's dom element
 			e.preventDefault(); // TODO: this may be problematic
 			f(e);
 			e.rayCaster = this._rayCaster;
 			this._subscribers[event].forEach(subscriber => {
-//				subscriber.keyInputs();
+				subscriber[event]();
 			});
 		}, false);
+		
 		if (!(event in this._subscribers)) {
 			this._subscribers[event] = new Set();
 		}
+		
+		// No need to worry about duplicate event listeners
+		// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Multiple_identical_event_listeners	
 	}
 	
 	_mouseCoords(event) {
+		// calculate mouse position in normalized device coordinates
+		// (-1 to +1) for both components
 		let mouse = new THREE.Vector2();
 		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
