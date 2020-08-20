@@ -16,6 +16,7 @@
   "author": "Brian Santoso",
   "license": "ISC",
   "dependencies": {
+    "@datastructures-js/priority-queue": "^4.1.1",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "lodash": "^4.17.15",

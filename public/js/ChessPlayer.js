@@ -1,3 +1,5 @@
+import ChessGame from "./ChessGame.js";
+
 class ChessPlayer {
 	// A ChessGame controller. Defines what method is used to receive moves
 	// (e.g. through a 3D UI, over the the internet, an AI),
@@ -9,9 +11,10 @@ class ChessPlayer {
 
 
 class Player3D extends ChessPlayer {
-	constructor(chessGame) {
+	constructor(chessGame, team) {
 		super();
 		this._game = chessGame;
+		this._team = team;
 		
 		this._hovering = null;
 		this._selected = null;
@@ -19,8 +22,9 @@ class Player3D extends ChessPlayer {
 		// State pattern: each behavior object defines behavior for a given state
 		this._unselectedBehavior = {
 			keyInputs: () => {
-				let intersected = this._game.rayCast();
+				let intersected = this._game.rayCast(this._team);
 				this.setHovering(intersected);
+				
 				let isPiece = this._isPiece(this.getHovering());
 				if (isPiece) {
 					let piece = this._getPiece(this.getHovering());
@@ -44,7 +48,7 @@ class Player3D extends ChessPlayer {
 		
 		this._selectedBehavior = {
 			keyInputs: () => {
-				let intersected = this._game.rayCast();
+				let intersected = this._game.rayCast(ChessGame.GHOST);
 				this.setHovering(intersected);
 				
 //				let piece = this._getPiece(this.getSelected()); // TODO: can optimize by putting in _unselectedBehavior.onclick();
@@ -60,6 +64,16 @@ class Player3D extends ChessPlayer {
 				this.setBehavior(this._unselectedBehavior);
 			}
 		};
+		
+		this._notMyTurn = {
+			keyInputs: () => {
+				
+			},
+			
+			onclick: () => {
+				
+			}
+		}
 		
 		this._behavior = this._unselectedBehavior;
 	}
@@ -94,9 +108,12 @@ class Player3D extends ChessPlayer {
 	
 	setSelected(mesh) {
 		// You should not be able to select a ghost...
-		if (this._isPiece(mesh)) {
-			this._selected = mesh;
-		}
+		this._selected = mesh;
+//		if (this._isPiece(mesh)) {
+//			this._selected = mesh;
+//		}
+		
+		
 		// Do NOT: "else set to null" because then if
 		// you try to click on a piece behind it's preview
 		// ghost, then it would not select the piece

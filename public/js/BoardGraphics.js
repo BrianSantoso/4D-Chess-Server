@@ -26,6 +26,7 @@ class BoardGraphics {
 		
 		this._pieceToMesh = new Map();
 		
+		this._boundingBox = null;
 		this._init();
 	}
 	
@@ -39,16 +40,30 @@ class BoardGraphics {
 	}
 	
 	update() {
-		
+		this._animator.update();
 	}
 	
 	view3D() {
 		return this._container;
 	}
 	
+	getBoundingBox() {
+		return this._boundingBox;
+	}
+	
 	_init() {
 		let square = 25;
 		this._container.add(BoardGraphics.checkerboard4D(this.n, square, square * 3, square * 1.5));
+		
+//		let min = this._container.position.copy();
+//		
+//		let boardSize = this._squareSize * this.n;
+//		let max = new THREE.Vector3(boardSize, 
+//									boardSize * this.n + this._deltaW * (this.n - 1), 
+//									this._deltaY * this.n
+//								   ).add(min);
+//		
+//		this._boundingBox = new THREE.Box3(min, max);
 		
 		console.log('BoardGraphics', this._container);
 	}
@@ -77,6 +92,12 @@ class BoardGraphics {
 	
 	_spawnGhostMesh(pieceObj, move, preview) {
 		let pos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+		let team = pieceObj.team;
+		let type = pieceObj.type;
+		if (!move.capturedPiece.isEmpty()) {
+			team = move.capturedPiece.team;
+			type = move.capturedPiece.type;
+		}
 		
 		let material; // TODO: implement some sort of materials scheme. this is kind of messy
 		if (preview) {
@@ -86,8 +107,8 @@ class BoardGraphics {
 		}
 		
 		let scale = move.capturedPiece.isEmpty() ? 1 : 1;
-		let mesh = Models.createMesh(pieceObj.type, material, pos, scale);
-		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
+		let mesh = Models.createMesh(type, material, pos, scale);
+		let rotation = team === ChessGame.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
 		this._ghost.add(mesh);
 		
@@ -113,29 +134,35 @@ class BoardGraphics {
 		this._container.add(this._pieces);
 	}
 	
-	showPossibleMoves(piece, moves) {
+	showPossibleMoves(piece, moves, preview=false) {
 		this.hidePossibleMoves();
 		moves.forEach(move => {
-			this._spawnGhostMesh(piece, move, false);
+			this._spawnGhostMesh(piece, move, preview);
 		});
 	}
 	
 	previewPossibleMoves(piece, moves) {
-		this.hidePossibleMoves();
-		moves.forEach(move => {
-			this._spawnGhostMesh(piece, move, true);
-		});
+		this.showPossibleMoves(piece, moves, true);
 	}
 	
 	hidePossibleMoves() {
 		this._ghost.remove(...this._ghost.children);
 	}
 	
-	rayCast(rayCaster) {
+	rayCast(rayCaster, targetTeam=ChessGame.OMNISCIENT) {
 		let group;
-		let candidates = this._white.children
-							.concat(this._black.children)
-							.concat(this._ghost.children);
+		let candidates = [];
+		
+		if (targetTeam.permissions.get(ChessGame.WHITE)) {
+			candidates = candidates.concat(this._white.children);
+		}
+		if (targetTeam.permissions.get(ChessGame.BLACK)) {
+			candidates = candidates.concat(this._black.children);
+		}
+		if (targetTeam.permissions.get(ChessGame.GHOST)) {
+			candidates = candidates.concat(this._ghost.children);
+		}
+		
 		let intersects = rayCaster.intersectObjects(candidates);
 		if (intersects.length > 0) {
 			return intersects[0].object;
@@ -144,18 +171,38 @@ class BoardGraphics {
 		}
 	}
 	
-	makeMove(move, aniamte) {
-		let mesh = this._pieceToMesh.get(move.piece);
-		let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
-		
-		let newPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
-		mesh.position.set(newPos.x, newPos.y, newPos.z);
-		this._remove(capturedMesh);
-		
-		if (move.promotionNew) {
-			this._remove(mesh);
-			this._spawnMeshFromPiece(move.promotionNew);
-		}
+	makeMove(move, animate) {
+		if (animate) {
+			let mesh = this._pieceToMesh.get(move.piece);
+			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
+			let endPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+			let numFrames = 12;
+			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
+			
+			let onFinish = () => {
+				this._remove(capturedMesh);
+				if (move.promotionNew) {
+					this._remove(mesh);
+					this._spawnMeshFromPiece(move.promotionNew);
+				}
+			}
+			
+			let frames = Animator.linearInterpolate(mesh, startPos, endPos, numFrames, onFinish);
+			this._animator._enqueue(frames); // TODO: make _enqueue public
+			
+		} else {
+			let mesh = this._pieceToMesh.get(move.piece);
+			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
+
+			let newPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+			mesh.position.set(newPos.x, newPos.y, newPos.z);
+			this._remove(capturedMesh);
+
+			if (move.promotionNew) {
+				this._remove(mesh);
+				this._spawnMeshFromPiece(move.promotionNew);
+			}
+		}	
 	}
 	
 	_remove(mesh) {

@@ -58,8 +58,8 @@ class GraphicalChessGame extends ChessGame {
 		this.boardGraphics().hidePossibleMoves();
 	}
 	
-	rayCast() {
-		return this.boardGraphics().rayCast(this._rayCaster);
+	rayCast(targetTeam) {
+		return this.boardGraphics().rayCast(this._rayCaster, targetTeam);
 	}
 	
 	boardGraphics() {
@@ -81,7 +81,7 @@ class GraphicalChessGame extends ChessGame {
 	makeMove(move) {
 		super.makeMove(move);
 		// TODO: tell graphics to move piece
-		this.boardGraphics().makeMove(move, false);
+		this.boardGraphics().makeMove(move, true);
 	}
 }
 
@@ -89,7 +89,10 @@ class LocalChessGame extends GraphicalChessGame {
 	constructor(n) {
 		super(n);
 		this._rayCaster = null;
-		this.controllers = [new LocalPlayer3D(this), new LocalPlayer3D(this)];
+		this.controllers = [ // TODO: assign teams dynamically...
+//			new LocalPlayer3D(this, ChessGame.OMNISCIENT), 
+			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
+		];
 	}
 	
 	keyInputs() {
@@ -113,10 +116,30 @@ class OnlineChessGame extends GraphicalChessGame /* Implements Online */ {
 	}
 }
 
-ChessGame.GHOST = -2;
-ChessGame.NONE = -1;
-ChessGame.WHITE = 0;
-ChessGame.BLACK = 1;
+
+class ChessTeam {
+	constructor() {
+		this.permissions = new Map();
+	}
+	
+	setPermissions(whitePerms, blackPerms, ghostPerms) {
+		this.permissions.set(ChessGame.WHITE, whitePerms);
+		this.permissions.set(ChessGame.BLACK, blackPerms);
+		this.permissions.set(ChessGame.GHOST, ghostPerms);
+	}
+}
+
+ChessGame.GHOST = new ChessTeam();
+ChessGame.NONE = new ChessTeam(); // TODO: may be problematic since spectator team is NONE and empty piece team is NONE
+ChessGame.WHITE = new ChessTeam();
+ChessGame.BLACK = new ChessTeam();
+ChessGame.OMNISCIENT = new ChessTeam();
+
+ChessGame.GHOST.setPermissions(false, false, true);
+ChessGame.WHITE.setPermissions(true, false, false);
+ChessGame.BLACK.setPermissions(false, true, false);
+ChessGame.OMNISCIENT.setPermissions(true, true, false);
+
 ChessGame.TIE_GAME = 2;
 
 export default ChessGame;

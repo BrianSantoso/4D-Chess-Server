@@ -80,7 +80,7 @@ const Models = {
 			shininess: 25,
 			flatShading: THREE.SmoothShading,
 			transparent: true,
-			opacity: 0.6,
+			opacity: 0.9,
 		},
 
 		green: {

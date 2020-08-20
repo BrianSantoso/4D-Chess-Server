@@ -2,7 +2,7 @@ import ChessGame from "./ChessGame.js";
 import { unique } from "./ArrayUtils.js";
 
 class Piece {
-	constructor(team=-1) {
+	constructor(team=ChessGame.NONE) {
 		this.team = team;
 		this.metaData = null;
 		this.type = '';

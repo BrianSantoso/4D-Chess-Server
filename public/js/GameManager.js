@@ -49,7 +49,7 @@ class ClientGameManager extends GameManager {
 	}
 	
 	_update() {
-		
+		this._game.update();
 	}
 	
 	_draw() {

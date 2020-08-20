@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
-//import TrackballControls from "./TrackballControls.js";
+//import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import TrackballControls from "./TrackballControls.js";
 import { debugSphere } from "./Utils3D.js";
 
 class SceneManager {
@@ -155,7 +155,7 @@ class SceneManager {
 		this._camera.position.set( 0, 20, 100 );
 		
 		const minDistance = 100;
-		const maxDistance = 500;
+		const maxDistance = Infinity;
 		
 		// https://threejs.org/docs/#examples/en/controls/OrbitControls
 		this._controls = new OrbitControls(this._camera, this._renderer.domElement);
@@ -190,6 +190,15 @@ class SceneManager {
 	
 	keyInputs() {
 		this._controls.update();
+		
+//		let min = new THREE.Vector3(0, 0, 0);
+//		let boardSize = 25 * 4;
+//		let max = new THREE.Vector3(boardSize, 
+//									25 * 3 * 4,
+//									-(boardSize * 4 + 25 * 1.5 * (4 - 1))
+//								   ).add(min);
+//		let boundingBox = new THREE.Box3(min, max);
+//		boundingBox.clampPoint(this._controls.target, this._controls.target);
 		
 		let target = this._controls.target;
 		this._controls2.target.set(target.x, target.y, target.z);
