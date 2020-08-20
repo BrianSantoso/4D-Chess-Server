@@ -83,7 +83,7 @@ class GameBoard {
 				break;
 			} else if(target.isEmpty() && !canCapture) {
 				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
-			} else if (originPiece.sameTeam(target)) {
+			} else if (!target.isEmpty()) {
 				break;
 			}
 		}

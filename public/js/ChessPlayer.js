@@ -35,6 +35,9 @@ class Player3D extends ChessPlayer {
 				
 				if (this.getSelected()) {
 					this.setBehavior(this._selectedBehavior);
+					
+					let piece = this._getPiece(this.getSelected());
+					this._game.showPossibleMoves(piece);
 				}
 			}
 		};
@@ -44,8 +47,8 @@ class Player3D extends ChessPlayer {
 				let intersected = this._game.rayCast();
 				this.setHovering(intersected);
 				
-				let piece = this._getPiece(this.getSelected()); // TODO: can optimize by putting in _unselectedBehavior.onclick();
-				this._game.showPossibleMoves(piece);
+//				let piece = this._getPiece(this.getSelected()); // TODO: can optimize by putting in _unselectedBehavior.onclick();
+//				this._game.showPossibleMoves(piece);
 			},
 			
 			onclick: () => {
@@ -90,7 +93,13 @@ class Player3D extends ChessPlayer {
 	}
 	
 	setSelected(mesh) {
-		this._selected = mesh;
+		// You should not be able to select a ghost...
+		if (this._isPiece(mesh)) {
+			this._selected = mesh;
+		}
+		// Do NOT: "else set to null" because then if
+		// you try to click on a piece behind it's preview
+		// ghost, then it would not select the piece
 	}
 	
 	setBehavior(behavior) {
