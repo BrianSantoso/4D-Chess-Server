@@ -66,7 +66,7 @@ class Player3D extends ChessPlayer {
 	}
 	
 	_isGhost(mesh) {
-		mesh && !!mesh.move;
+		return mesh && !!mesh.move;
 	}
 	
 	_getPiece(mesh) {

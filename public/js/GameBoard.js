@@ -22,6 +22,17 @@ class GameBoard {
 		piece.set(x, y, z, w);
 	}
 	
+	makeMove(move) {
+		if (move.promotionNew) {
+			this.set(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
+		} else {
+			this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
+		}
+		
+		// check for pawn promotion
+		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
+	}
+	
 	get(x, y, z, w) {
 		return this._pieces[x][y][z][w];
 	}
@@ -42,6 +53,7 @@ class GameBoard {
 									  args.maxSteps, args.canCapture);
 			result.push(...moves);
 		});
+		// TODO: filter by legality
 		return unique(result);
 	}
 	
@@ -58,17 +70,29 @@ class GameBoard {
 			  this.inBounds(x += dx, y += dy, z += dz, w += dw)){
 			
 			let target = this.get(x, y, z, w);
+								  
+			let promotion = originPiece.type === 'pawn' && this._isPromotionSquare(x, y, z, w);
+			let promotionNew = null;
+			if (promotion) {
+				promotionNew = new Queen(team);
+				promotionNew.set(x, y, z, w);
+			}
+			
 			if (originPiece.oppositeTeam(target) && canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, null));
+				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
 				break;
 			} else if(target.isEmpty() && !canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, null));
+				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
 			} else if (originPiece.sameTeam(target)) {
 				break;
 			}
 		}
 		
 		return moves;
+	}
+	
+	_isPromotionSquare(x, y, z, w) {
+		return (z === 0 && w === 0) || (z === this.n - 1 && w === this. n - 1);
 	}
 	
 	_init4D() {

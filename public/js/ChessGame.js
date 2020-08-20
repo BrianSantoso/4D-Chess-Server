@@ -1,5 +1,6 @@
 import GameBoard from "./GameBoard.js";
 import BoardGraphics, { EmptyBoardGraphics } from "./BoardGraphics.js";
+import Piece from "./Piece.js";
 import { LocalPlayer3D, OnlinePlayer3D } from "./ChessPlayer.js";
 
 class ChessGame {	
@@ -9,8 +10,9 @@ class ChessGame {
 		this._controllers = [];
 	}
 	
-	makeMove() {
-		
+	makeMove(move) {
+		this.board().makeMove(move);
+		// TODO: add move to history
 	}
 	
 	board() {
@@ -76,9 +78,10 @@ class GraphicalChessGame extends ChessGame {
 		
 	}
 	
-	makeMove() {
-		super.makeMove();
+	makeMove(move) {
+		super.makeMove(move);
 		// TODO: tell graphics to move piece
+		this.boardGraphics().makeMove(move, false);
 	}
 }
 

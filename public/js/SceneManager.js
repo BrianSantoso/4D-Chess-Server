@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import TrackballControls from "./TrackballControls.js";
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+//import TrackballControls from "./TrackballControls.js";
 import { debugSphere } from "./Utils3D.js";
 
 class SceneManager {
@@ -162,7 +163,7 @@ class SceneManager {
 		this._controls.dampingFactor = 0.1;
 		this._controls.screenSpacePanning = true;
 		this._controls.enableZoom = false;
-		this._controls.rotateSpeed = 0.5;
+		this._controls.rotateSpeed = 0.3;
 		this._controls.minDistance = minDistance;
 		this._controls.maxDistance = maxDistance;
 		

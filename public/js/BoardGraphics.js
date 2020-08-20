@@ -24,6 +24,8 @@ class BoardGraphics {
 		this._deltaY = this._squareSize * 3;
 		this._deltaW = this._squareSize * 1.5;
 		
+		this._pieceToMesh = new Map();
+		
 		this._init();
 	}
 	
@@ -67,6 +69,8 @@ class BoardGraphics {
 		}
 		// bind associated piece to mesh
 		mesh.piece = pieceObj;
+		
+		this._pieceToMesh.set(pieceObj, mesh);
 		
 		return mesh;
 	}
@@ -138,6 +142,27 @@ class BoardGraphics {
 		} else {
 			return null;
 		}
+	}
+	
+	makeMove(move, aniamte) {
+		let mesh = this._pieceToMesh.get(move.piece);
+		let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
+		
+		let newPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+		mesh.position.set(newPos.x, newPos.y, newPos.z);
+		this._remove(capturedMesh);
+		
+		if (move.promotionNew) {
+			this._remove(mesh);
+			this._spawnMeshFromPiece(move.promotionNew);
+		}
+	}
+	
+	_remove(mesh) {
+		// Do not remove from _pieceToMesh or else we will lose 
+		// it forever and wont be able to undo moves graphically
+		this._white.remove(mesh);
+		this._black.remove(mesh);
 	}
 }
 

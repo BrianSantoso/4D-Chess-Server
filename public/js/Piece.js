@@ -85,8 +85,8 @@ class Pawn extends Piece {
 		if (this.metaData.hasMoved) {
 			movement = [
 				new PieceBehavior([1], 1, false, [
-					PieceBehavior.BIDIRECTIONAL,
-					PieceBehavior.BIDIRECTIONAL,
+					PieceBehavior.CANT_MOVE,
+					PieceBehavior.CANT_MOVE,
 					forwards,
 					forwards
 				])
@@ -94,8 +94,8 @@ class Pawn extends Piece {
 		} else {
 			movement = [
 				new PieceBehavior([1], 2, false, [
-					PieceBehavior.BIDIRECTIONAL,
-					PieceBehavior.BIDIRECTIONAL,
+					PieceBehavior.CANT_MOVE,
+					PieceBehavior.CANT_MOVE,
 					forwards,
 					forwards
 				])
