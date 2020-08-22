@@ -16,7 +16,7 @@ class BoardGraphics {
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
 		
-		this._showingMoveFor = null;
+//		this._showingMoveFor = null;
 		
 		this._container.add(this._pieces);
 		
@@ -54,6 +54,7 @@ class BoardGraphics {
 	}
 	
 	_init() {
+		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
 		let square = 25;
 		this._container.add(BoardGraphics.checkerboard4D(this.n, square, square * 3, square * 1.5));
 		
@@ -109,7 +110,7 @@ class BoardGraphics {
 		if (preview) {
 			material = move.capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
 		} else {
-			material = move.capturedPiece.isEmpty() ? 'green' : 'red';
+			material = move.capturedPiece.isEmpty() ? 'green' : 'orange';
 		}
 		
 		let scale = move.capturedPiece.isEmpty() ? 1 : 1;
@@ -137,17 +138,21 @@ class BoardGraphics {
 			this._spawnMeshFromPiece(pieceObj);
 		});
 		
+		
 		this._container.add(this._pieces);
+//		let square = 25;
+//		this._container.add(BoardGraphics.checkerboard4D(this.n, square, square * 3, square * 1.5));
 	}
 	
 	showPossibleMoves(piece, moves, preview=false, animate=true) {
-		if (this._showingMoveFor === piece && preview) { // TODO: this is very temporary
-			return;
-		}
+//		if (this._showingMoveFor === piece && preview) { // TODO: this is very temporary
+//			return;
+//		}
 		console.log(piece)
+		
+		this.hidePossibleMoves(); // TODO: revive this when removing _showingMoveFor
 		this._showingMoveFor = piece;
 		
-//		this.hidePossibleMoves(); // TODO: revive this when removing _showingMoveFor
 		moves.forEach(move => {
 			let mesh = this._spawnGhostMesh(piece, move, preview);
 			
@@ -162,7 +167,7 @@ class BoardGraphics {
 	}
 	
 	hidePossibleMoves(animate=true) {
-		this._showingMoveFor = null; // again, probably temporary
+//		this._showingMoveFor = null; // again, probably temporary
 		if (animate) {
 			this._ghost.children.forEach(mesh => {
 				this._fadeOut(mesh, 8, () => {
@@ -264,7 +269,7 @@ class BoardGraphics {
 	
 	_fadeOut(mesh, numFrames, onFinishCallback) {
 		// Assumes mesh.material.transparent
-		let frames = Animator.opacity(Animator.LINEAR, mesh, mesh.material.oapcity, 0, numFrames, onFinishCallback);
+		let frames = Animator.opacity(Animator.LINEAR, mesh, mesh.material.opacity, 0, numFrames, onFinishCallback);
 		this._animator.animate(frames);
 	}
 }
@@ -274,12 +279,18 @@ BoardGraphics.checkerboard = function(n=4, squareSize=25, y=0, w=0){
 	const opacity = 0.5;
 	const boardSize = n * squareSize;
 	
-	const getMat = (primary, flip) => new THREE.MeshBasicMaterial({
-		color: primary ? 0xccccfc : 0x444464, 
-		transparent: true, 
-		opacity: opacity, 
-		side: flip ? THREE.BackSide : THREE.FrontSide
-	});
+	const getMat = (primary, flip) => {
+		let mat = new THREE.MeshBasicMaterial({
+			color: primary ? 0xccccfc : 0x444464, 
+			transparent: true, 
+			opacity: opacity, 
+			side: flip ? THREE.BackSide : THREE.FrontSide
+		});
+		// Fixes issue with transparent board hiding transparent pieces
+		// https://discourse.threejs.org/t/material-transparency-problem/3822
+		mat.depthWrite = false;
+		return mat;
+	};
 	const getMatArr = (flip) => [getMat(true, flip), getMat(false, flip)];
 	
 	let topGeometry = new THREE.PlaneGeometry(boardSize, boardSize, n, n);
@@ -321,6 +332,13 @@ BoardGraphics.checkerboard = function(n=4, squareSize=25, y=0, w=0){
 	sideMesh3.position.set(-boardSize / 2, 0, -thickness / 2);
 	sideMesh4.position.set(0, boardSize / 2, -thickness / 2);
 	
+//	sideMesh1.renderOrder = -1;
+//	sideMesh2.renderOrder = -1;
+//	sideMesh3.renderOrder = -1;
+//	sideMesh4.renderOrder = -1;
+//	topMesh.renderOrder = -1;
+//	bottomMesh.renderOrder = -1;
+	
 	let boxContainer = new THREE.Group();
 	boxContainer.add(topMesh);
 	boxContainer.add(bottomMesh);
@@ -330,6 +348,10 @@ BoardGraphics.checkerboard = function(n=4, squareSize=25, y=0, w=0){
 	boxContainer.add(sideMesh4);
 	
 	rotateObject(boxContainer, -90, 0, 0)
+	
+	
+//	boxContainer.renderOrder = -1;
+	
 	return boxContainer;
 }
 

@@ -15,7 +15,20 @@ class ChessGame {
 	
 	makeMove(move) {
 		this.board().makeMove(move);
+		this._switchTurns();
 		// TODO: add move to history
+	}
+	
+	assignRoles() {
+		
+	}
+	
+	_switchTurns() {
+		if (this._turn === ChessGame.WHITE) {
+			this._turn = ChessGame.BLACK;
+		} else if (this._turn === ChessGame.BLACK) {
+			this._turn = ChessGame.WHITE;
+		}
 	}
 	
 	board() {
@@ -29,6 +42,10 @@ class ChessGame {
 	update() {
 		
 	}
+	
+	getTurn() {
+		return this._turn;
+	}
 }
 
 class GraphicalChessGame extends ChessGame {
@@ -37,7 +54,6 @@ class GraphicalChessGame extends ChessGame {
 		
 		this._rayCaster = null;
 		this._controllers = [ // TODO: assign teams dynamically...
-//			new LocalPlayer3D(this, ChessGame.OMNISCIENT), 
 			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
 		];
 		this._boardGraphics = new BoardGraphics(n); // 3D View

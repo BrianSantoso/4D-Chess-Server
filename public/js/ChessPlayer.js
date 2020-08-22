@@ -4,17 +4,20 @@ class ChessPlayer {
 	// A ChessGame controller. Defines what method is used to receive moves
 	// (e.g. through a 3D UI, over the the internet, an AI),
 	// and how to transmit information after making moves
-	constructor() {
-		
+	constructor(chessGame, team) {
+		this._game = chessGame;
+		this._team = team;
+	}
+	
+	makeMove(move) {
+		this._game.makeMove(move);
 	}
 }
 
 
-class Player3D extends ChessPlayer {
+class LocalPlayer3D extends ChessPlayer {
 	constructor(chessGame, team) {
-		super();
-		this._game = chessGame;
-		this._team = team;
+		super(chessGame, team);
 		
 		this._hovering = null;
 		this._selected = null;
@@ -28,9 +31,9 @@ class Player3D extends ChessPlayer {
 				let isPiece = this._isPiece(this.getHovering());
 				if (isPiece) {
 					let piece = this._getPiece(this.getHovering());
-					this._game.previewPossibleMoves(piece);
+//					this._game.previewPossibleMoves(piece);
 				} else {
-					this._game.hidePossibleMoves();
+//					this._game.hidePossibleMoves();
 				}
 			},
 			
@@ -57,9 +60,9 @@ class Player3D extends ChessPlayer {
 			
 			onclick: () => {
 				if (this._isGhost(this.getHovering())) {
-					this._game.makeMove(this.getHovering().move);
-					this._game.hidePossibleMoves();
+					this.makeMove(this.getHovering().move);
 				}
+				this._game.hidePossibleMoves();
 				this.setSelected(null);
 				this.setBehavior(this._unselectedBehavior);
 			}
@@ -133,21 +136,20 @@ class Player3D extends ChessPlayer {
 	}
 }
 
-class LocalPlayer3D extends Player3D {
-	// Local Player does not need to transmit anything
-	constructor(chessGame) {
-		super(chessGame);
-	}
-}
+//class LocalPlayer3D extends Player3D {
+//	// Local Player does not need to transmit anything
+//}
 
-class OnlinePlayer3D extends Player3D /* implements Transmitter */ {
+class OnlinePlayer3D extends LocalPlayer3D /* implements Transmitter */ {
 	
+	makeMove(move) {
+		super.move();
+		// TODO: send move to server
+	}
 }
 
 class MoveReceiver extends ChessPlayer /* implements Receiver */ {
-	constructor(gameBoard, serverToReceiveFrom) {
-		super();
-	}
+	
 }
 
 class MoveReceiverTransmitter extends MoveReceiver /* implements Transmitter */ {

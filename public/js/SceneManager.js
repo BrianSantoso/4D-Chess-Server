@@ -56,6 +56,9 @@ class SceneManager {
 		this._rootElement.appendChild(this._renderer.domElement);
 
 		this._renderer.setClearColor(0xf7f7f7);
+		// Somehow this fixes opacity issues
+		// https://github.com/mrdoob/three.js/issues/3490
+		this._renderer.sortObjects = false;
 		
 		let ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
 		this._scene.add(ambientLight);
