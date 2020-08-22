@@ -9,8 +9,6 @@ class GameBoard {
 		this.n = n;
 		this._pieces = null;
 		this._init4D();
-		
-		console.log(this.getPossibleMoves(0, 0, 1, 1))
 	}
 	
 	getPieces() {
@@ -46,8 +44,14 @@ class GameBoard {
 	
 	getPossibleMoves(x, y, z, w) {
 		let originPiece = this.get(x, y, z, w);
-		let paramsList = originPiece.rayCastParams();
 		let result = [];
+		
+		if (originPiece.isEmpty()) {
+			return result;
+		}
+		
+		let paramsList = originPiece.rayCastParams();
+		
 		paramsList.forEach(args => {
 			let moves = this._rayCast(x, y, z, w, args.direction, 
 									  args.maxSteps, args.canCapture);

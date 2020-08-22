@@ -6,8 +6,11 @@ import { LocalPlayer3D, OnlinePlayer3D } from "./ChessPlayer.js";
 class ChessGame {	
 	constructor(n) {
 		this._board = new GameBoard(n);
-		this._moveManager;
+//		this._moveManager;
 		this._controllers = [];
+		this._turn = ChessGame.WHITE;
+		this._mode = null;
+		this._moveHistory = []; // TODO: doubly linked list of moves
 	}
 	
 	makeMove(move) {
@@ -32,6 +35,11 @@ class GraphicalChessGame extends ChessGame {
 	constructor(n) {
 		super(n);
 		
+		this._rayCaster = null;
+		this._controllers = [ // TODO: assign teams dynamically...
+//			new LocalPlayer3D(this, ChessGame.OMNISCIENT), 
+			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
+		];
 		this._boardGraphics = new BoardGraphics(n); // 3D View
 		this._layerStack; // 2D View
 	}
@@ -70,12 +78,20 @@ class GraphicalChessGame extends ChessGame {
 		return this.boardGraphics().view3D();
 	}
 	
-	update() {
-		this._boardGraphics.update();
+	keyInputs() {
+		this._controllers.forEach(controller => {
+			controller.keyInputs();
+		});
 	}
 	
 	intentionalClick() {
-		
+		this._controllers.forEach(controller => {
+			controller.onclick();
+		});
+	}
+	
+	update() {
+		this._boardGraphics.update();
 	}
 	
 	makeMove(move) {
@@ -85,28 +101,28 @@ class GraphicalChessGame extends ChessGame {
 	}
 }
 
-class LocalChessGame extends GraphicalChessGame {
-	constructor(n) {
-		super(n);
-		this._rayCaster = null;
-		this.controllers = [ // TODO: assign teams dynamically...
-//			new LocalPlayer3D(this, ChessGame.OMNISCIENT), 
-			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
-		];
-	}
-	
-	keyInputs() {
-		this.controllers.forEach(controller => {
-			controller.keyInputs();
-		});
-	}
-	
-	intentionalClick() {
-		this.controllers.forEach(controller => {
-			controller.onclick();
-		});
-	}
-}
+//class LocalChessGame extends GraphicalChessGame {
+//	constructor(n) {
+//		super(n);
+//		this._rayCaster = null;
+//		this.controllers = [ // TODO: assign teams dynamically...
+////			new LocalPlayer3D(this, ChessGame.OMNISCIENT), 
+//			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
+//		];
+//	}
+//	
+//	keyInputs() {
+//		this.controllers.forEach(controller => {
+//			controller.keyInputs();
+//		});
+//	}
+//	
+//	intentionalClick() {
+//		this.controllers.forEach(controller => {
+//			controller.onclick();
+//		});
+//	}
+//}
 
 class OnlineChessGame extends GraphicalChessGame /* Implements Online */ {
 	constructor(n) {
@@ -143,4 +159,4 @@ ChessGame.OMNISCIENT.setPermissions(true, true, false);
 ChessGame.TIE_GAME = 2;
 
 export default ChessGame;
-export { LocalChessGame };
+export { GraphicalChessGame };

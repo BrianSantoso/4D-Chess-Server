@@ -16,6 +16,8 @@ class BoardGraphics {
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
 		
+		this._showingMoveFor = null;
+		
 		this._container.add(this._pieces);
 		
 		this._animator = new Animator();
@@ -68,7 +70,7 @@ class BoardGraphics {
 		console.log('BoardGraphics', this._container);
 	}
 	
-	_spawnMeshFromPiece(pieceObj) {
+	_spawnMeshFromPiece(pieceObj, animate=true) {
 		if (pieceObj.isEmpty()) {
 			return null;
 		}
@@ -86,6 +88,10 @@ class BoardGraphics {
 		mesh.piece = pieceObj;
 		
 		this._pieceToMesh.set(pieceObj, mesh);
+		
+		if (animate) {
+			this._grow(mesh, 12);
+		}
 		
 		return mesh;
 	}
@@ -134,19 +140,38 @@ class BoardGraphics {
 		this._container.add(this._pieces);
 	}
 	
-	showPossibleMoves(piece, moves, preview=false) {
-		this.hidePossibleMoves();
+	showPossibleMoves(piece, moves, preview=false, animate=true) {
+		if (this._showingMoveFor === piece && preview) { // TODO: this is very temporary
+			return;
+		}
+		console.log(piece)
+		this._showingMoveFor = piece;
+		
+//		this.hidePossibleMoves(); // TODO: revive this when removing _showingMoveFor
 		moves.forEach(move => {
-			this._spawnGhostMesh(piece, move, preview);
+			let mesh = this._spawnGhostMesh(piece, move, preview);
+			
+			if (animate) {
+				this._fadeIn(mesh, 8);
+			}
 		});
 	}
 	
-	previewPossibleMoves(piece, moves) {
-		this.showPossibleMoves(piece, moves, true);
+	previewPossibleMoves(piece, moves, animate=true) {
+		this.showPossibleMoves(piece, moves, true, animate);
 	}
 	
-	hidePossibleMoves() {
-		this._ghost.remove(...this._ghost.children);
+	hidePossibleMoves(animate=true) {
+		this._showingMoveFor = null; // again, probably temporary
+		if (animate) {
+			this._ghost.children.forEach(mesh => {
+				this._fadeOut(mesh, 8, () => {
+					this._ghost.remove(mesh);
+				});
+			});
+		} else {
+			this._ghost.remove(...this._ghost.children);
+		}
 	}
 	
 	rayCast(rayCaster, targetTeam=ChessGame.OMNISCIENT) {
@@ -176,19 +201,27 @@ class BoardGraphics {
 			let mesh = this._pieceToMesh.get(move.piece);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
 			let endPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
-			let numFrames = 12;
+			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
 			let onFinish = () => {
 				this._remove(capturedMesh);
 				if (move.promotionNew) {
-					this._remove(mesh);
+					this._shrink(mesh, numFrames, () => {
+						this._remove(mesh);
+					});
 					this._spawnMeshFromPiece(move.promotionNew);
 				}
 			}
 			
-			let frames = Animator.linearInterpolate(mesh, startPos, endPos, numFrames, onFinish);
-			this._animator._enqueue(frames); // TODO: make _enqueue public
+			let frames = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames, onFinish);
+			this._animator.animate(frames);
+			
+			
+			if (capturedMesh) {
+				this._shrink(capturedMesh, numFrames);
+			}
+			
 			
 		} else {
 			let mesh = this._pieceToMesh.get(move.piece);
@@ -210,6 +243,29 @@ class BoardGraphics {
 		// it forever and wont be able to undo moves graphically
 		this._white.remove(mesh);
 		this._black.remove(mesh);
+	}
+	
+	_shrink(mesh, numFrames, onFinishCallback) {
+		let shrinkFrames = Animator.scale(Animator.LINEAR, mesh, mesh.scale.x, 0, numFrames, onFinishCallback);
+		this._animator.animate(shrinkFrames);
+	}
+	
+	_grow(mesh, numFrames, onFinishCallback) {
+		let scaleFrames = Animator.scale(Animator.LINEAR, mesh, 0, mesh.scale.x, numFrames, onFinishCallback);
+		this._animator.animate(scaleFrames);
+	}
+	
+	_fadeIn(mesh, numFrames, onFinishCallback) {
+		// Assumes mesh.material.transparent
+		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
+		let frames = Animator.opacity(Animator.LINEAR, mesh, 0, mesh.material.opacity, numFrames, onFinishCallback);
+		this._animator.animate(frames);
+	}
+	
+	_fadeOut(mesh, numFrames, onFinishCallback) {
+		// Assumes mesh.material.transparent
+		let frames = Animator.opacity(Animator.LINEAR, mesh, mesh.material.oapcity, 0, numFrames, onFinishCallback);
+		this._animator.animate(frames);
 	}
 }
 
