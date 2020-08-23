@@ -76,7 +76,7 @@ class Interactor3DWorker {
 			console.log('showing', mesh)
 			let piece = mesh.piece;
 			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, 120);
+			this._boardGraphics().showPossibleMoves(piece, moves, preview, 12);
 		}
 	}
 	
@@ -84,7 +84,7 @@ class Interactor3DWorker {
 		if (this._isPiece(mesh)) {
 			console.log('hiding', mesh)
 			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, 120);
+			this._boardGraphics().hidePossibleMoves(piece, 12);
 		}
 	}
 	

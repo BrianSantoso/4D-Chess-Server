@@ -250,26 +250,28 @@ class BoardGraphics {
 	}
 	
 	_shrink(mesh, numFrames, onFinishCallback) {
-		let shrinkFrames = Animator.scale(Animator.LINEAR, mesh, mesh.scale.x, 0, numFrames, onFinishCallback);
-		this._animator.animate(shrinkFrames);
+		let animation = Animator.scale(Animator.LINEAR, mesh, mesh.scale.x, 0, numFrames, onFinishCallback);
+		this._animator.animate(animation);
 	}
 	
 	_grow(mesh, numFrames, onFinishCallback) {
-		let scaleFrames = Animator.scale(Animator.LINEAR, mesh, 0, mesh.scale.x, numFrames, onFinishCallback);
-		this._animator.animate(scaleFrames);
+		let animation = Animator.scale(Animator.LINEAR, mesh, 0, mesh.scale.x, numFrames, onFinishCallback);
+		this._animator.animate(animation);
 	}
 	
 	_fadeIn(mesh, numFrames, onFinishCallback) {
 		// Assumes mesh.material.transparent
 		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
-		let frames = Animator.opacity(Animator.LINEAR, mesh, 0, mesh.material.opacity, numFrames, onFinishCallback);
-		this._animator.animate(frames);
+		let animation = Animator.opacity(Animator.LINEAR, mesh, 0, mesh.material.opacity, numFrames, onFinishCallback);
+		animation.override = true;
+		this._animator.animate(animation);
 	}
 	
 	_fadeOut(mesh, numFrames, onFinishCallback) {
 		// Assumes mesh.material.transparent
-		let frames = Animator.opacity(Animator.LINEAR, mesh, mesh.material.opacity, 0, numFrames, onFinishCallback);
-		this._animator.animate(frames);
+		let animation = Animator.opacity(Animator.LINEAR, mesh, mesh.material.opacity, 0, numFrames, onFinishCallback);
+		animation.override = true;
+		this._animator.animate(animation);
 	}
 }
 
