@@ -133,7 +133,7 @@ class SceneManager {
 			f(e);
 			e.rayCaster = this._rayCaster;
 			this._subscribers[event].forEach(subscriber => {
-				subscriber[event]();
+				subscriber[event](e);
 			});
 		}, false);
 		

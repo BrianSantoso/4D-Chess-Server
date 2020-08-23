@@ -1,16 +1,20 @@
 import { MinPriorityQueue } from '@datastructures-js/priority-queue';
 import * as THREE from 'three';
+//import { v4 as uuidv4 } from 'uuid';
+// uuidv4(); '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
 // https://www.npmjs.com/package/@datastructures-js/priority-queue
 
 class Animator {
 	constructor() {
 		this._queue = new MinPriorityQueue();
+		this._ongoing = new Map();
 	}
 	
 	update() {
-		let frames = this._dequeue();
-		frames.forEach(frame => {
-			frame.element();
+		let animationFrames = this._dequeue();
+		animationFrames.forEach(aFrame => {
+//			aFrame.execute();
+			aFrame.element();
 		});
 	}
 	
@@ -48,6 +52,25 @@ class Animator {
 	}
 }
 
+class Animation {
+	constructor(frames, override=false) {
+		this.mesh; // the mesh this animation is acting on
+		this.frames = frames.map(frame => new AnimationFrame(frame, this)); // functions to be called on animate
+		this.override = override; // whether this animation should override another animation currently acting on the same mesh
+	}
+}
+
+class AnimationFrame {
+	constructor(frame, animationGroup) {
+		this.frame = frame;
+		this.animationGroup = animationGroup;
+	}
+	
+	execute() {
+		this.frame();
+	}
+}
+
 Animator.LINEAR = x => x;
 
 Animator.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
@@ -55,6 +78,7 @@ Animator.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
 Animator.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
 
 Animator.translate = function(mode, mesh, startPos, endPos, numFrames, onFinishCallback) {
+	let groupID = uuidv4();
 	let frames = [];
 	let interval = endPos.clone().sub(startPos);
 	onFinishCallback = onFinishCallback || function() {};

@@ -4,6 +4,11 @@ import { debugSphere, rotateObject } from "./Utils3D.js";
 import Models from "./Models.js";
 import ChessGame from "./ChessGame.js";
 
+// TODO: update graphics hierarchy
+// BoardGrahpics
+//    -> Graphics3D
+//    -> NullGrahpics
+
 class BoardGraphics {
 	constructor(n) {
 		this.n = n;
@@ -16,7 +21,7 @@ class BoardGraphics {
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
 		
-//		this._showingMoveFor = null;
+		this._showingMovesFor = new Map();
 		
 		this._container.add(this._pieces);
 		
@@ -28,7 +33,6 @@ class BoardGraphics {
 		
 		this._pieceToMesh = new Map();
 		
-		this._boundingBox = null;
 		this._init();
 	}
 	
@@ -144,38 +148,33 @@ class BoardGraphics {
 //		this._container.add(BoardGraphics.checkerboard4D(this.n, square, square * 3, square * 1.5));
 	}
 	
-	showPossibleMoves(piece, moves, preview=false, animate=true) {
-//		if (this._showingMoveFor === piece && preview) { // TODO: this is very temporary
-//			return;
-//		}
-		console.log(piece)
+	showPossibleMoves(piece, moves, preview=false, frames=0) {
 		
-		this.hidePossibleMoves(); // TODO: revive this when removing _showingMoveFor
-		this._showingMoveFor = piece;
+		let meshes = [];
 		
 		moves.forEach(move => {
 			let mesh = this._spawnGhostMesh(piece, move, preview);
 			
-			if (animate) {
-				this._fadeIn(mesh, 8);
+			if (frames) {
+				this._fadeIn(mesh, frames);
 			}
+			
+			meshes.push(mesh);
 		});
+		
+		this._showingMovesFor.set(piece, meshes);
 	}
 	
-	previewPossibleMoves(piece, moves, animate=true) {
-		this.showPossibleMoves(piece, moves, true, animate);
-	}
-	
-	hidePossibleMoves(animate=true) {
-//		this._showingMoveFor = null; // again, probably temporary
-		if (animate) {
-			this._ghost.children.forEach(mesh => {
-				this._fadeOut(mesh, 8, () => {
+	hidePossibleMoves(piece, frames=0) {
+		let meshes = this._showingMovesFor.get(piece);
+		if (frames) {
+			meshes.forEach(mesh => {
+				this._fadeOut(mesh, frames, () => {
 					this._ghost.remove(mesh);
 				});
 			});
 		} else {
-			this._ghost.remove(...this._ghost.children);
+			this._ghost.remove(...meshes);
 		}
 	}
 	

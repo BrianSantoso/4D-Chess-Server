@@ -1,6 +1,9 @@
 import * as THREE from "three"
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
+import ChessGame from "./ChessGame.js";
+import { Player3D } from "./ChessPlayer.js";
+import BoardGraphics from "./BoardGraphics.js";
 //import View2D from "./View2D";
 
 class GameManager {
@@ -10,6 +13,30 @@ class GameManager {
 	
 	setGame(game) {
 		this._game = game;
+	}
+	
+	createGame(config) {
+		// Factory to create game, instantiating and injecting required dependencies
+		let defaultConfig = {
+			n: 4,
+			BoardGraphics: BoardGraphics,
+			WhitePlayer: Player3D,
+			BlackPlayer: Player3D
+		}
+		config = Object.assign(defaultConfig, config);
+		
+		let game = new ChessGame(config.n);
+		
+		let boardGraphics = new config.BoardGraphics(config.n);
+		game.setBoardGraphics(boardGraphics);
+		
+		let white = new config.WhitePlayer(ChessGame.WHITE, game);
+		let black = new config.BlackPlayer(ChessGame.BLACK, game);
+		game.setWhite(white);
+		game.setBlack(black);
+		
+		return game;
+		// TODO: set controllers and subscriptions, etc.
 	}
 }
 
@@ -22,8 +49,6 @@ class ClientGameManager extends GameManager {
 		
 		this._controller = null;
 		
-//		Models.loadModels();
-		
 	}
 	
 	setGame(game) {
@@ -32,20 +57,40 @@ class ClientGameManager extends GameManager {
 			// Decouple current game from Scene Manager
 			this._view3D.remove(this._game.view3D());
 			// TODO: unsubscribe current game from mouse event handlers
+			this._game.getPlayers().forEach(player => {
+				if (player.needsClickEvent()) {
+					// TODO: is there a prettier way to do this?
+					this._view3D.unsubscribe(player, 'intentionalClick');
+				}
+			});
 		}
 		
-		this._view3D.add(game.view3D());
+		// TODO: Is this structure okay to assume since this is a 3D game manager?
+		this._view3D.add(game._boardGraphics.view3D());
 		
 		super.setGame(game);
 		
-		this._view3D.subscribe(game, 'intentionalClick');
-		game.initGraphics();
-		game.setRayCaster(this._view3D.getRayCaster());
+		// manage subscriptions
+		game.getPlayers().forEach(player => {
+			if (player.needsClickEvent()) {
+				// TODO: is there a prettier way to do this?
+				this._view3D.subscribe(player, 'intentionalClick');
+			}
+		});
+	}
+	
+	createGame(config) {
+		let game = super.createGame(config);
+		game.getPlayers().forEach(player => {
+			if (player.needsRayCaster()) {
+				player.setRayCaster(this._view3D.getRayCaster());
+			}
+		});
+		return game;
 	}
 	
 	_keyInputs() {
 		this._view3D.keyInputs();
-		this._game.keyInputs();
 	}
 	
 	_update() {
