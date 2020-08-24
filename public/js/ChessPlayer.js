@@ -11,6 +11,8 @@ class ChessPlayer {
 	// component that decides how to make moves, and transmitter component?
 	
 	constructor(team, chessGame) {
+		this._game = chessGame;
+		this._commandQueue = [];
 	}
 	
 	makeMove(move) {
@@ -20,6 +22,10 @@ class ChessPlayer {
 	update() {
 		// query interactors for moves
 		this._interactor.update();
+		let move = this._commandQueue.shift();
+		if (move) {
+			this.makeMove(move);
+		}
 	}
 	
 	setBoardGraphics(boardGraphics) {
@@ -42,7 +48,7 @@ class Player3D extends ChessPlayer {
 	// has a BoardGraphics3D is a compromise I am willing to make for simplicity.
 	constructor(team, chessGame) {
 		super(team, chessGame);
-		this._interactor = new Interactor3D(team, chessGame);
+		this._interactor = new Interactor3D(team, chessGame, this._commandQueue);
 	}
 	
 	setRayCaster(rayCaster) {

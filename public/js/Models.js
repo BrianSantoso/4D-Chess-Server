@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import GLTFLoader from 'three-gltf-loader';
 
 const Models = {
-	SCALE_FACTOR: 5.7,
+	SCALE_FACTOR: 5,
 	directory: "../models/",
 	modelData: {
 		pawn: {
@@ -62,7 +62,7 @@ const Models = {
 			shininess: 20,
 			flatShading: THREE.SmoothShading,
 			transparent: true,
-			opacity: 0.5
+			opacity: 0.7
 		},
 		
 		lightGray: {
@@ -71,7 +71,7 @@ const Models = {
 			shininess: 25,
 			flatShading: THREE.SmoothShading,
 			transparent: true,
-			opacity: 0.5
+			opacity: 0.7
 		},
 
 		red: {

@@ -126,7 +126,7 @@ class BoardGraphics {
 		mesh.move = move;
 		// Fixes issue with transparent board hiding transparent pieces
 		// https://discourse.threejs.org/t/material-transparency-problem/3822
-		mesh.material.depthWrite = false;
+//		mesh.material.depthWrite = false;
 		return mesh;
 	}
 	
@@ -150,7 +150,9 @@ class BoardGraphics {
 	
 	showPossibleMoves(piece, moves, preview=false, frames=0) {
 		
-		let meshes = [];
+		// hide moves if already showing
+		this.hidePossibleMoves(piece, frames);
+		let meshes = new Set();
 		
 		moves.forEach(move => {
 			let mesh = this._spawnGhostMesh(piece, move, preview);
@@ -159,22 +161,28 @@ class BoardGraphics {
 				this._fadeIn(mesh, frames);
 			}
 			
-			meshes.push(mesh);
+			meshes.add(mesh);
 		});
-		
+		// TODO: is this even doing anything?
 		this._showingMovesFor.set(piece, meshes);
 	}
 	
 	hidePossibleMoves(piece, frames=0) {
 		let meshes = this._showingMovesFor.get(piece);
+		if (!meshes) {
+			return;
+		}
 		if (frames) {
 			meshes.forEach(mesh => {
 				this._fadeOut(mesh, frames, () => {
 					this._ghost.remove(mesh);
+					meshes.delete(mesh);
 				});
 			});
+			// TODO: remove meshes from _showingMovesFor?
 		} else {
 			this._ghost.remove(...meshes);
+			meshes.forEach(mesh => meshes.delete(mesh));
 		}
 	}
 	
@@ -200,7 +208,7 @@ class BoardGraphics {
 		}
 	}
 	
-	makeMove(move, frames=0) {
+	makeMove(move, frames=0, onFinish) {
 		if (frames) {
 			let mesh = this._pieceToMesh.get(move.piece);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
@@ -208,7 +216,7 @@ class BoardGraphics {
 			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
-			let onFinish = () => {
+			let onFinishRemove = () => {
 				this._remove(capturedMesh);
 				if (move.promotionNew) {
 					this._shrink(mesh, numFrames, () => {
@@ -218,7 +226,12 @@ class BoardGraphics {
 				}
 			}
 			
-			let frames = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames, onFinish);
+			let onFinishCallBack = () => {
+				onFinishRemove();
+				onFinish();
+			}
+			
+			let frames = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames, onFinishCallBack);
 			this._animator.animate(frames);
 			
 			
@@ -239,6 +252,8 @@ class BoardGraphics {
 				this._remove(mesh);
 				this._spawnMeshFromPiece(move.promotionNew);
 			}
+			
+			onFinish();
 		}	
 	}
 	
