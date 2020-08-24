@@ -4,8 +4,20 @@ class Interactor3D {
 	constructor(team, chessGame, rayCaster) {
 		this._movePreviewer = new MovePreviewer(ChessGame.OMNISCIENT, chessGame, rayCaster);
 		this._pieceSelector = new PieceSelector(team, chessGame, rayCaster);
-		this._moveConfirmer = new PieceSelector(ChessGame.GHOST, chessGame, rayCaster);
+		this._moveConfirmer = new MoveConfirmer(ChessGame.GHOST, chessGame, rayCaster);
 		this._rayCaster = rayCaster;
+		
+		this._unselected = () => {
+			this._movePreviewer.update();
+			this._pieceSelector.update();
+			this._moveConfirmer.update();
+		}
+		this._selected = () => {
+			this._pieceSelector.update();
+			this._moveConfirmer.update();
+		}
+		
+		this._state = this._unselected;
 	}
 	
 	setRayCaster(rayCaster) {
@@ -15,12 +27,19 @@ class Interactor3D {
 	}
 	
 	intentionalClick(event) {
-		
+		if (this._pieceSelector.canClick()) {
+			let selected = this._pieceSelector.onclick();
+			if (selected) {
+				this._state = this._selected;
+			} else {
+				this._state = this._unselected;
+			}
+		}
+		this._moveConfirmer.onclick();
 	}
 	
 	update() {
-		this._movePreviewer.update();
-		// TODO: offer moves
+		this._state();
 	}
 }
 
@@ -73,7 +92,7 @@ class Interactor3DWorker {
 	
 	_showPossibleMoves(mesh, preview=false) {
 		if (this._isPiece(mesh)) {
-			console.log('showing', mesh)
+//			console.log('showing', mesh)
 			let piece = mesh.piece;
 			let moves = this._getPossibleMoves(piece);
 			this._boardGraphics().showPossibleMoves(piece, moves, preview, 12);
@@ -82,7 +101,7 @@ class Interactor3DWorker {
 	
 	_hidePossibleMoves(mesh) {
 		if (this._isPiece(mesh)) {
-			console.log('hiding', mesh)
+//			console.log('hiding', mesh)
 			let piece = mesh.piece;
 			this._boardGraphics().hidePossibleMoves(piece, 12);
 		}
@@ -118,12 +137,62 @@ class MovePreviewer extends Interactor3DWorker {
 	}
 }
 
-class PieceSelector extends Interactor3DWorker {
+class PieceSelector extends Interactor3DWorker /* Implements Clicker */ {
+	update() {
+		let prevHovering = this._getHovering();
+		let hovering = this._rayCast();
+		this._setHovering(hovering);
+	}
 	
+	canClick() {
+		return this._team === this._game.currTurn();
+	}
+	
+	onclick() {
+		let prevSelected = this._getSelected();
+		let different = this._setSelected(this._getHovering());
+		
+		if (this._getSelected()) {
+			if (different) {
+				this._hidePossibleMoves(prevSelected);
+				this._hidePossibleMoves(this._getSelected());
+				this._showPossibleMoves(this._getSelected());
+			} else {
+				
+			}
+			
+//			this._hidePossibleMoves(this._getSelected());
+//			this._showPossibleMoves(this._getSelected());
+			return true;
+		} else {
+			this._hidePossibleMoves(prevSelected);
+			return false;
+		}
+	}
 }
 
-class MoveConfirmer extends Interactor3DWorker {
+class MoveConfirmer extends Interactor3DWorker /* Implements Clicker */ {
+	update() {
+		let prevHovering = this._getHovering();
+		let hovering = this._rayCast();
+		this._setHovering(hovering);
+	}
 	
+	canClick() {
+		return this._team === this._game.currTurn();
+	}
+	
+	onclick() {
+		if (this._isGhost(this._getHovering())) {
+			this._offerMove(this._getHovering().move);
+//			this._setHovering(null);
+		}
+	}
+	
+	_offerMove(move) {
+		// TODO: change
+		this._game.makeMove(move);
+	}
 }
 
 export default Interactor3D;

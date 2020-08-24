@@ -127,7 +127,6 @@ Animator.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
 Animator.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
 
 Animator.translate = function(mode, mesh, startPos, endPos, numFrames, onFinishCallback) {
-	let groupID = uuidv4();
 	let frames = [];
 	let interval = endPos.clone().sub(startPos);
 	onFinishCallback = onFinishCallback || function() {};

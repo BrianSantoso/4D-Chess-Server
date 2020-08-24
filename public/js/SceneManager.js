@@ -103,7 +103,7 @@ class SceneManager {
 		}, false);
 		
 		const notAClick = 0.05;
-		let dragStart = new THREE.Vector2(0, 0);
+		let dragStart = new THREE.Vector2(0, 0); // TODO: Should be infinity vector
 		
 		this._addEventListener('mousemove', (e) => { 
 			this._updateRayCaster(this._mouseCoords(e));
@@ -111,6 +111,7 @@ class SceneManager {
 		this._addEventListener('mousedown', (e) => {
 			dragStart = this._mouseCoords(e);
 		});
+		
 		this._addEventListener('mouseup', (e) => {
 			let dragEnd = this._mouseCoords(e);
 			if (dragStart.distanceToSquared(dragEnd) < notAClick * notAClick) {
@@ -119,7 +120,7 @@ class SceneManager {
 		});
 		
 		const customEvent = new Event('intentionalClick');
-		this._addEventListener('intentionalClick', () => {});
+		this._addEventListener('intentionalClick', (e) => {});
 		
 	}
 	

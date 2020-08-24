@@ -43,6 +43,7 @@ class ChessGame {
 	
 	makeMove(move) {
 		this._board.makeMove(move);
+		this._boardGraphics.makeMove(move, 16);
 		this._switchTurns();
 		// TODO: add move to history
 	}
@@ -83,7 +84,7 @@ class ChessGame {
 //		this._getCurrentPlayer().update();
 	}
 	
-	getTurn() {
+	currTurn() {
 		return this._turn;
 	}
 }
