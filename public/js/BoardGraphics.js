@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Animator from "./Animator.js";
+import Animator, { Animation } from "./Animator.js";
 import { debugSphere, rotateObject, checkerboard4D } from "./Utils3D.js";
 import Models from "./Models.js";
 import ChessGame from "./ChessGame.js";
@@ -237,7 +237,7 @@ class BoardGraphics {
 			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
-			let translation = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames);
+			let translation = Animation.translate(Animation.QUADRATIC, mesh, startPos, endPos, numFrames);
 			let movingPieceProm = this._animator.animate(translation)
 				.then(() => {
 					this._remove(capturedMesh);
@@ -281,32 +281,28 @@ class BoardGraphics {
 	}
 	
 	_shrink(mesh, numFrames) {
-		let animation = Animator.scale(Animator.LINEAR, mesh, mesh.scale.x, 0, numFrames);
+		let animation = Animation.scale(Animation.LINEAR, mesh, mesh.scale.x, 0, numFrames);
 		return this._animator.animate(animation);
-//		return animation;
 	}
 	
 	_grow(mesh, numFrames) {
-		let animation = Animator.scale(Animator.LINEAR, mesh, 0, mesh.scale.x, numFrames);
+		let animation = Animation.scale(Animation.LINEAR, mesh, 0, mesh.scale.x, numFrames);
 		return this._animator.animate(animation);
-//		return animation;
 	}
 	
 	_fadeIn(mesh, numFrames) {
 		// Assumes mesh.material.transparent
 		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
-		let animation = Animator.opacity(Animator.LINEAR, mesh, 0, mesh.material.opacity, numFrames);
+		let animation = Animation.opacity(Animation.LINEAR, mesh, 0, mesh.material.opacity, numFrames);
 		animation.override = true;
 		return this._animator.animate(animation);
-//		return animation;
 	}
 	
 	_fadeOut(mesh, numFrames) {
 		// Assumes mesh.material.transparent
-		let animation = Animator.opacity(Animator.LINEAR, mesh, mesh.material.opacity, 0, numFrames);
+		let animation = Animation.opacity(Animation.LINEAR, mesh, mesh.material.opacity, 0, numFrames);
 		animation.override = true;
 		return this._animator.animate(animation);
-//		return animation;
 	}
 }
 

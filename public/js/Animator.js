@@ -129,13 +129,13 @@ class AnimationFrame {
 	}
 }
 
-Animator.LINEAR = x => x;
+Animation.LINEAR = x => x;
 
-Animator.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
+Animation.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
 
-Animator.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
+Animation.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
 
-Animator.translate = function(mode, mesh, startPos, endPos, numFrames) {
+Animation.translate = function(mode, mesh, startPos, endPos, numFrames) {
 	let frames = [];
 	let interval = endPos.clone().sub(startPos);
 	for (let frame = 1; frame <= numFrames; frame++) {
@@ -149,7 +149,7 @@ Animator.translate = function(mode, mesh, startPos, endPos, numFrames) {
 	return new Animation(mesh, frames);
 }
 
-Animator.scale = function(mode, mesh, startScale, endScale, numFrames) {
+Animation.scale = function(mode, mesh, startScale, endScale, numFrames) {
 	let frames = [];
 	let interval = endScale - startScale;
 	for (let frame = 1; frame <= numFrames; frame++) {
@@ -163,7 +163,7 @@ Animator.scale = function(mode, mesh, startScale, endScale, numFrames) {
 	return new Animation(mesh, frames);
 }
 
-Animator.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames) {
+Animation.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames) {
 	// Mesh must have transparent: true
 	let frames = [];
 	let interval = endOpacity - startOpacity;
@@ -186,3 +186,4 @@ Animator.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames) {
 }
 
 export default Animator;
+export { Animation };
