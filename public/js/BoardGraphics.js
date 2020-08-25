@@ -21,6 +21,7 @@ class BoardGraphics {
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
 		
+		this._canInteract = true;
 		this._showingMovesFor = new Map();
 		
 		this._container.add(this._pieces);
@@ -47,6 +48,19 @@ class BoardGraphics {
 	
 	update() {
 		this._animator.update();
+//		if (this._animator.isOccupied()) {
+//			this._disableInteraction();
+//		} else {
+//			this._enableInteraction();
+//		}
+	}
+	
+	_disableInteraction() {
+		this._canInteract = false;
+	}
+	
+	_enableInteraction() {
+		this._canInteract = true;
 	}
 	
 	view3D() {
@@ -187,6 +201,11 @@ class BoardGraphics {
 	}
 	
 	rayCast(rayCaster, targetTeam=ChessGame.OMNISCIENT) {
+		
+		if (!this._canInteract) {
+			return null;
+		}
+		
 		let group;
 		let candidates = [];
 		
@@ -208,7 +227,7 @@ class BoardGraphics {
 		}
 	}
 	
-	makeMove(move, frames=0, onFinish) {
+	makeMove(move, frames=0) {
 		if (frames) {
 			let mesh = this._pieceToMesh.get(move.piece);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
@@ -216,7 +235,7 @@ class BoardGraphics {
 			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
-			let onFinishRemove = () => {
+			let onFinish = () => {
 				this._remove(capturedMesh);
 				if (move.promotionNew) {
 					this._shrink(mesh, numFrames, () => {
@@ -226,12 +245,7 @@ class BoardGraphics {
 				}
 			}
 			
-			let onFinishCallBack = () => {
-				onFinishRemove();
-				onFinish();
-			}
-			
-			let frames = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames, onFinishCallBack);
+			let frames = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames, onFinish);
 			this._animator.animate(frames);
 			
 			
@@ -252,8 +266,6 @@ class BoardGraphics {
 				this._remove(mesh);
 				this._spawnMeshFromPiece(move.promotionNew);
 			}
-			
-			onFinish();
 		}	
 	}
 	

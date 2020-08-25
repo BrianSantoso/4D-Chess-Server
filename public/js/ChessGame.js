@@ -43,10 +43,7 @@ class ChessGame {
 	
 	makeMove(move) {
 		this._board.makeMove(move);
-		this._boardGraphics.makeMove(move, 16, () => {
-			// Swithc turns once move animation is complete
-//			this._switchTurns();
-		});
+		this._boardGraphics.makeMove(move, 16);
 		this._switchTurns();
 		// TODO: add move to history
 	}

@@ -74,6 +74,10 @@ class Animator {
 	animate(animation) {
 		this._enqueue(animation);
 	}
+	
+	isOccupied() {
+		return !this._queue.isEmpty();
+	}
 }
 
 class Animation {
@@ -181,6 +185,7 @@ Animator.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames, onF
 		}
 		frames.push(frame);
 	}
+	
 	return new Animation(mesh, frames);
 }
 
