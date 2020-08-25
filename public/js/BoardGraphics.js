@@ -109,10 +109,12 @@ class BoardGraphics {
 		this._pieceToMesh.set(pieceObj, mesh);
 		
 		if (frames) {
-			this._grow(mesh, frames);
+			return this._grow(mesh, frames);
+		} else {
+			return Promise.resolve();
 		}
 		
-		return mesh;
+//		return mesh;
 	}
 	
 	_spawnGhostMesh(pieceObj, move, preview) {
@@ -188,7 +190,7 @@ class BoardGraphics {
 		}
 		if (frames) {
 			meshes.forEach(mesh => {
-				this._fadeOut(mesh, frames, () => {
+				this._fadeOut(mesh, frames).then(() => {
 					this._ghost.remove(mesh);
 					meshes.delete(mesh);
 				});
@@ -235,24 +237,26 @@ class BoardGraphics {
 			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
-			let onFinish = () => {
-				this._remove(capturedMesh);
-				if (move.promotionNew) {
-					this._shrink(mesh, numFrames, () => {
-						this._remove(mesh);
-					});
-					this._spawnMeshFromPiece(move.promotionNew, 16);
-				}
-			}
+			let translation = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames);
+			let movingPieceProm = this._animator.animate(translation)
+				.then(() => {
+					this._remove(capturedMesh);
+					if (move.promotionNew) {
+						return this._shrink(mesh, numFrames);
+					} else {
+						// End promise chain (Do nothing)
+						return Promise.reject();
+					}
+				}).then(() => {
+					this._remove(mesh);
+					return this._spawnMeshFromPiece(move.promotionNew, 16);
+				}, () => { /* Do nothing */ });
 			
-			let frames = Animator.translate(Animator.QUADRATIC, mesh, startPos, endPos, numFrames, onFinish);
-			this._animator.animate(frames);
-			
-			
+			let capturedPieceProm = Promise.resolve();
 			if (capturedMesh) {
-				this._shrink(capturedMesh, numFrames);
+				capturedPieceProm = this._shrink(capturedMesh, numFrames);
 			}
-			
+			return Promise.all([movingPieceProm, capturedPieceProm]);
 			
 		} else {
 			let mesh = this._pieceToMesh.get(move.piece);
@@ -276,29 +280,33 @@ class BoardGraphics {
 		this._black.remove(mesh);
 	}
 	
-	_shrink(mesh, numFrames, onFinishCallback) {
-		let animation = Animator.scale(Animator.LINEAR, mesh, mesh.scale.x, 0, numFrames, onFinishCallback);
-		this._animator.animate(animation);
+	_shrink(mesh, numFrames) {
+		let animation = Animator.scale(Animator.LINEAR, mesh, mesh.scale.x, 0, numFrames);
+		return this._animator.animate(animation);
+//		return animation;
 	}
 	
-	_grow(mesh, numFrames, onFinishCallback) {
-		let animation = Animator.scale(Animator.LINEAR, mesh, 0, mesh.scale.x, numFrames, onFinishCallback);
-		this._animator.animate(animation);
+	_grow(mesh, numFrames) {
+		let animation = Animator.scale(Animator.LINEAR, mesh, 0, mesh.scale.x, numFrames);
+		return this._animator.animate(animation);
+//		return animation;
 	}
 	
-	_fadeIn(mesh, numFrames, onFinishCallback) {
+	_fadeIn(mesh, numFrames) {
 		// Assumes mesh.material.transparent
 		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
-		let animation = Animator.opacity(Animator.LINEAR, mesh, 0, mesh.material.opacity, numFrames, onFinishCallback);
+		let animation = Animator.opacity(Animator.LINEAR, mesh, 0, mesh.material.opacity, numFrames);
 		animation.override = true;
-		this._animator.animate(animation);
+		return this._animator.animate(animation);
+//		return animation;
 	}
 	
-	_fadeOut(mesh, numFrames, onFinishCallback) {
+	_fadeOut(mesh, numFrames) {
 		// Assumes mesh.material.transparent
-		let animation = Animator.opacity(Animator.LINEAR, mesh, mesh.material.opacity, 0, numFrames, onFinishCallback);
+		let animation = Animator.opacity(Animator.LINEAR, mesh, mesh.material.opacity, 0, numFrames);
 		animation.override = true;
-		this._animator.animate(animation);
+		return this._animator.animate(animation);
+//		return animation;
 	}
 }
 

@@ -22,11 +22,6 @@ class Animator {
 			if (ongoingForThisMesh.has(animation)) {
 				aFrame.execute();
 			}
-			
-			// Remove from ongoing animations when finished
-			if (aFrame.last) {
-				ongoingForThisMesh.delete(animation);
-			}
 		});
 	}
 	
@@ -69,10 +64,14 @@ class Animator {
 		
 		// Add to list of ongoing animations for this mesh
 		ongoing.add(animation);
+		animation.promise.then(() => {
+			ongoing.delete(animation);
+		});
 	}
 	
 	animate(animation) {
 		this._enqueue(animation);
+		return animation.promise;
 	}
 	
 	isOccupied() {
@@ -84,42 +83,48 @@ class Animation {
 	constructor(mesh, frames, override=false) {
 		this.mesh = mesh; // the mesh this animation is acting on
 		this.frames = frames.map(frame => new AnimationFrame(frame, this)); // functions to be called on animate
-		this.frames[this.frames.length - 1].last = true;
 		this.override = override; // whether this animation should override another animation currently acting on the same mesh
+		this.promise = Promise.all(this.frames.map(aFrame => aFrame.promise));
 	}
 	
-	combine(animation) {
-		if (this.mesh !== animation.mesh) {
-			throw new Error('Cannot combine animations with different target meshes');
-		}
-		
-		let combinedFrames = [];
-		let i = 0;
-		let j = 0;
-		while (i < this.frames.length && j < animation.frames.length) {
-			let newFrame = () => {
-				this.frames[i]();
-				animation.frames[i]();
-			}
-			combinedFrames.push(newFrame);
-			i++, j++;
-		}
-		
-		combinedFrames = combinedFrames.concat(this.frames.slice(i));
-		combinedFrames = combinedFrames.concat(animation.frames.slice(i));
-		
-		return new Animation(combinedFrames, this.override || animation.override);
-	}
+//	combine(animation) {
+//		if (this.mesh !== animation.mesh) {
+//			throw new Error('Cannot combine animations with different target meshes');
+//		}
+//		
+//		let combinedFrames = [];
+//		let i = 0;
+//		let j = 0;
+//		while (i < this.frames.length && j < animation.frames.length) {
+//			let newFrame = () => {
+//				this.frames[i]();
+//				animation.frames[i]();
+//			}
+//			combinedFrames.push(newFrame);
+//			i++, j++;
+//		}
+//		
+//		combinedFrames = combinedFrames.concat(this.frames.slice(i));
+//		combinedFrames = combinedFrames.concat(animation.frames.slice(i));
+//		
+//		return new Animation(combinedFrames, this.override || animation.override);
+//	}
 }
 
 class AnimationFrame {
-	constructor(frame, animationGroup, last=false) {
-		this.frame = frame;
+	constructor(frame, animationGroup) {
+//		this.frame = frame;
+		this.promise = new Promise((resolve) => {
+			this.frame = () => {
+				frame();
+				resolve();
+			}
+		});
 		this.animationGroup = animationGroup;
-		this.last = last;
 	}
 	
 	execute() {
+		// TODO: Perhaps rework such that calling execute will resolve promise?
 		this.frame();
 	}
 }
@@ -130,59 +135,50 @@ Animator.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
 
 Animator.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
 
-Animator.translate = function(mode, mesh, startPos, endPos, numFrames, onFinishCallback) {
+Animator.translate = function(mode, mesh, startPos, endPos, numFrames) {
 	let frames = [];
 	let interval = endPos.clone().sub(startPos);
-	onFinishCallback = onFinishCallback || function() {};
 	for (let frame = 1; frame <= numFrames; frame++) {
 		let percent = mode(frame / numFrames);
 		let moveTo = startPos.clone().add(interval.clone().multiplyScalar(percent));
-		let lastFrame = frame === numFrames;
 		let frame = () => {
 			mesh.position.set(moveTo.x, moveTo.y, moveTo.z);
-			if (lastFrame) {
-				onFinishCallback();
-			}
 		}
 		frames.push(frame);
 	}
 	return new Animation(mesh, frames);
 }
 
-Animator.scale = function(mode, mesh, startScale, endScale, numFrames, onFinishCallback) {
+Animator.scale = function(mode, mesh, startScale, endScale, numFrames) {
 	let frames = [];
 	let interval = endScale - startScale;
-	onFinishCallback = onFinishCallback || function() {};
 	for (let frame = 1; frame <= numFrames; frame++) {
 		let percent = mode(frame / numFrames);
 		let scaleTo = startScale + interval * percent;
-		let lastFrame = frame === numFrames;
 		let frame = () => {
 			mesh.scale.set(scaleTo, scaleTo, scaleTo);
-			if (lastFrame) {
-				onFinishCallback();
-			}
 		}
 		frames.push(frame);
 	}
 	return new Animation(mesh, frames);
 }
 
-Animator.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback) {
+Animator.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames) {
 	// Mesh must have transparent: true
 	let frames = [];
 	let interval = endOpacity - startOpacity;
-	onFinishCallback = onFinishCallback || function() {};
 	for (let frame = 1; frame <= numFrames; frame++) {
 		let percent = mode(frame / numFrames);
 		let opacity = startOpacity + interval * percent;
-		let lastFrame = frame === numFrames;
 		let frame = () => {
 			mesh.material.opacity = opacity;
-			if (lastFrame) {
-				onFinishCallback();
-			}
 		}
+//		let promise = new Promise((resolve) => {
+//			frame = () => {
+//				mesh.material.opacity = opacity;
+//				resolve();
+//			}
+//		});
 		frames.push(frame);
 	}
 	
