@@ -2,18 +2,45 @@
   "name": "chess2",
   "version": "1.0.0",
   "description": "4D Chess",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node build/bundle-back.js",
+    "buildfront": "webpack --mode=development --config webpack-front.config.cjs",
+    "buildback": "webpack --mode=development --config webpack-back.config.cjs",
+    "build": "npm run buildback && npm run buildfront",
+    "testf": "npm run buildfront && npm run start",
+    "testb": "npm run buildback && npm run start",
+    "test": "npm run build && npm run start",
+    "open": "google-chrome --incognito http://localhost:3000"
   },
   "author": "Brian Santoso",
   "license": "ISC",
   "dependencies": {
+    "@datastructures-js/priority-queue": "^4.1.1",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "lodash": "^4.17.15",
+    "lodash-es": "^4.17.15",
     "path": "^0.12.7",
-    "socket.io": "^2.3.0"
-  }
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "socket.io": "^2.3.0",
+    "three": "^0.118.3",
+    "three-gltf-loader": "^1.111.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "babel-loader": "^8.1.0",
+    "css-loader": "^4.0.0",
+    "style-loader": "^1.2.1",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^2.5.0"
+  },
+  "presets": [
+    "@babel/preset-env",
+    "@babel/preset-react"
+  ]
 }
