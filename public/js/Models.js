@@ -125,7 +125,7 @@ const Models = {
 			shininess: 25,
 			flatShading: THREE.SmoothShading,
 			transparent: true,
-			opacity: 0.4,
+			opacity: 0.9,
 		},
 	},
 

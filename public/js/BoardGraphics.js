@@ -17,16 +17,20 @@ class BoardGraphics {
 		this._white = new THREE.Group();
 		this._black = new THREE.Group();
 		this._ghost = new THREE.Group();
+		this._highlight = new THREE.Group();
 		this._pieces.add(this._white);
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
+		this._pieces.add(this._highlight);
 		
 		this._canInteract = true;
-		this._showingMovesFor = new Map();
+		this._showingMovesFor = new Map(); // map of Piece objects to their Set of possible move meshes (Ghost meshes)
+		this._highlightingFor = new Map(); // map of Piece objects to their temporary highlight meshes
 		
 		this._container.add(this._pieces);
 		
 		this._animator = new Animator();
+		this._allAnimProms = [];
 		
 		this._squareSize = 25;
 		this._deltaY = this._squareSize * 3;
@@ -152,9 +156,11 @@ class BoardGraphics {
 		this._white = new THREE.Group();
 		this._black = new THREE.Group();
 		this._ghost = new THREE.Group();
+		this._highlight = new THREE.Group();
 		this._pieces.add(this._white);
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
+		this._pieces.add(this._highlight);
 		
 		pieces.flat(3).forEach(pieceObj => {
 			this._spawnMeshFromPiece(pieceObj);
@@ -166,40 +172,101 @@ class BoardGraphics {
 	
 	showPossibleMoves(piece, moves, preview=false, frames=0) {
 		
+		let showAnimationProms = [];
 		// hide moves if already showing
-		this.hidePossibleMoves(piece, frames);
+		let fadeAnimationProm = this.hidePossibleMoves(piece, frames);
 		let meshes = new Set();
 		
 		moves.forEach(move => {
 			let mesh = this._spawnGhostMesh(piece, move, preview);
 			
 			if (frames) {
-				this._fadeIn(mesh, frames);
+				let fadeInProm = this._fadeIn(mesh, frames);
+				showAnimationProms.push(fadeInProm);
 			}
 			
 			meshes.add(mesh);
 		});
 		// TODO: is this even doing anything?
 		this._showingMovesFor.set(piece, meshes);
+		
+		return Promise.all(showAnimationProms.concat([fadeAnimationProm]));
 	}
 	
 	hidePossibleMoves(piece, frames=0) {
 		let meshes = this._showingMovesFor.get(piece);
+		let fadeAnimationProm;
 		if (!meshes) {
-			return;
+			return Promise.resolve();
 		}
 		if (frames) {
 			meshes.forEach(mesh => {
-				this._fadeOut(mesh, frames).then(() => {
-					this._ghost.remove(mesh);
-					meshes.delete(mesh);
+				fadeAnimationProm = this._fadeOut(mesh, frames).then(() => {
+					this._remove(mesh);
+					meshes.delete(mesh); // I think we already do that here (see below)
 				});
 			});
 			// TODO: remove meshes from _showingMovesFor?
 		} else {
-			this._ghost.remove(...meshes);
+			this._remove(...meshes);
 			meshes.forEach(mesh => meshes.delete(mesh));
+			fadeAnimationProm = Promise.resolve();
 		}
+		return fadeAnimationProm;
+	}
+	
+//	hideAllPossibleMoves(frames=0) {
+//		let hideAllProms = [];
+//		// TODO: iterate through all ghosts in this._ghosts instead
+//		this._showingMovesFor.forEach((piece, meshes) =>{
+//			let hideProm = this.hidePossibleMoves(piece, frames);
+//			hideAllProms.push(hideProm);
+//		});
+//		return Promise.all(hideAllProms);
+//	}
+	
+	highlight(piece, frames=0) {
+		this.unhighlight(piece, frames);
+		let mesh = this._spawnHighlightMesh(piece);
+		if (frames) {
+			this._fadeIn(mesh, frames);
+		}
+		this._highlightingFor.set(piece, mesh);
+	}
+	
+	unhighlight(piece, frames=0) {
+		let mesh = this._highlightingFor.get(piece);
+		if (!mesh) {
+			return;
+		}
+		if (frames) {
+			this._fadeOut(mesh, frames).then(() => {
+				this._remove(mesh);
+				// TODO: somehow having this here breaks?
+				// this._highlightingFor.delete(piece);
+			});
+			this._highlightingFor.delete(piece);
+		} else {
+			this._remove(mesh);
+			this._highlightingFor.delete(piece);
+		}
+	}
+	
+	_spawnHighlightMesh(pieceObj) {
+		let pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
+		let team = pieceObj.team;
+		let type = pieceObj.type;
+		let material = 'blue';
+		let scale = 1;
+		let mesh = Models.createMesh(type, material, pos, scale);
+		let rotation = team === ChessGame.WHITE ? 180 : 0;
+		rotateObject(mesh, 0, rotation, 0);
+		this._highlight.add(mesh);
+		// Fixes issue with transparent board hiding transparent pieces
+		// https://discourse.threejs.org/t/material-transparency-problem/3822
+//		mesh.material.depthWrite = false;
+		console.log(mesh)
+		return mesh;		
 	}
 	
 	rayCast(rayCaster, targetTeam=ChessGame.OMNISCIENT) {
@@ -230,6 +297,15 @@ class BoardGraphics {
 	}
 	
 	makeMove(move, frames=0) {
+		
+		let moveAnimationProm;
+		
+		// Is this necessary?
+//		let hidePossibleMovesProm = this.hideAllPossibleMoves(6);
+		
+		// IMPORTANT: Need to wait until ghost meshes disappear until reenabling
+		this._disableInteraction();
+		
 		if (frames) {
 			let mesh = this._pieceToMesh.get(move.piece);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
@@ -237,14 +313,14 @@ class BoardGraphics {
 			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
-			let translation = Animation.translate(Animation.QUADRATIC, mesh, startPos, endPos, numFrames);
-			let movingPieceProm = this._animator.animate(translation)
+			let movingPieceProm = this._translate(mesh, numFrames, startPos, endPos)
 				.then(() => {
 					this._remove(capturedMesh);
 					if (move.promotionNew) {
 						return this._shrink(mesh, numFrames);
 					} else {
 						// End promise chain (Do nothing)
+						// TODO: how to end a promise chain properly?
 						return Promise.reject();
 					}
 				}).then(() => {
@@ -256,7 +332,7 @@ class BoardGraphics {
 			if (capturedMesh) {
 				capturedPieceProm = this._shrink(capturedMesh, numFrames);
 			}
-			return Promise.all([movingPieceProm, capturedPieceProm]);
+			moveAnimationProm = Promise.all([movingPieceProm, capturedPieceProm]);
 			
 		} else {
 			let mesh = this._pieceToMesh.get(move.piece);
@@ -268,9 +344,20 @@ class BoardGraphics {
 
 			if (move.promotionNew) {
 				this._remove(mesh);
-				this._spawnMeshFromPiece(move.promotionNew);
+				return this._spawnMeshFromPiece(move.promotionNew);
 			}
-		}	
+			moveAnimationProm = Promise.resolve();
+		}
+		
+//		Promise.all([moveAnimationProm]).then(() => {
+//			this._enableInteraction();
+//		});
+		
+		// Reenable interaction when all animations have finished
+		this._allAnimProms.push(moveAnimationProm);
+		Promise.all(this._allAnimProms).then(() => {
+			this._enableInteraction();
+		});
 	}
 	
 	_remove(mesh) {
@@ -278,16 +365,29 @@ class BoardGraphics {
 		// it forever and wont be able to undo moves graphically
 		this._white.remove(mesh);
 		this._black.remove(mesh);
+		this._ghost.remove(mesh);
+		this._highlight.remove(mesh);
+	}
+	
+	_translate(mesh, numFrames, startPos, endPos) {
+		let animation = Animation.translate(Animation.QUADRATIC, mesh, startPos, endPos, numFrames);
+		let promise = this._animator.animate(animation);
+		this._allAnimProms.push(promise);
+		return promise;
 	}
 	
 	_shrink(mesh, numFrames) {
 		let animation = Animation.scale(Animation.LINEAR, mesh, mesh.scale.x, 0, numFrames);
-		return this._animator.animate(animation);
+		let promise = this._animator.animate(animation);
+		this._allAnimProms.push(promise);
+		return promise;
 	}
 	
 	_grow(mesh, numFrames) {
 		let animation = Animation.scale(Animation.LINEAR, mesh, 0, mesh.scale.x, numFrames);
-		return this._animator.animate(animation);
+		let promise = this._animator.animate(animation);
+		this._allAnimProms.push(promise);
+		return promise;
 	}
 	
 	_fadeIn(mesh, numFrames) {
@@ -295,14 +395,20 @@ class BoardGraphics {
 		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
 		let animation = Animation.opacity(Animation.LINEAR, mesh, 0, mesh.material.opacity, numFrames);
 		animation.override = true;
-		return this._animator.animate(animation);
+		
+		let promise = this._animator.animate(animation);
+		this._allAnimProms.push(promise);
+		return promise;
 	}
 	
 	_fadeOut(mesh, numFrames) {
 		// Assumes mesh.material.transparent
 		let animation = Animation.opacity(Animation.LINEAR, mesh, mesh.material.opacity, 0, numFrames);
 		animation.override = true;
-		return this._animator.animate(animation);
+		
+		let promise = this._animator.animate(animation);
+		this._allAnimProms.push(promise);
+		return promise;
 	}
 }
 

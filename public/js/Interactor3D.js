@@ -18,6 +18,7 @@ class Interactor3D {
 				this._movePreviewer.showMovesFor(this._movePreviewer.hovering());
 				
 				this._pieceSelector.update();
+				this._pieceSelector.highlight(this._pieceSelector.hovering());
 				// TODO: make _pieceSelector highlight hovering piece
 			},
 			onclick: () => {
@@ -29,6 +30,7 @@ class Interactor3D {
 						this._movePreviewer.showMovesFor(null);
 						// Show the moves for what was selected
 						this._pieceSelector.showMovesFor(this._pieceSelector.selected());
+						this._pieceSelector.highlight(this._pieceSelector.selected());
 						// TODO: make _pieceSelector highlight selected piece
 						
 						// Swap to selected state
@@ -55,6 +57,7 @@ class Interactor3D {
 				this._moveConfirmer.setSelected(null);
 				this._pieceSelector.setSelected(null);
 				this._pieceSelector.showMovesFor(null);
+				this._pieceSelector.highlight(null);
 				this.swapState(this._unselected);
 			},
 			onSwapOut: () => {}
@@ -94,7 +97,8 @@ class Interactor3D {
 	}
 	
 	offerMove(move) {
-		this._commandQueue.push(move);
+//		this._commandQueue.push(move);
+		this._game.makeMove(move);
 	}
 	
 	_myTurn() {
@@ -118,6 +122,7 @@ class Interactor3DWorker {
 		this._hovering = null;
 		this._selected = null;
 		this._showingMovesFor = null;
+		this._highlighting = null;
 	}
 	
 	update() {
@@ -143,6 +148,24 @@ class Interactor3DWorker {
 			this._hidePossibleMoves(this._showingMovesFor);
 		}
 		this._showingMovesFor = mesh;
+	}
+	
+	highlight(mesh) {
+		if (Interactor3D.isPiece(mesh)) {
+			let piece = mesh.piece;
+			if (this._highlighting !== mesh) {
+				// If different than already showing, hide previous and show new
+				this._unhighlight(this._highlighting);
+				// In case this piece is already showing moves (through another selector)
+				// hide moves and reshow to prevent possibility of double showing
+//				this._hidePossibleMoves(mesh);
+				/// edit: this shouldnt be the job of the interactor, but rather the board graphics
+				this._highlight(mesh);
+			}
+		} else {
+			this._unhighlight(this._highlighting);
+		}
+		this._highlighting = mesh;		
 	}
 	
 	hovering() {
@@ -193,7 +216,22 @@ class Interactor3DWorker {
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
+//			this._boardGraphics().hidePossibleMoves(piece, 160);
 			this._boardGraphics().hidePossibleMoves(piece, 6);
+		}
+	}
+	
+	_highlight(mesh) {
+		if (Interactor3D.isPiece(mesh)) {
+			let piece = mesh.piece;
+			this._boardGraphics().highlight(piece, 6);
+		}
+	}
+	
+	_unhighlight(mesh) {
+		if (Interactor3D.isPiece(mesh)) {
+			let piece = mesh.piece;
+			this._boardGraphics().unhighlight(piece, 6);
 		}
 	}
 	

@@ -2,13 +2,12 @@ import { ClientGameManager } from "./GameManager.js";
 import { ChessGame } from "./ChessGame.js";
 import { Player3D } from "./ChessPlayer.js";
 import BoardGraphics from "./BoardGraphics.js";
-import Models from "./Models.js";
 
 class App {
 	constructor() {
 		this._gameManager = new ClientGameManager();
 		// TODO: should be gameManager.loadAssets().then()
-		Models.loadModels().then(() => {
+		this._gameManager.loadAssets().then(() => {
 			let config = {
 				n: 4,
 				WhitePlayer: Player3D,
