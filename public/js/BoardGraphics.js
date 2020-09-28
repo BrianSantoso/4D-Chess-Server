@@ -134,7 +134,7 @@ class BoardGraphics {
 		if (preview) {
 			material = move.capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
 		} else {
-			material = move.capturedPiece.isEmpty() ? 'green' : 'orange';
+			material = move.capturedPiece.isEmpty() ? 'green' : 'red';
 		}
 		
 		let scale = move.capturedPiece.isEmpty() ? 1 : 1;
@@ -393,7 +393,7 @@ class BoardGraphics {
 	_fadeIn(mesh, numFrames) {
 		// Assumes mesh.material.transparent
 		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
-		let animation = Animation.opacity(Animation.LINEAR, mesh, 0, mesh.material.opacity, numFrames);
+		let animation = Animation.opacity(Animation.QUADRATIC, mesh, 0, mesh.material.opacity, numFrames);
 		animation.override = true;
 		
 		let promise = this._animator.animate(animation);
@@ -403,7 +403,7 @@ class BoardGraphics {
 	
 	_fadeOut(mesh, numFrames) {
 		// Assumes mesh.material.transparent
-		let animation = Animation.opacity(Animation.LINEAR, mesh, mesh.material.opacity, 0, numFrames);
+		let animation = Animation.opacity(Animation.QUADRATIC, mesh, mesh.material.opacity, 0, numFrames);
 		animation.override = true;
 		
 		let promise = this._animator.animate(animation);
