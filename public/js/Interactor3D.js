@@ -247,18 +247,16 @@ class Interactor3DWorker {
 	_highlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().highlight(piece, 6);
+			this._boardGraphics().highlight(piece, 3);
 		}
 	}
 	
 	_unhighlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().unhighlight(piece, 6);
+			this._boardGraphics().unhighlight(piece, 10);
 		}
 	}
-	
-
 }
 
 class MovePreviewer extends Interactor3DWorker {
