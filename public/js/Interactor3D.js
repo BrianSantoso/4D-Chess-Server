@@ -51,9 +51,11 @@ class Interactor3D {
 		// Define behavior for unselected state
 		this._unselected = {
 			update: () => {
+				// try show moves
 				this._movePreviewer.update();
 				this._movePreviewer.showMovesFor(this._movePreviewer.hovering());
 				
+				// try highlight
 				this._pieceSelector.update();
 				this._pieceSelector.highlight(this._pieceSelector.hovering());
 				// TODO: make _pieceSelector highlight hovering piece
