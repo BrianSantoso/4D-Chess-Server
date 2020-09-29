@@ -11,29 +11,58 @@ class Interactor3D {
 		this._pieceSelector = new PieceSelector(this, team);
 		this._moveConfirmer = new MoveConfirmer(this, ChessGame.GHOST);
 		
+		
+		let trySelectPiece = () => {
+			this._pieceSelector.update(); // update _pieceSelector's hovering
+			this._pieceSelector.select(); // set _pieceSelector's selected to its hovering
+			if (this._pieceSelector.selected()) { // if clicked on a piece
+				// Hide _movePreviewer's moves
+				this._movePreviewer.showMovesFor(null);
+				// Show the moves for what was selected
+				this._pieceSelector.showMovesFor(this._pieceSelector.selected());
+				this._pieceSelector.highlight(this._pieceSelector.selected());
+				// TODO: make _pieceSelector highlight selected piece
+
+				// Swap to selected state
+				this.swapState(this._selected);
+			}
+			return this._pieceSelector.selected();
+		}
+		
+		let tryConfirmMove = () => {
+			this._moveConfirmer.update(); // update _moveConfirmer's hovering
+			this._moveConfirmer.select(); // set _moveConfirmer's selected to its hovering
+
+			let selectedGhost = this._moveConfirmer.selected()
+
+			if (selectedGhost) { // if clicked on a ghost piece
+				let move = selectedGhost.move;
+				this.offerMove(move);
+			}
+			this.swapState(this._unselected);
+			this._moveConfirmer.setSelected(null);
+			this._pieceSelector.setSelected(null);
+			this._pieceSelector.showMovesFor(null);
+			this._pieceSelector.highlight(null);
+			
+			return selectedGhost;
+		}
+		
 		// Define behavior for unselected state
 		this._unselected = {
 			update: () => {
+				// try show moves
 				this._movePreviewer.update();
 				this._movePreviewer.showMovesFor(this._movePreviewer.hovering());
 				
+				// try highlight
 				this._pieceSelector.update();
+				this._pieceSelector.highlight(this._pieceSelector.hovering());
 				// TODO: make _pieceSelector highlight hovering piece
 			},
 			onclick: () => {
 				if (this._myTurn()) {
-					this._pieceSelector.update(); // update _pieceSelector's hovering
-					this._pieceSelector.select(); // set _pieceSelector's selected to its hovering
-					if (this._pieceSelector.selected()) { // if clicked on a piece
-						// Hide _movePreviewer's moves
-						this._movePreviewer.showMovesFor(null);
-						// Show the moves for what was selected
-						this._pieceSelector.showMovesFor(this._pieceSelector.selected());
-						// TODO: make _pieceSelector highlight selected piece
-						
-						// Swap to selected state
-						this.swapState(this._selected);
-					}
+					trySelectPiece();
 				}
 			},
 			onSwapOut: () => {}
@@ -42,20 +71,19 @@ class Interactor3D {
 		// Define behavior for selected state
 		this._selected = {
 			update: () => {
-				this._moveConfirmer.update();
 				// Can optinally do something more, like highlight the ghost move that is being hovering on.
+				// this._moveConfirmer.update();
 			},
 			onclick: () => {
-				this._moveConfirmer.update(); // update _moveConfirmer's hovering
-				this._moveConfirmer.select(); // set _moveConfirmer's selected to its hovering
-				if (this._moveConfirmer.selected()) { // if clicked on a ghost piece
-					let move = this._moveConfirmer.selected().move;
-					this.offerMove(move);
+				if (this._myTurn()) {
+					let selectedGhost = tryConfirmMove();
+					if (!selectedGhost) {
+						// TODO: ghost will have raycast priority. trying to select
+						// a piece in front of a ghost will fail, selecting the ghost
+						// instead
+						trySelectPiece();
+					}
 				}
-				this._moveConfirmer.setSelected(null);
-				this._pieceSelector.setSelected(null);
-				this._pieceSelector.showMovesFor(null);
-				this.swapState(this._unselected);
 			},
 			onSwapOut: () => {}
 		};
@@ -94,7 +122,8 @@ class Interactor3D {
 	}
 	
 	offerMove(move) {
-		this._commandQueue.push(move);
+//		this._commandQueue.push(move);
+		this._game.makeMove(move);
 	}
 	
 	_myTurn() {
@@ -118,6 +147,7 @@ class Interactor3DWorker {
 		this._hovering = null;
 		this._selected = null;
 		this._showingMovesFor = null;
+		this._highlighting = null;
 	}
 	
 	update() {
@@ -143,6 +173,24 @@ class Interactor3DWorker {
 			this._hidePossibleMoves(this._showingMovesFor);
 		}
 		this._showingMovesFor = mesh;
+	}
+	
+	highlight(mesh) {
+		if (Interactor3D.isPiece(mesh)) {
+			let piece = mesh.piece;
+			if (this._highlighting !== mesh) {
+				// If different than already showing, hide previous and show new
+				this._unhighlight(this._highlighting);
+				// In case this piece is already showing moves (through another selector)
+				// hide moves and reshow to prevent possibility of double showing
+//				this._hidePossibleMoves(mesh);
+				/// edit: this shouldnt be the job of the interactor, but rather the board graphics
+				this._highlight(mesh);
+			}
+		} else {
+			this._unhighlight(this._highlighting);
+		}
+		this._highlighting = mesh;		
 	}
 	
 	hovering() {
@@ -186,23 +234,36 @@ class Interactor3DWorker {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
 			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, 6);
+			this._boardGraphics().showPossibleMoves(piece, moves, preview, 10);
 		}
 	}
 	
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, 6);
+//			this._boardGraphics().hidePossibleMoves(piece, 160);
+			this._boardGraphics().hidePossibleMoves(piece, 10);
 		}
 	}
 	
-
+	_highlight(mesh) {
+		if (Interactor3D.isPiece(mesh)) {
+			let piece = mesh.piece;
+			this._boardGraphics().highlight(piece, 3);
+		}
+	}
+	
+	_unhighlight(mesh) {
+		if (Interactor3D.isPiece(mesh)) {
+			let piece = mesh.piece;
+			this._boardGraphics().unhighlight(piece, 10);
+		}
+	}
 }
 
 class MovePreviewer extends Interactor3DWorker {
 	showMovesFor(mesh) {
-		super.showMovesFor(mesh, true);
+//		super.showMovesFor(mesh, true);
 	}
 }
 

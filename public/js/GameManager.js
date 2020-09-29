@@ -89,6 +89,11 @@ class ClientGameManager extends GameManager {
 		return game;
 	}
 	
+	loadAssets() {
+		let modelsPromise = Models.loadModels();
+		return Promise.all([modelsPromise]);
+	}
+	
 	_keyInputs() {
 		this._view3D.keyInputs();
 	}

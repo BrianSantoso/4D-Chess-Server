@@ -1,12 +1,12 @@
 import { MinPriorityQueue } from '@datastructures-js/priority-queue';
 import * as THREE from 'three';
-//import { v4 as uuidv4 } from 'uuid';
-// uuidv4(); '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
 // https://www.npmjs.com/package/@datastructures-js/priority-queue
 
 class Animator {
 	constructor() {
 		this._queue = new MinPriorityQueue();
+		// TODO: Find a way to remove items from PriorityQueue via predicate 
+		// function, instead of maintaining an ongoing animation map.
 		this._ongoing = new Map(); // Maps meshes to Set of ongoing animations
 	}
 	
@@ -58,7 +58,10 @@ class Animator {
 			ongoing = this._ongoing.get(animation.mesh);
 		}
 		if (animation.override) {
-			// Override all ongoing animations for this mesh
+			// Override all ongoing animations for this mesh by
+			// resolving them without exwecuting their animation
+			// and removing them from the ongoing map
+			ongoing.forEach(animation => animation.forceResolve());
 			ongoing.clear();
 		}
 		
@@ -75,6 +78,10 @@ class Animator {
 	}
 	
 	isOccupied() {
+		// This is potentially flawed. The queue may contain overriden animations.
+		// Better approach would to be to check if any animations are in this._ongoing
+		// or, even better, figure out how to remove items from the PQ instead of mantaining
+		// an ongoing map.
 		return !this._queue.isEmpty();
 	}
 }
@@ -85,6 +92,10 @@ class Animation {
 		this.frames = frames.map(frame => new AnimationFrame(frame, this)); // functions to be called on animate
 		this.override = override; // whether this animation should override another animation currently acting on the same mesh
 		this.promise = Promise.all(this.frames.map(aFrame => aFrame.promise));
+	}
+	
+	forceResolve() {
+		this.frames.forEach(aFrame => aFrame.forceResolve());
 	}
 	
 //	combine(animation) {
@@ -113,8 +124,11 @@ class Animation {
 
 class AnimationFrame {
 	constructor(frame, animationGroup) {
-//		this.frame = frame;
+		this.frame;
+		this.forceResolve;
+		this.animationGroup;
 		this.promise = new Promise((resolve) => {
+			this.forceResolve = resolve;
 			this.frame = () => {
 				frame();
 				resolve();
