@@ -4,7 +4,7 @@ import Models from "./Models.js";
 import ChessGame from "./ChessGame.js";
 import { Player3D } from "./ChessPlayer.js";
 import BoardGraphics from "./BoardGraphics.js";
-//import View2D from "./View2D";
+import View2D from "./View2D.jsx";
 
 class GameManager {
 	constructor() {
@@ -43,7 +43,7 @@ class GameManager {
 class ClientGameManager extends GameManager {
 	constructor() {
 		super();
-		this._view2D = null;
+		this._view2D = new View2D();
 		// TODO: Pass DOM Element to contain threejs canvas.
 		this._view3D = new SceneManager(document.getElementById("gameManager")); 
 		
@@ -104,6 +104,7 @@ class ClientGameManager extends GameManager {
 	
 	_draw() {
 		this._view3D.draw();
+		this._view2D.draw();
 	}
 	
 	_startLoop() {

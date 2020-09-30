@@ -21,6 +21,17 @@ module.exports = {
           'css-loader',
         ]
       },
+	  { // Load svgs: https://www.pluralsight.com/guides/how-to-load-svg-with-react-and-webpack
+        test: /\.svg$/,
+        use: [
+          {
+            loader: 'svg-url-loader',
+            options: {
+              limit: 10000,
+            },
+          },
+        ],
+      },
     ]
   }
 };
