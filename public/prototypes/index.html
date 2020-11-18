@@ -1,0 +1,91 @@
+<html>
+	
+	<head>
+		<style>		
+			@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+			
+			.playerInfo {
+				font-family: 'Source Code Pro', monospace;
+				width: 30em;
+				display: inline-block;
+				position: fixed;
+			}
+			
+			.playerText {
+				vertical-align: middle;
+				padding: .5em 0;
+			}
+			
+			.playerWhite .playerIcon {
+				float: left; /* Justify-left icon */
+				content: url('../assets/player/king_white.svg');
+			}
+			
+			.playerWhite {
+				left: 0; /* Make playerInfo appear on left side of screen */
+				text-align: left; /* Justify-left all text */
+			}
+			
+			.playerBlack .playerIcon {
+				float: right;
+				content: url('../assets/player/king_black.svg');
+			}
+			
+			.playerBlack {
+				right: 0;
+				text-align: right;
+			}
+			
+			.playerIcon {
+				width: 6em;
+				margin: 0 1em;
+			}
+			
+			.playerFooter {
+				display: inline-block;
+				font-size: 1.5em;
+				margin: .5em 0;
+			}
+			
+			.playerTime {
+				display: inline-block;
+			}
+			
+			.playerStatus {
+				width: 0.8em;
+				height: 0.8em;
+			}
+			
+			.playerName {
+				font-size: 2em;
+			}
+		</style>
+	</head>
+	<body>
+		<div class='playerInfo playerWhite'>
+			<img class='playerIcon' />
+			<div class='playerText'>
+				<div class='playerName'>
+					Guest8449947756
+				</div>
+				<div class='playerFooter'>
+					<div class='playerTime'>--:--:--</div>
+					<img class='playerStatus' src='../assets/player/online.svg' />
+				</div>
+			</div>
+		</div>
+
+		<div class='playerInfo playerBlack'>
+			<img class='playerIcon' />
+			<div class='playerText'>
+				<div class='playerName'>
+					Anon
+				</div>
+				<div class='playerFooter'>
+					<div class='playerTime'>--:--:--</div>
+					<img class='playerStatus' src='../assets/player/online.svg' />
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
