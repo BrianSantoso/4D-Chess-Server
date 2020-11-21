@@ -24,7 +24,7 @@
 
 .playerWhite .playerIcon {
 	float: left; /* Justify-left icon */
-	content: url('../assets/player/king_white.svg');
+	content: url('../../assets/player/king_white.svg');
 }
 
 .playerWhite {
@@ -34,7 +34,7 @@
 
 .playerBlack .playerIcon {
 	float: right;
-	content: url('../assets/player/king_black.svg');
+	content: url('../../assets/player/king_black.svg');
 }
 
 .playerBlack {
@@ -72,4 +72,38 @@
 	position: absolute;
 	bottom: calc(var(--icon-size) / 4);
 	left: 0;
+}
+
+.sidebar {
+	position: absolute;
+	display: inline-block;
+	right: calc(var(--icon-size) / 4);
+	top: 40%;
+}
+
+.game-button {
+	/*	position: fixed;*/
+	display: inline-block;
+	position: relative;
+	pointer-events: auto;
+
+	padding: calc(var(--icon-size) / 4);  /* Circle Radius */
+	border-radius: 50%; /* Make circle */
+
+	background-color: #FFFFFF;
+	opacity: .6;
+	z-index: 999;
+
+	box-sizing: border-box; /* ? */
+	box-shadow: 0 0 4px rgba(0,0,0,.15);
+/*				box-shadow: inset 0 -0.6em 0 -0.35em rgba(0,0,0,0.17);*/
+}
+
+.game-button:active {
+/*				bottom: -0.2em;*/
+	box-shadow: none;
+}
+
+.game-button > img {
+	width: calc(var(--icon-size) / 2);
 }

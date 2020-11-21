@@ -44,8 +44,8 @@ class ClientGameManager extends GameManager {
 	constructor() {
 		super();
 		this._domElement = document.getElementById("embed");
-		this._view2D = new View2D();
-		this._view3D = new SceneManager(this._domElement); 
+		this._view2D = new View2D(this);
+		this._view3D = new SceneManager(this._domElement);
 		
 		this._controller = null;
 		
@@ -90,6 +90,10 @@ class ClientGameManager extends GameManager {
 		return game;
 	}
 	
+	cameraHome() {
+		this._view3D.configureCamera(this._game._boardGraphics, ChessGame.WHITE, 0);
+	}
+	
 	loadAssets() {
 		let modelsPromise = Models.loadModels();
 		return Promise.all([modelsPromise]);
@@ -101,6 +105,7 @@ class ClientGameManager extends GameManager {
 	
 	_update() {
 		this._game.update();
+		this._view3D.update();
 	}
 	
 	_draw() {

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 //import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import TrackballControls from "./TrackballControls.js";
+import Animator, { Animation } from "./Animator.js";
 import { debugSphere } from "./Utils3D.js";
 import ChessGame from "./ChessGame.js";
 
@@ -15,6 +16,7 @@ class SceneManager {
 		this._renderer = null;
 		this._rayCaster = null;
 		this._controls = null;
+		this._animator = new Animator();
 		this._initScene();
 		this._initControls();
 		
@@ -163,7 +165,7 @@ class SceneManager {
 	
 	_initControls() {
 		// Camera's position will get reassigned.
-		this._camera.position.set( 0, 20, 100 );
+		this._camera.position.set(387, 292, -244);
 		
 		const minDistance = 100;
 		const maxDistance = Infinity;
@@ -216,6 +218,10 @@ class SceneManager {
 		this._controls2.update();
 	}
 	
+	update() {
+		this._animator.update();
+	}
+	
 	_syncControls() {
 		this._controls.update();
 		let target = this._controls.target;
@@ -227,7 +233,7 @@ class SceneManager {
 		this._renderer.render(this._scene, this._camera);
 	}
 	
-	configureCamera(boardGraphics, team) {
+	configureCamera(boardGraphics, team, numFrames=0) {
 		team = team === ChessGame.WHITE ? 1 : - 1;
 		let center = boardGraphics.getCenter();
 		let offset = new THREE.Vector3(team * 320, 130, 0);
@@ -235,9 +241,16 @@ class SceneManager {
 		
 		console.log(home, center)
 		
-		this._camera.position.set(home.x, home.y, home.z);
-		this._controls.target.set(center.x, center.y, center.z);
-		this._syncControls();
+		if (numFrames === 0) {
+			this._camera.position.set(home.x, home.y, home.z);
+			this._controls.target.set(center.x, center.y, center.z);
+			this._syncControls();
+		} else {
+			this._controls.target.set(center.x, center.y, center.z);
+			this._syncControls();
+			let animation = Animation.translate(Animation.LINEAR, this._camera, this._camera.position.clone(), home.clone(), 60);
+			this._animator.animate(animation);
+		}
 	}
 }
 

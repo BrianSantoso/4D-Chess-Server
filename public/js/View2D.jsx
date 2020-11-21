@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom';
 //import WhiteIcon from '../assets/player/king_white.svg';
 //import BlackIcon from '../assets/player/king_black.svg';
 import ChessGame from './ChessGame.js';
+import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 
 class View2D {
-	constructor() {
+	constructor(gameManager) {
+		this._gameManager = gameManager;
 		
+		this.cameraHome = this.cameraHome.bind(this);
 		// TODO: implement chat later
 		let chat = (<div className='chat'>
 			<ul className='chat-message'>
@@ -19,8 +22,16 @@ class View2D {
 			<div className='overlay'>
 				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
 				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
+				
+				<div className='sidebar'>
+					<CircleButton icon={HomeIcon} handleClick={this.cameraHome}></CircleButton>
+				</div>
 			</div>
 		);
+	}
+	
+	cameraHome() {
+		this._gameManager.cameraHome();
 	}
 	
 	draw() {
@@ -92,6 +103,20 @@ class PlayerInfo extends Component {
 					{footer}
 				</div>
 			</div>
+		)
+	}
+}
+
+class CircleButton extends Component {
+	constructor(props) {
+		super(props);
+	}
+	
+	render() {
+		return (
+			<a className='game-button' onClick={this.props.handleClick} >
+				<img draggable="false" src={this.props.icon} />
+			</a>
 		)
 	}
 }
