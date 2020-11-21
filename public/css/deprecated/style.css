@@ -1,0 +1,257 @@
+/* Prevent Scrolling */
+html, body { 
+	margin: 0px;
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
+
+body {
+	position: relative;
+}
+
+.text {
+/*	font-family: 'Roboto Mono', monospace;*/
+	font-family: 'Source Code Pro', monospace;
+/*	font-family: 'Ubuntu Mono', monospace;*/
+	color: #3f3f3f;
+/*	font-size: 3.8em;*/
+/*	font-size: 7.6vh;*/
+	font-size: 9.6vh;
+/*	font-weight: 700;*/
+/*    letter-spacing: 4px;*/
+}
+
+.overlay {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+
+	/* No Highlight */
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	 -khtml-user-select: none; /* Konqueror HTML */
+	   -moz-user-select: none; /* Old versions of Firefox */
+		-ms-user-select: none; /* Internet Explorer/Edge */
+			user-select: none; /* Non-prefixed version, currently
+								  supported by Chrome, Opera and Firefox */				
+}
+
+.circleButton > img {
+	/* No Drag */
+	-webkit-user-drag: none; /* Safari */
+	 -khtml-user-drag: none; /* Konqueror HTML */
+	   -moz-user-drag: none; /* Old versions of Firefox */
+		 -o-user-drag: none;
+		-ms-user-drag: none; /* Internet Explorer/Edge */
+			user-drag: none; /* Non-prefixed version, currently
+								  supported by Chrome, Opera and Firefox */
+}
+
+.moveHistoryButton {
+/*	position: fixed;*/
+	display: inline-block;
+	position: relative;
+	padding: 1%; /* Circle Radius */
+	border-radius: 50%; /* Make circle */
+	margin-bottom: 0px;
+	background-color: #FFFFFF;
+	opacity: .6;
+	z-index: 999;
+	box-shadow: 0 0 4px rgba(0,0,0,.15);
+	pointer-events: auto;
+/*	bottom: 1em;*/
+	border-radius:0.15em;
+	box-sizing: border-box;
+	font-family:'Roboto',sans-serif;
+	text-transform:uppercase;
+	box-shadow:inset 0 -0.6em 0 -0.35em rgba(0,0,0,0.17);
+	vertical-align: middle;
+}
+
+.moveHistoryButton:active{
+/*	top:0.1em;*/
+/*	bottom: 0.8em;*/
+	bottom: -0.2em;
+	box-shadow: none;
+}
+/*
+@media all and (max-width:30em) {
+ .circleButton {
+  display:block;
+  margin:0.4em auto;
+ }
+}
+*/
+
+.moveHistoryButton:hover {
+	opacity: 0.9;
+}
+
+.rectButton {
+	pointer-events: auto;
+	display: block;
+/*	position: absolute;*/
+	transition: .4s;
+	box-shadow: 0 0 4px rgba(0,0,0,.17);
+	border-radius: 8px;
+	
+}
+
+.rectButton:hover {
+/*	background-color: #3f3f3f;*/
+/*	box-shadow: 0 0 4px rgba(0,0,0,.1);*/
+}
+
+/*
+#redoButton {
+	right: 42%;
+}
+
+#undoButton {
+	right: 58%;
+}
+*/
+
+.toolbarItem {
+	display: inline-block;
+	text-align: center;
+}
+
+#toolbar {
+	display: inline-block;
+	text-align: center;
+	width: 100%;
+	height: auto;
+	position: absolute;
+	bottom: 1em;
+	overflow: visible;
+}
+
+#moveStatus {
+/*
+	min-width: 10vw;
+	width: auto;
+*/
+	width: 14vw;
+	margin: 0 1vw;
+	font-size: 1.4em;
+}
+
+#playButton {
+/*
+	width: 24em;
+	height: 14.8em;
+*/
+	margin-left: auto;
+    margin-right: auto;
+/*	margin-top: 5%;*/
+	margin-top: 10vh;
+	margin-bottom: auto;
+	
+	right: 50%;
+/*	bottom: 16px;*/
+	margin-bottom: 0px;
+/*	width: 7em;*/
+	
+/*    height: 3em;*/
+/*    height: 3em;*/
+	
+/*
+	width: 34vw;
+	height: 31vh;
+*/
+	
+	width: auto;
+	height: auto;
+	padding: 9.5vh 11vw;
+	
+	
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+	
+	border: none;
+	text-align: center;
+	text-decoration: none;
+/*	font-size: 4em;*/
+	font-size: 10.4vh;
+}
+
+#playOptionsMenu {
+	padding-top: 3vh;
+	text-align: center;
+}
+
+.playOptionButton {
+	margin-left: auto;
+    margin-right: auto;
+	margin-top: 5vh;
+/*	margin-bottom: auto;*/
+/*	margin-bottom: 1vh;*/
+	border: none;
+	text-align: center;
+	text-decoration: none;
+	font-size: 5.2vh;
+	
+	min-width: 40vw;
+	width: auto;
+	height: auto;
+	padding: 2vh 4.8vw;
+	
+/*
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+*/
+	background-color: #3f3f3f;
+	color: #f6f6f6;
+}
+
+#matchmakingButton {
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+}
+
+#localMultiplayerButton {
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+}
+
+#sandboxButton {
+	background-color: #f6f6f6;
+	color: #3f3f3f;
+}
+
+#privateRoomButton {
+	margin-left: auto;
+    margin-right: auto;
+	margin-top: 5vh;
+	margin-bottom: auto;
+	border: none;
+	text-align: center;
+	text-decoration: none;
+	font-size: 5.2vh;
+	
+	width: auto;
+	height: auto;
+	padding: 2vh 4.8vw;
+	
+	background-color: #3f3f3f;
+	color: #f6f6f6;
+}
+
+
+#gameTitle {
+	text-align: center;
+/*	margin-top: 0.5em;*/
+	margin-top: 6.5vh;
+	margin-bottom: 0;
+/*	font-size: 5em;*/
+	font-size: 13vh;
+}
+
+#gameSubTitle {
+	text-align: center;
+/*	margin-top: 0.1em;*/
+	margin-top: 1.3vh;
+	font-size: 5.5vh;
+}

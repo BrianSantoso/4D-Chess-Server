@@ -3,11 +3,12 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 //import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import TrackballControls from "./TrackballControls.js";
 import { debugSphere } from "./Utils3D.js";
+import ChessGame from "./ChessGame.js";
 
 class SceneManager {
 	
 	constructor(rootElement) {
-		this._rootElement = rootElement;
+		this._root = rootElement;
 		
 		this._scene = null;
 		this._camera = null;
@@ -24,6 +25,10 @@ class SceneManager {
 		}
 		
 		this._initEventListeners();
+	}
+	
+	getCamera() {
+		return this._camera;
 	}
 	
 	remove(object) {
@@ -48,12 +53,12 @@ class SceneManager {
 	
 	_initScene() {
 		this._scene = new THREE.Scene();
-		this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 9000); 
+		this._camera = new THREE.PerspectiveCamera(75, this._root.clientWidth / this._root.clientHeight, 0.1, 9000); 
 		this._camera.position.set(0, 0, 0);
 		this._renderer = new THREE.WebGLRenderer({antialias: true});
-		this._renderer.setSize(window.innerWidth, window.innerHeight);
+		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
 		this._renderer.domElement.id = "three-canvas";
-		this._rootElement.appendChild(this._renderer.domElement);
+		this._root.appendChild(this._renderer.domElement);
 
 		this._renderer.setClearColor(0xf7f7f7);
 		// Somehow this fixes opacity issues
@@ -90,14 +95,15 @@ class SceneManager {
 	}
 	
 	onWindowResize() {
-		this._camera.aspect = window.innerWidth / window.innerHeight;
+		this._camera.aspect = this._root.clientWidth / this._root.clientHeight;
 		this._camera.updateProjectionMatrix();
-		this._renderer.setSize(window.innerWidth, window.innerHeight);
+		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
 		this._controls.handleResize();
 	}
 	
 	_initEventListeners() {
 		window.addEventListener('resize', () => {
+			// TODO: should not be window's resize event, but instead this._root's resize event
 			this.onWindowResize();
 			// TODO: detach event listener
 		}, false);
@@ -150,12 +156,13 @@ class SceneManager {
 		// calculate mouse position in normalized device coordinates
 		// (-1 to +1) for both components
 		let mouse = new THREE.Vector2();
-		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+		mouse.x = ( event.clientX / this._root.clientWidth ) * 2 - 1;
+		mouse.y = - ( event.clientY / this._root.clientHeight ) * 2 + 1;
 		return mouse;
 	}
 	
 	_initControls() {
+		// Camera's position will get reassigned.
 		this._camera.position.set( 0, 20, 100 );
 		
 		const minDistance = 100;
@@ -209,8 +216,28 @@ class SceneManager {
 		this._controls2.update();
 	}
 	
+	_syncControls() {
+		this._controls.update();
+		let target = this._controls.target;
+		this._controls2.target.set(target.x, target.y, target.z);
+		this._controls2.update();
+	}
+	
 	draw() {
 		this._renderer.render(this._scene, this._camera);
+	}
+	
+	configureCamera(boardGraphics, team) {
+		team = team === ChessGame.WHITE ? 1 : - 1;
+		let center = boardGraphics.getCenter();
+		let offset = new THREE.Vector3(team * 320, 130, 0);
+		let home = center.clone().add(offset);
+		
+		console.log(home, center)
+		
+		this._camera.position.set(home.x, home.y, home.z);
+		this._controls.target.set(center.x, center.y, center.z);
+		this._syncControls();
 	}
 }
 

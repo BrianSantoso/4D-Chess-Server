@@ -67,28 +67,35 @@ class BoardGraphics {
 		this._canInteract = true;
 	}
 	
+	// TODO. view3D is a misnomer. Should be renamed Object3D or similar.
 	view3D() {
 		return this._container;
 	}
 	
 	getBoundingBox() {
-		return this._boundingBox;
+		let min = new THREE.Vector3(-this._squareSize / 2, 0, this._squareSize / 2).add(this._container.position);
+		
+		let boardSize = this._squareSize * this.n;
+		let max = new THREE.Vector3(boardSize, 
+									this._deltaY * this.n,
+									-(boardSize * this.n + this._deltaW * (this.n - 1))
+								   ).add(min);
+		
+		return new THREE.Box3(min, max);
+	}
+	
+	getCenter() {
+		let boundingBox = this.getBoundingBox();
+		let min = boundingBox.min.clone();
+		let max = boundingBox.max.clone();
+		
+		return min.add(max).divideScalar(2);
 	}
 	
 	_init() {
 		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
 		let square = 25;
 		this._container.add(checkerboard4D(this.n, square, square * 3, square * 1.5));
-		
-//		let min = this._container.position.copy();
-//		
-//		let boardSize = this._squareSize * this.n;
-//		let max = new THREE.Vector3(boardSize, 
-//									boardSize * this.n + this._deltaW * (this.n - 1), 
-//									this._deltaY * this.n
-//								   ).add(min);
-//		
-//		this._boundingBox = new THREE.Box3(min, max);
 		
 		console.log('BoardGraphics', this._container);
 	}

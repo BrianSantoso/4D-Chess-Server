@@ -43,9 +43,9 @@ class GameManager {
 class ClientGameManager extends GameManager {
 	constructor() {
 		super();
+		this._domElement = document.getElementById("embed");
 		this._view2D = new View2D();
-		// TODO: Pass DOM Element to contain threejs canvas.
-		this._view3D = new SceneManager(document.getElementById("gameManager")); 
+		this._view3D = new SceneManager(this._domElement); 
 		
 		this._controller = null;
 		
@@ -67,6 +67,7 @@ class ClientGameManager extends GameManager {
 		
 		// TODO: Is this structure okay to assume since this is a 3D game manager?
 		this._view3D.add(game._boardGraphics.view3D());
+		this._view3D.configureCamera(game._boardGraphics, ChessGame.WHITE);
 		
 		super.setGame(game);
 		
