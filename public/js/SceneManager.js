@@ -236,7 +236,7 @@ class SceneManager {
 	configureCamera(boardGraphics, team, numFrames=0) {
 		team = team === ChessGame.WHITE ? 1 : - 1;
 		let center = boardGraphics.getCenter();
-		let offset = new THREE.Vector3(team * 320, 130, 0);
+		let offset = new THREE.Vector3(team * 320, 115, 0);
 		let home = center.clone().add(offset);
 		
 		console.log(home, center)

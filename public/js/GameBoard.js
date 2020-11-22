@@ -29,6 +29,9 @@ class GameBoard {
 		
 		// check for pawn promotion
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
+		
+		// if not undoing a move
+		move.piece.update();
 	}
 	
 	get(x, y, z, w) {
@@ -42,7 +45,7 @@ class GameBoard {
 				w >= 0 && w < this.n
 	}
 	
-	getPossibleMoves(x, y, z, w) {
+	getPossibleMoves(x, y, z, w, attacksOnly=false) {
 		let originPiece = this.get(x, y, z, w);
 		let result = [];
 		
@@ -50,15 +53,79 @@ class GameBoard {
 			return result;
 		}
 		
-		let paramsList = originPiece.rayCastParams();
+		let paramsList = attacksOnly ? originPiece.attackRayCastParams() : originPiece.rayCastParams();
 		
 		paramsList.forEach(args => {
 			let moves = this._rayCast(x, y, z, w, args.direction, 
 									  args.maxSteps, args.canCapture);
 			result.push(...moves);
 		});
+		
+		result = unique(result);
 		// TODO: filter by legality
-		return unique(result);
+		if (!attacksOnly) {
+			result = result.filter(this.isLegal.bind(this));
+		}
+		return result;
+	}
+	
+	inCheck(team) {
+		let isKing = (piece) => {
+			return piece.type === 'king' && piece.team === team;
+		}
+		let exit = (piece) => true;
+		let king = this._applyTo(exit, isKing);
+		
+		let oppositeTeam = (piece) => piece.oppositeTeam(king);
+		let attacksKing = (piece) => {
+			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, true);
+			let attacks = moves.filter(move => move.isCapture());
+			return attacks.some(move => move.capturedPiece === king);
+		}
+		let predicate = (piece) => oppositeTeam(piece) && attacksKing(piece);
+		
+		let attackers = [];
+		let grab = (piece) => {
+			attackers.push(piece);
+			return false;
+		}
+		this._applyTo(grab, predicate);
+		return attackers;
+	}
+	
+	isLegal(move) {
+		// Simulate move
+		let temp = this.get(move.x1, move.y1, move.z1, move.w1, move.piece);
+		this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
+		this.set(move.x0, move.y0, move.z0, move.w0, new Piece())
+		
+		let attackers = this.inCheck(move.piece.team);
+		let isLegal = attackers.length === 0;
+		
+		// Return board to normal state
+		this.set(move.x1, move.y1, move.z1, move.w1, temp);
+		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
+		
+		return isLegal;
+	}
+	
+	_applyTo(f, predicate) {
+		// Applies f to all pieces satisfying predicate. If f returns true, 
+		// iteration stops and the piece which caused the exit is returned.
+		predicate = predicate || (() => true);
+		for (let x = 0; x < this._pieces.length; x++) {
+			for (let y = 0; y < this._pieces[0].length; y++) {
+				for (let z = 0; z < this._pieces[0][0].length; z++) {
+					for (let w = 0; w < this._pieces[0][0][0].length; w++) {
+						let piece = this._pieces[x][y][z][w];
+						if (predicate(piece) && f(piece)) {
+							return piece;
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	_rayCast(x, y, z, w, direction, maxSteps, canCapture) {

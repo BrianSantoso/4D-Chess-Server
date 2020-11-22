@@ -10,7 +10,9 @@ class ChessGame {
 		this._black = null;
 		this._boardGraphics = null;
 		this._turn = ChessGame.WHITE;
-		this._mode = null;
+		// Why not just have subclasses of GameBoard override rules
+		// for custom gamemodes (freeplay, etc.)?
+//		this._mode = null;
 		this._moveHistory = []; // TODO: doubly linked list of moves
 	}
 	
@@ -214,5 +216,15 @@ ChessGame.BLACK.setPermissions(false, true, false);
 ChessGame.OMNISCIENT.setPermissions(true, true, false);
 
 ChessGame.TIE_GAME = 2;
+
+ChessGame.oppositeTeam = (team) => {
+	if (team === ChessGame.WHITE) {
+		return ChessGame.BLACK;
+	} else if (team === ChessGame.BLACK) {
+		return ChessGame.WHITE;
+	} else {
+		return null;
+	}
+};
 
 export default ChessGame;

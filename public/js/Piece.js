@@ -19,6 +19,10 @@ class Piece {
 		this.w = w;
 	}
 	
+	update() {
+		
+	}
+	
 	movement() {
 		return null;
 	}
@@ -26,8 +30,8 @@ class Piece {
 	attack() {
 		// By default, piece attacking behavior is identical to its movement, except that it can capture
 		let attackBehavior = this.movement().map(behavior => {
-			let attackingVersion = behavior.copy();
-			attackingVersion.canCapture = true;
+			let attackingVersion = behavior.attackingVersion();
+//			attackingVersion.canCapture = true;
 			return attackingVersion;
 		});
 		return attackBehavior;
@@ -38,22 +42,28 @@ class Piece {
 	}
 	
 	attackRayCastParams() {
-		let behaviors = this.attack();
-		let params = behaviors.map(b => b.toRayCastParams()).flat();
-		return unique(params);
+		if (!this._attackRayCastParams) {
+			let behaviors = this.attack();
+			let params = behaviors.map(b => b.toRayCastParams()).flat();
+			this._attackRayCastParams = unique(params);
+		}
+		return this._attackRayCastParams;
 	}
 	
 	rayCastParams() {
-		let behaviors = this.behavior();
-		let params = behaviors.map(b => b.toRayCastParams()).flat();
-		return unique(params);
+		if (!this._rayCastParams) {
+			let behaviors = this.behavior();
+			let params = behaviors.map(b => b.toRayCastParams()).flat();
+			this._rayCastParams = unique(params);
+		}
+		return this._rayCastParams;
 	}
 	
 	oppositeTeam(otherPiece) {
-		if (this.team == ChessGame.WHITE) {
-			return otherPiece.team == ChessGame.BLACK;
-		} else if (this.team = ChessGame.BLACK) {
-			return otherPiece.team == ChessGame.WHITE;
+		if (this.team === ChessGame.WHITE) {
+			return otherPiece.team === ChessGame.BLACK;
+		} else if (this.team === ChessGame.BLACK) {
+			return otherPiece.team === ChessGame.WHITE;
 		} else {
 			return false;
 		}
@@ -78,13 +88,21 @@ class Pawn extends Piece {
 		this.type = 'pawn';
 	}
 	
+	update() {
+		if (!this.metaData.hasMoved) {
+			this.metaData.hasMoved = true;
+			this._rayCastParams = null;
+			this._attackRayCastParams = null;
+		}
+	}
+	
 	movement() {
 		let forwards = this.team == ChessGame.WHITE ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		let movement;
 		if (this.metaData.hasMoved) {
 			movement = [
-				new PieceBehavior([1], 1, false, [
+				PieceBehavior.create([1], 1, false, [
 					PieceBehavior.CANT_MOVE,
 					PieceBehavior.CANT_MOVE,
 					forwards,
@@ -93,7 +111,7 @@ class Pawn extends Piece {
 			];
 		} else {
 			movement = [
-				new PieceBehavior([1], 2, false, [
+				PieceBehavior.create([1], 2, false, [
 					PieceBehavior.CANT_MOVE,
 					PieceBehavior.CANT_MOVE,
 					forwards,
@@ -109,7 +127,7 @@ class Pawn extends Piece {
 		let forwards = this.team == ChessGame.WHITE ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		return [
-			new PieceBehavior([1, 1], 1, true, [
+			PieceBehavior.create([1, 1], 1, true, [
 				PieceBehavior.BIDIRECTIONAL,
 				PieceBehavior.BIDIRECTIONAL,
 				forwards,
@@ -117,6 +135,19 @@ class Pawn extends Piece {
 			])
 		];
 	}
+	
+	// Pawn rayCastParams cannot be simply cached because its behavior changes.
+//	attackRayCastParams() {
+//		let behaviors = this.attack();
+//		let params = behaviors.map(b => b.toRayCastParams()).flat();
+//		return unique(params);
+//	}
+//	
+//	rayCastParams() {
+//		let behaviors = this.behavior();
+//		let params = behaviors.map(b => b.toRayCastParams()).flat();
+//		return unique(params);
+//	}
 }
 
 class King extends Piece {
@@ -125,8 +156,8 @@ class King extends Piece {
 		this.type = 'king';
 	}
 	movement() {
-		let orthogonal = new PieceBehavior([1], 1);
-		let diagonal = new PieceBehavior([1, 1], 1);
+		let orthogonal = PieceBehavior.create([1], 1);
+		let diagonal = PieceBehavior.create([1, 1], 1);
 		return [orthogonal, diagonal];
 	}
 }
@@ -137,8 +168,8 @@ class Queen extends Piece {
 		this.type = 'queen';
 	}
 	movement() {
-		let orthogonal = new PieceBehavior([1], Infinity);
-		let diagonal = new PieceBehavior([1, 1], Infinity);
+		let orthogonal = PieceBehavior.create([1], Infinity);
+		let diagonal = PieceBehavior.create([1, 1], Infinity);
 		return [orthogonal, diagonal];
 	}
 }
@@ -149,7 +180,7 @@ class Bishop extends Piece {
 		this.type = 'bishop';
 	}
 	movement() {
-		let diagonal = new PieceBehavior([1, 1], Infinity);
+		let diagonal = PieceBehavior.create([1, 1], Infinity);
 		return [diagonal];
 	}
 }
@@ -160,7 +191,7 @@ class Knight extends Piece {
 		this.type = 'knight';
 	}
 	movement() {
-		let L = new PieceBehavior([1, 2], 1);
+		let L = PieceBehavior.create([1, 2], 1);
 		return [L];
 	}
 }
@@ -171,7 +202,7 @@ class Rook extends Piece {
 		this.type = 'rook';
 	}
 	movement() {
-		let orthogonal = new PieceBehavior([1], Infinity);
+		let orthogonal = PieceBehavior.create([1], Infinity);
 		return [orthogonal];
 	}
 }
@@ -185,21 +216,29 @@ class PieceBehavior {
 		this.maxSteps = maxSteps;
 		this.canCapture = canCapture // Whether piece can capture another piece. Used to differentiate between movement and attacks
 		this.axisRules = axisRules;
+		this._rayCastParams;
 	}
 	
-	copy() {
-		return new PieceBehavior(this.units, this.maxSteps, this.canCapture, this.axisRules);
+	attackingVersion() {
+//		return PieceBehavior.create(this.units, this.maxSteps, this.canCapture, this.axisRules);
+		return PieceBehavior.create(this.units, this.maxSteps, true, this.axisRules);
 	}
 	
 	toRayCastParams() {
 		// Returns all ray cast directions given for this piece behavior
-		
-		let directions = this._permuteReplace();
-		return directions.map(dir => ({
-			direction: dir,
-			maxSteps: this.maxSteps,
-			canCapture: this.canCapture
-		}));
+		if (!this._rayCastParams) {
+			let directions = this._permuteReplace();
+			this._rayCastParams = directions.map(dir => ({
+				direction: dir,
+				maxSteps: this.maxSteps,
+				canCapture: this.canCapture
+			}));
+		}
+		return this._rayCastParams;
+	}
+	
+	hash() {
+		return JSON.stringify([this.units, this.maxSteps, this.canCapture, this.axisRules]);
 	}
 	
 	_expandAxisRules() {
@@ -275,7 +314,22 @@ class PieceBehavior {
 	
 }
 
+PieceBehavior.cachedBehaviors = {};
 
+PieceBehavior.create = (units, maxSteps, canCapture=false, axisRules=PieceBehavior.ALL_DIRS) => {
+	let behavior = new PieceBehavior(units, maxSteps, canCapture, axisRules);
+	console.log(PieceBehavior.cachedBehaviors)
+	let hash = behavior.hash();
+	let result;
+	if (hash in PieceBehavior.cachedBehaviors) {
+		return PieceBehavior.cachedBehaviors[hash];
+	} else {
+		PieceBehavior.cachedBehaviors[hash] = behavior;
+		behavior.toRayCastParams();
+		return behavior;
+	}
+	return behavior;
+}
 
 PieceBehavior.BACKWARD = -1;
 PieceBehavior.CANT_MOVE = 0;
