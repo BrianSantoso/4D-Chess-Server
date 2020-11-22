@@ -1,26 +1,9 @@
-import ChessGame from "./ChessGame.js";
-import { unique } from "./ArrayUtils.js";
+import { unique } from "../public/js/ArrayUtils.js";
+import * as fs from 'fs';
 
-class Piece {
-	constructor(team=ChessGame.NONE) {
-		this.team = team;
-		this.metaData = null;
-		this.type = '';
-		this.x = -1;
-		this.y = -1;
-		this.z = -1;
-		this.w = -1;
-	}
-	
-	set(x, y, z, w) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.w = w;
-	}
-	
-	update() {
-		
+class PieceParamsTemplate {
+	constructor(type) {
+		this.type = type;
 	}
 	
 	movement() {
@@ -31,7 +14,6 @@ class Piece {
 		// By default, piece attacking behavior is identical to its movement, except that it can capture
 		let attackBehavior = this.movement().map(behavior => {
 			let attackingVersion = behavior.attackingVersion();
-//			attackingVersion.canCapture = true;
 			return attackingVersion;
 		});
 		return attackBehavior;
@@ -58,73 +40,30 @@ class Piece {
 		}
 		return this._rayCastParams;
 	}
-	
-	oppositeTeam(otherPiece) {
-		if (this.team === ChessGame.WHITE) {
-			return otherPiece.team === ChessGame.BLACK;
-		} else if (this.team === ChessGame.BLACK) {
-			return otherPiece.team === ChessGame.WHITE;
-		} else {
-			return false;
-		}
-	}
-	
-	sameTeam(otherPiece) {
-		return this.team == otherPiece.team;
-	}
-	
-	isEmpty() {
-		return this.team == ChessGame.NONE;
-	}
 }
 
-class Pawn extends Piece {
+class PawnUnmoved extends PieceParamsTemplate {
 	constructor(team) {
-		super(team);
-		this.metaData = {
-			hasMoved: false,
-			justMovedTwoSpaces: false
-		};
-		this.type = 'pawn';
-	}
-	
-	update() {
-		if (!this.metaData.hasMoved) {
-			this.metaData.hasMoved = true;
-			this._rayCastParams = null;
-			this._attackRayCastParams = null;
-		}
+		super('pawnUnmoved'+team);
+		this.team = team;
 	}
 	
 	movement() {
-		let forwards = this.team == ChessGame.WHITE ? 
+		let forwards = this.team == 'White' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
-		let movement;
-		if (this.metaData.hasMoved) {
-			movement = [
-				PieceBehavior.create([1], 1, false, [
-					PieceBehavior.CANT_MOVE,
-					PieceBehavior.CANT_MOVE,
-					forwards,
-					forwards
-				])
-			];
-		} else {
-			movement = [
-				PieceBehavior.create([1], 2, false, [
-					PieceBehavior.CANT_MOVE,
-					PieceBehavior.CANT_MOVE,
-					forwards,
-					forwards
-				])
-			];
-		}
-		
+		let movement = [
+			PieceBehavior.create([1], 2, false, [
+				PieceBehavior.CANT_MOVE,
+				PieceBehavior.CANT_MOVE,
+				forwards,
+				forwards
+			])
+		];	
 		return movement;
 	}
 	
 	attack() {
-		let forwards = this.team == ChessGame.WHITE ? 
+		let forwards = this.team == 'White' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		return [
 			PieceBehavior.create([1, 1], 1, true, [
@@ -135,25 +74,45 @@ class Pawn extends Piece {
 			])
 		];
 	}
-	
-	// Pawn rayCastParams cannot be simply cached because its behavior changes.
-//	attackRayCastParams() {
-//		let behaviors = this.attack();
-//		let params = behaviors.map(b => b.toRayCastParams()).flat();
-//		return unique(params);
-//	}
-//	
-//	rayCastParams() {
-//		let behaviors = this.behavior();
-//		let params = behaviors.map(b => b.toRayCastParams()).flat();
-//		return unique(params);
-//	}
 }
 
-class King extends Piece {
+class PawnMoved extends PieceParamsTemplate {
 	constructor(team) {
-		super(team);
-		this.type = 'king';
+		super('pawnMoved'+team);
+		this.team = team;
+	}
+	
+	movement() {
+		let forwards = this.team == this.team == 'White' ? 
+			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
+		let movement = [
+			PieceBehavior.create([1], 1, false, [
+				PieceBehavior.CANT_MOVE,
+				PieceBehavior.CANT_MOVE,
+				forwards,
+				forwards
+			])
+		];
+		return movement;
+	}
+	
+	attack() {
+		let forwards = this.team == 'White' ? 
+			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
+		return [
+			PieceBehavior.create([1, 1], 1, true, [
+				PieceBehavior.BIDIRECTIONAL,
+				PieceBehavior.BIDIRECTIONAL,
+				forwards,
+				forwards
+			])
+		];
+	}
+}
+
+class King extends PieceParamsTemplate {
+	constructor() {
+		super('king');
 	}
 	movement() {
 		let orthogonal = PieceBehavior.create([1], 1);
@@ -162,10 +121,9 @@ class King extends Piece {
 	}
 }
 
-class Queen extends Piece {
-	constructor(team) {
-		super(team);
-		this.type = 'queen';
+class Queen extends PieceParamsTemplate {
+	constructor() {
+		super('queen');
 	}
 	movement() {
 		let orthogonal = PieceBehavior.create([1], Infinity);
@@ -174,10 +132,9 @@ class Queen extends Piece {
 	}
 }
 
-class Bishop extends Piece {
-	constructor(team) {
-		super(team);
-		this.type = 'bishop';
+class Bishop extends PieceParamsTemplate {
+	constructor() {
+		super('bishop');
 	}
 	movement() {
 		let diagonal = PieceBehavior.create([1, 1], Infinity);
@@ -185,10 +142,9 @@ class Bishop extends Piece {
 	}
 }
 
-class Knight extends Piece {
-	constructor(team) {
-		super(team);
-		this.type = 'knight';
+class Knight extends PieceParamsTemplate {
+	constructor() {
+		super('knight');
 	}
 	movement() {
 		let L = PieceBehavior.create([1, 2], 1);
@@ -196,10 +152,9 @@ class Knight extends Piece {
 	}
 }
 
-class Rook extends Piece {
-	constructor(team) {
-		super(team);
-		this.type = 'rook';
+class Rook extends PieceParamsTemplate {
+	constructor() {
+		super('rook');
 	}
 	movement() {
 		let orthogonal = PieceBehavior.create([1], Infinity);
@@ -220,7 +175,6 @@ class PieceBehavior {
 	}
 	
 	attackingVersion() {
-//		return PieceBehavior.create(this.units, this.maxSteps, this.canCapture, this.axisRules);
 		return PieceBehavior.create(this.units, this.maxSteps, true, this.axisRules);
 	}
 	
@@ -318,7 +272,6 @@ PieceBehavior.cachedBehaviors = {};
 
 PieceBehavior.create = (units, maxSteps, canCapture=false, axisRules=PieceBehavior.ALL_DIRS) => {
 	let behavior = new PieceBehavior(units, maxSteps, canCapture, axisRules);
-	console.log(PieceBehavior.cachedBehaviors)
 	let hash = behavior.hash();
 	let result;
 	if (hash in PieceBehavior.cachedBehaviors) {
@@ -345,25 +298,31 @@ PieceBehavior.ALL_DIRS = [
 PieceBehavior.computeAll = () => {
 	let output = {};
 	let templates = [
-		new Pawn(null),
-		new Pawn(null),
-		new Rook(null),
-		new Knight(null),
-		new Bishop(null),
-		new Queen(null),
-		new King(null),
+		new PawnUnmoved('White'),
+		new PawnUnmoved('Black'),
+		new PawnMoved('White'),
+		new PawnMoved('Black'),
+		new Rook(),
+		new Knight(),
+		new Bishop(),
+		new Queen(),
+		new King(),
 	];
-	templates[1].update();
-	templates[1].type = 'pawnMoved'
 	templates.forEach(piece => {
 		let pieceParams = {
 			attack: piece.attackRayCastParams(),
 			behavior: piece.rayCastParams()
 		}
 		output[piece.type] = pieceParams;
-	})
+	});
+	fs.writeFile('./testing/rayCastParams.json', JSON.stringify(output), (err) => {
+        if (err) {
+			console.log('Error writing file:', err);
+		}
+    });
 	console.log(output);
 }
 
-export default Piece;
-export { Pawn, Rook, Knight, Bishop, King, Queen };
+PieceBehavior.computeAll();
+
+export default PieceBehavior;
