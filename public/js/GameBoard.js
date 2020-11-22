@@ -130,6 +130,9 @@ class GameBoard {
 	
 	_rayCast(x, y, z, w, direction, maxSteps, canCapture) {
 		let [startX, startY, startZ, startW] = [x, y, z, w];
+		if (maxSteps === null) {
+			maxSteps = Infinity;
+		}
 		let originPiece = this.get(x, y, z, w);
 		if (originPiece.isEmpty()) {
 			return null;
