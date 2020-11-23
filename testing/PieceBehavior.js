@@ -83,7 +83,7 @@ class PawnMoved extends PieceParamsTemplate {
 	}
 	
 	movement() {
-		let forwards = this.team == this.team == 'White' ? 
+		let forwards = this.team == 'White' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		let movement = [
 			PieceBehavior.create([1], 1, false, [

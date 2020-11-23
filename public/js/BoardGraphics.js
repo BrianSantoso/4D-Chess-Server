@@ -417,6 +417,14 @@ class BoardGraphics {
 		this._allAnimProms.push(promise);
 		return promise;
 	}
+	
+	_blink(mesh, numFrames) {
+		let animation = Animation.blink(Animation.GEN_COS(6), mesh, Models.materials.red.color, 60);
+		
+		let promise = this._animator.animate(animation);
+		this._allAnimProms.push(promise);
+		return promise;
+	}
 }
 
 export default BoardGraphics;

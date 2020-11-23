@@ -161,12 +161,6 @@ class Interactor3DWorker {
 			if (this._showingMovesFor !== mesh) {
 				// If different than already showing, hide previous and show new
 				this._hidePossibleMoves(this._showingMovesFor);
-				
-				// In case this piece is already showing moves (through another selector)
-				// hide moves and reshow to prevent possibility of double showing
-//				this._hidePossibleMoves(mesh);
-				/// edit: this shouldnt be the job of the interactor, but rather the board graphics
-				
 				this._showPossibleMoves(mesh, preview);
 			}
 		} else {
@@ -181,10 +175,6 @@ class Interactor3DWorker {
 			if (this._highlighting !== mesh) {
 				// If different than already showing, hide previous and show new
 				this._unhighlight(this._highlighting);
-				// In case this piece is already showing moves (through another selector)
-				// hide moves and reshow to prevent possibility of double showing
-//				this._hidePossibleMoves(mesh);
-				/// edit: this shouldnt be the job of the interactor, but rather the board graphics
 				this._highlight(mesh);
 			}
 		} else {
@@ -241,7 +231,6 @@ class Interactor3DWorker {
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-//			this._boardGraphics().hidePossibleMoves(piece, 160);
 			this._boardGraphics().hidePossibleMoves(piece, 10);
 		}
 	}
@@ -263,7 +252,7 @@ class Interactor3DWorker {
 
 class MovePreviewer extends Interactor3DWorker {
 	showMovesFor(mesh) {
-//		super.showMovesFor(mesh, true);
+		
 	}
 }
 

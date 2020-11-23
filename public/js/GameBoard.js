@@ -63,8 +63,9 @@ class GameBoard {
 		
 		result = unique(result);
 		// TODO: filter by legality
+		let legal = (move) => this.isLegal(move).length === 0;
 		if (!attacksOnly) {
-			result = result.filter(this.isLegal.bind(this));
+			result = result.filter(legal);
 		}
 		return result;
 	}
@@ -93,6 +94,16 @@ class GameBoard {
 		return attackers;
 	}
 	
+	allPossibleMoves(team) {
+		let moves = [];
+		let sameTeam = (piece) => piece.team === team;
+		let grabMoves = (piece) => {
+			moves = moves.concat(this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w));
+		}
+		this._applyTo(grabMoves ,sameTeam);
+		return moves;
+	}
+	
 	isLegal(move) {
 		// Simulate move
 		let temp = this.get(move.x1, move.y1, move.z1, move.w1, move.piece);
@@ -100,13 +111,12 @@ class GameBoard {
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece())
 		
 		let attackers = this.inCheck(move.piece.team);
-		let isLegal = attackers.length === 0;
 		
-		// Return board to normal state
+		// Return board to its original state
 		this.set(move.x1, move.y1, move.z1, move.w1, temp);
 		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
 		
-		return isLegal;
+		return attackers;
 	}
 	
 	_applyTo(f, predicate) {
@@ -148,6 +158,7 @@ class GameBoard {
 			let promotion = originPiece.type === 'pawn' && this._isPromotionSquare(x, y, z, w);
 			let promotionNew = null;
 			if (promotion) {
+				// why not call this.set(x, y, z, w, promotionNew) ?
 				promotionNew = new Queen(team);
 				promotionNew.set(x, y, z, w);
 			}

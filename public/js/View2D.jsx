@@ -115,7 +115,7 @@ class CircleButton extends Component {
 	render() {
 		return (
 			<a className='game-button' onClick={this.props.handleClick} >
-				<img draggable="false" src={this.props.icon} />
+				<img src={this.props.icon} />
 			</a>
 		)
 	}
