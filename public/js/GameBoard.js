@@ -45,7 +45,7 @@ class GameBoard {
 				w >= 0 && w < this.n
 	}
 	
-	getPossibleMoves(x, y, z, w, attacksOnly=false) {
+	getPossibleMoves(x, y, z, w, legalOnly=true) {
 		let originPiece = this.get(x, y, z, w);
 		let result = [];
 		
@@ -53,8 +53,9 @@ class GameBoard {
 			return result;
 		}
 		
-		let paramsList = attacksOnly ? originPiece.attackRayCastParams() : originPiece.rayCastParams();
-		
+		// let paramsList = attacksOnly ? originPiece.attackRayCastParams() : originPiece.rayCastParams();
+		let paramsList = originPiece.rayCastParams();
+
 		paramsList.forEach(args => {
 			let moves = this._rayCast(x, y, z, w, args.direction, 
 									  args.maxSteps, args.canCapture);
@@ -62,9 +63,12 @@ class GameBoard {
 		});
 		
 		result = unique(result);
-		// TODO: filter by legality
-		let legal = (move) => this.isLegal(move).length === 0;
-		if (!attacksOnly) {
+
+		if (legalOnly) {
+			// Must impose this extra condition to prevent mutual recursion 
+			// between getPossibleMoves and inCheck 
+			// (getLegalMoves -> isLegal -> inCheck)
+			let legal = (move) => this.isLegal(move).length === 0;
 			result = result.filter(legal);
 		}
 		return result;
@@ -79,7 +83,10 @@ class GameBoard {
 		
 		let oppositeTeam = (piece) => piece.oppositeTeam(king);
 		let attacksKing = (piece) => {
-			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, true);
+			// Must request legalOnly=false to prevent mutual recursion
+			// between inCheck and getPossibleMoves
+			// (getLegalMoves -> isLegal -> inCheck)
+			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, false);
 			let attacks = moves.filter(move => move.isCapture());
 			return attacks.some(move => move.capturedPiece === king);
 		}
@@ -100,7 +107,7 @@ class GameBoard {
 		let grabMoves = (piece) => {
 			moves = moves.concat(this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w));
 		}
-		this._applyTo(grabMoves ,sameTeam);
+		this._applyTo(grabMoves, sameTeam);
 		return moves;
 	}
 	

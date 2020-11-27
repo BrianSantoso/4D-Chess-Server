@@ -129,7 +129,7 @@ const Models = {
 		},
 	},
 
-	createMesh: function(piece, material, pos, scale=1, canRayCast=true) {
+	createMesh: function(piece, material, pos, scale=1, opacity=1) {
 		
 		if (typeof material == "string") {
 			material = Models.materials[material];
@@ -137,7 +137,16 @@ const Models = {
 		
 		const modelData = Models.modelData[piece];
 		const geometry = modelData.geometry;
-		let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(material))
+
+		let newMaterial = new THREE.MeshPhongMaterial(material);
+		newMaterial.originalColor = newMaterial.color.clone();
+		if (opacity < 1) {
+			// Specifying a material's opacity will override its default value.
+			newMaterial.opacity = opacity;
+			newMaterial.transparent = true;
+		}
+
+		let mesh = new THREE.Mesh(geometry, newMaterial);
 		
 		mesh.position.set(0, 0, 0);
 		mesh.rotation.set(modelData.rotation.x, modelData.rotation.y, modelData.rotation.z);

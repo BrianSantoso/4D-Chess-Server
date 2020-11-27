@@ -213,7 +213,7 @@ Animation.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames) {
 
 Animation.blink = function(mode, mesh, color, numFrames) {
 	let frames = [];
-	let originalColor = mesh.material.color;
+	let originalColor = mesh.material.originalColor;
 	let targetColor = new THREE.Color(color);
 	for (let frame = 1; frame <= numFrames; frame++) {
 		let percent = mode(frame / numFrames);

@@ -28,12 +28,12 @@ class Piece {
 		return null;
 	}
 	
-	attackRayCastParams() {
-		return rayCastParams['default'][this.type]['attack'];
-	}
+	// attackRayCastParams() {
+	// 	return rayCastParams['default'][this._paramKey()]['attack'];
+	// }
 	
 	rayCastParams() {
-		return rayCastParams['default'][this.type]['behavior'];
+		return rayCastParams['default'][this._paramKey()]['behavior'];
 	}
 	
 	oppositeTeam(otherPiece) {
@@ -53,6 +53,10 @@ class Piece {
 	isEmpty() {
 		return this.team == ChessGame.NONE;
 	}
+
+	_paramKey() {
+		return this.type;
+	}
 }
 
 class Pawn extends Piece {
@@ -68,19 +72,11 @@ class Pawn extends Piece {
 	update() {
 		this.metaData.hasMoved = true;
 	}
-	
-	attackRayCastParams() {
-		let moved = this.metaData.hasMoved ? 'pawnMoved' : 'pawnUnmoved'; 
+
+	_paramKey() {
+		let moved = this.metaData.hasMoved ? 'Moved' : 'Unmoved'; 
 		let team = this.team === ChessGame.WHITE ? 'White' : 'Black';
-		let lookup = moved + team;
-		return rayCastParams['default'][lookup]['attack'];
-	}
-	
-	rayCastParams() {
-		let moved = this.metaData.hasMoved ? 'pawnMoved' : 'pawnUnmoved'; 
-		let team = this.team === ChessGame.WHITE ? 'White' : 'Black';
-		let lookup = moved + team;
-		return rayCastParams['default'][lookup]['behavior'];
+		return this.type + moved + team;
 	}
 }
 

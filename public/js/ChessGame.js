@@ -54,9 +54,9 @@ class ChessGame {
 		
 	}
 	
-	getPossibleMoves(piece) {
+	getPossibleMoves(piece, legalOnly=true) {
 		// TODO: interact with mode to determine altered possible moves
-		return this._board.getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
+		return this._board.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, legalOnly);
 	}
 	
 	_getCurrentPlayer() {

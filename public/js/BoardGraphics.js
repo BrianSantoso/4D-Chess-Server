@@ -36,6 +36,7 @@ class BoardGraphics {
 		this._deltaY = this._squareSize * 3;
 		this._deltaW = this._squareSize * 1.5;
 		
+		// TODO: add a get(piece) method
 		this._pieceToMesh = new Map();
 		
 		this._init();
@@ -141,11 +142,12 @@ class BoardGraphics {
 		if (preview) {
 			material = move.capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
 		} else {
-			material = move.capturedPiece.isEmpty() ? 'green' : 'red';
+			material = move.capturedPiece.isEmpty() ? 'green' : 'orange';
 		}
 		
 		let scale = move.capturedPiece.isEmpty() ? 1 : 1;
-		let mesh = Models.createMesh(type, material, pos, scale);
+		let opacity = move.capturedPiece.isEmpty() ? 0.7 : 0.99;
+		let mesh = Models.createMesh(type, material, pos, scale, opacity);
 		let rotation = team === ChessGame.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
 		this._ghost.add(mesh);
@@ -181,7 +183,7 @@ class BoardGraphics {
 		
 		let showAnimationProms = [];
 		// hide moves if already showing
-		let fadeAnimationProm = this.hidePossibleMoves(piece, frames);
+		let hideAnimationProms = this.hidePossibleMoves(piece, frames);
 		let meshes = new Set();
 		
 		moves.forEach(move => {
@@ -189,37 +191,43 @@ class BoardGraphics {
 			
 			if (frames) {
 				let fadeInProm = this._fadeIn(mesh, frames);
+				let growInProm = this._grow(mesh, frames);
 				showAnimationProms.push(fadeInProm);
+				showAnimationProms.push(growInProm);
+			} else {
+				// else do nothing
 			}
-			
 			meshes.add(mesh);
 		});
 		// TODO: is this even doing anything?
 		this._showingMovesFor.set(piece, meshes);
 		
-		return Promise.all(showAnimationProms.concat([fadeAnimationProm]));
+		return Promise.all(showAnimationProms.concat([hideAnimationProms]));
 	}
 	
 	hidePossibleMoves(piece, frames=0) {
 		let meshes = this._showingMovesFor.get(piece);
-		let fadeAnimationProm;
+		let hideAnimationProms = [];
 		if (!meshes) {
 			return Promise.resolve();
 		}
 		if (frames) {
 			meshes.forEach(mesh => {
-				fadeAnimationProm = this._fadeOut(mesh, frames).then(() => {
+				let fadeOutProm = this._fadeOut(mesh, frames);
+				let shrinkOutProm = this._shrink(mesh, frames);
+				hideAnimationProms.push(fadeOutProm);
+				hideAnimationProms.push(shrinkOutProm);
+				Promise.all([fadeOutProm, shrinkOutProm]).then(() => {
 					this._remove(mesh);
-					meshes.delete(mesh); // I think we already do that here (see below)
+					meshes.delete(mesh); // I think we already do that here (see above)
 				});
 			});
 			// TODO: remove meshes from _showingMovesFor?
 		} else {
 			this._remove(...meshes);
 			meshes.forEach(mesh => meshes.delete(mesh));
-			fadeAnimationProm = Promise.resolve();
 		}
-		return fadeAnimationProm;
+		return Promise.all(hideAnimationProms);
 	}
 	
 //	hideAllPossibleMoves(frames=0) {
@@ -366,6 +374,13 @@ class BoardGraphics {
 			this._enableInteraction();
 		});
 	}
+
+	explainAll(attackers) {
+		attackers.forEach(attacker => {
+			let mesh = this._pieceToMesh.get(attacker);
+			this._blink(mesh, 64);
+		})
+	}
 	
 	_remove(mesh) {
 		// Do not remove from _pieceToMesh or else we will lose 
@@ -419,8 +434,8 @@ class BoardGraphics {
 	}
 	
 	_blink(mesh, numFrames) {
-		let animation = Animation.blink(Animation.GEN_COS(6), mesh, Models.materials.red.color, 60);
-		
+		let animation = Animation.blink(Animation.GEN_COS(3), mesh, Models.materials.red.color, numFrames);
+		animation.override = true;
 		let promise = this._animator.animate(animation);
 		this._allAnimProms.push(promise);
 		return promise;

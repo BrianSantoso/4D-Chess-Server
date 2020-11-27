@@ -1,4 +1,5 @@
 import ChessGame from "./ChessGame.js";
+import { King } from "./Piece.js";
 
 class Interactor3D {
 	constructor(team, chessGame, commandQueue, rayCaster) {
@@ -10,14 +11,25 @@ class Interactor3D {
 		this._movePreviewer = new MovePreviewer(this, ChessGame.OMNISCIENT);
 		this._pieceSelector = new PieceSelector(this, team);
 		this._moveConfirmer = new MoveConfirmer(this, ChessGame.GHOST);
+		this._moveExplainer = new MoveExplainer(this, ChessGame.oppositeTeam(team));
 		
 		
 		let trySelectPiece = () => {
 			this._pieceSelector.update(); // update _pieceSelector's hovering
 			this._pieceSelector.select(); // set _pieceSelector's selected to its hovering
-			if (this._pieceSelector.selected()) { // if clicked on a piece
+
+			let selected = this._pieceSelector.selected();
+
+			// ideally this should be its own Interactor3DWorker
+			if (selected) { // if clicked on a piece
 				// Hide _movePreviewer's moves
 				this._movePreviewer.showMovesFor(null);
+
+				let unadressedCheck = this._pieceSelector.explainIfUnadressedCheck(selected);
+				if (unadressedCheck) {
+					this._pieceSelector.setSelected(null);
+					return;
+				}
 				// Show the moves for what was selected
 				this._pieceSelector.showMovesFor(this._pieceSelector.selected());
 				this._pieceSelector.highlight(this._pieceSelector.selected());
@@ -32,15 +44,26 @@ class Interactor3D {
 		let tryConfirmMove = () => {
 			this._moveConfirmer.update(); // update _moveConfirmer's hovering
 			this._moveConfirmer.select(); // set _moveConfirmer's selected to its hovering
-
-			let selectedGhost = this._moveConfirmer.selected()
+			this._moveExplainer.update();
+			this._moveExplainer.select();
+			
+			let selectedGhost = this._moveConfirmer.selected();
+			let selectedPiece = this._pieceSelector.selected();
+			let destination = this._moveExplainer.selected();
 
 			if (selectedGhost) { // if clicked on a ghost piece
 				let move = selectedGhost.move;
 				this.offerMove(move);
+			} else if (destination) {
+				// Pitfall of having a separate moveExplainer and moveConfirmer
+				// is that clicking a ghost that is behind of a blockedDestination
+				// will favor the ghost.
+				// The silver lining is that selecting a capture move will always work.
+				this._moveExplainer.explainIfBlocked(selectedPiece);
 			}
 			this.swapState(this._unselected);
 			this._moveConfirmer.setSelected(null);
+			this._moveExplainer.setSelected(null);
 			this._pieceSelector.setSelected(null);
 			this._pieceSelector.showMovesFor(null);
 			this._pieceSelector.highlight(null);
@@ -112,8 +135,8 @@ class Interactor3D {
 		return this._game.boardGraphics();
 	}
 	
-	getPossibleMoves(piece) {
-		return this._game.getPossibleMoves(piece);
+	getPossibleMoves(piece, legalOnly=true) {
+		return this._game.getPossibleMoves(piece, legalOnly);
 	}
 	
 	rayCast(team) {
@@ -211,13 +234,33 @@ class Interactor3DWorker {
 		this._selected = mesh;
 		return different;
 	}
+
+	explainIfUnadressedCheck(meshToMove) {
+		let pieceToMove = meshToMove.piece;
+		let notKing = pieceToMove.type !== 'king';
+		let legalMoves = this._getPossibleMoves(pieceToMove);
+		let theoreticalMoves = this._getPossibleMoves(pieceToMove, false);
+		if (notKing && legalMoves.length === 0 && theoreticalMoves.length > 0) {
+			let attackers = this._parent._game._board.inCheck(this._team);
+			this._parent._game.boardGraphics().explainAll(attackers);
+			return true;
+		}
+		return false;
+	}
+
+	explainIfBlocked(meshToMove) {
+		let blockedMove = this._isBlocked(meshToMove);
+		if (blockedMove) {
+			this._explainWhyBlocked(blockedMove);
+		}
+	}
 	
 	_boardGraphics() {
 		return this._parent.boardGraphics();
 	}
 	
-	_getPossibleMoves(piece) {
-		return this._parent.getPossibleMoves(piece);
+	_getPossibleMoves(piece, legalOnly=true) {
+		return this._parent.getPossibleMoves(piece, legalOnly);
 	}
 	
 	_showPossibleMoves(mesh, preview=false) {
@@ -248,6 +291,30 @@ class Interactor3DWorker {
 			this._boardGraphics().unhighlight(piece, 10);
 		}
 	}
+
+	_isBlocked(originalMesh) {
+		// Returns the blocked move of originalMesh corresponding to
+		// the destination given by this.selected();
+		let pieceToMove = originalMesh.piece;
+		let moves = this._getPossibleMoves(pieceToMove, false);
+		let destination = this.selected().piece;
+		for (let i = 0; i < moves.length; i++) {
+			let move = moves[i];
+			if (move.destinationIs(destination.x, destination.y, destination.z, destination.w)) {
+				return move;
+			}
+		}
+		return null;
+		// let destinationIs = move => {
+		// 	return move.destinationIs(destination.x, destination.y, destination.z, destination.w);
+		// }
+		// return moves.some(destinationIs);
+	}
+
+	_explainWhyBlocked(move) {
+		let attackers = this._parent._game._board.isLegal(move);
+		this._parent._game.boardGraphics().explainAll(attackers);
+	}
 }
 
 class MovePreviewer extends Interactor3DWorker {
@@ -261,6 +328,10 @@ class PieceSelector extends Interactor3DWorker {
 }
 
 class MoveConfirmer extends Interactor3DWorker {
+
+}
+
+class MoveExplainer extends Interactor3DWorker {
 
 }
 
