@@ -19,6 +19,13 @@ class Move {
 	isCapture() {
 		return !this.capturedPiece.isEmpty();
 	}
+
+	destinationIs(x1, y1, z1, w1) {
+		return this.x1 === x1 &&
+				this.y1 === y1 &&
+				this.z1 === z1 &&
+				this.w1 === w1;
+	}
 }
 
 export default Move;

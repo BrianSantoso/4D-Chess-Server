@@ -149,6 +149,18 @@ Animation.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
 
 Animation.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
 
+Animation.GEN_SIN = (hills) => {
+	return (x) => {
+		return 0.5 * Math.sin((2 * hills - 1) * Math.PI * x) + 0.5;
+	}
+}
+
+Animation.GEN_COS = (hills) => {
+	return (x) => {
+		return -0.5 * Math.cos(2 * hills * Math.PI * x) + 0.5;
+	}
+}
+
 Animation.translate = function(mode, mesh, startPos, endPos, numFrames) {
 	let frames = [];
 	let interval = endPos.clone().sub(startPos);
@@ -196,6 +208,21 @@ Animation.opacity = function(mode, mesh, startOpacity, endOpacity, numFrames) {
 		frames.push(frame);
 	}
 	
+	return new Animation(mesh, frames);
+}
+
+Animation.blink = function(mode, mesh, color, numFrames) {
+	let frames = [];
+	let originalColor = mesh.material.originalColor;
+	let targetColor = new THREE.Color(color);
+	for (let frame = 1; frame <= numFrames; frame++) {
+		let percent = mode(frame / numFrames);
+		let newColor = originalColor.clone().lerp(targetColor, percent);
+		let frame = () => {
+			mesh.material.color = newColor;
+		}
+		frames.push(frame);
+	}
 	return new Animation(mesh, frames);
 }
 

@@ -7,10 +7,12 @@
     "start": "node build/bundle-back.js",
     "buildfront": "webpack --mode=development --config webpack-front.config.cjs",
     "buildback": "webpack --mode=development --config webpack-back.config.cjs",
+    "buildtesting": "webpack --mode=development --config webpack-testing.config.cjs",
     "build": "npm run buildback && npm run buildfront",
     "testf": "npm run buildfront && npm run start",
     "testb": "npm run buildback && npm run start",
     "test": "npm run build && npm run start",
+    "testing": "npm run buildtesting && node testing/build/bundle-testing.js",
     "open": "google-chrome --incognito http://localhost:3000"
   },
   "author": "Brian Santoso",
@@ -35,6 +37,7 @@
     "babel-loader": "^8.1.0",
     "css-loader": "^4.0.0",
     "style-loader": "^1.2.1",
+    "svg-url-loader": "^6.0.0",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.12",
     "webpack-node-externals": "^2.5.0"
