@@ -416,7 +416,7 @@ class BoardGraphics {
 		this._allAnimProms.push(promise);
 		return promise;
 	}
-	
+	g
 	_shrink(mesh, numFrames) {
 		let animation = Animation.scale(Animation.LINEAR, mesh, mesh.scale.x, 0, numFrames);
 		let promise = this._animator.animate(animation);
