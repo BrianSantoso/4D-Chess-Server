@@ -5,10 +5,9 @@ import Move from "./Move.js";
 import { unique } from "./ArrayUtils.js";
 
 class GameBoard {
-	constructor(n) {
-		this.n = n;
+	constructor(dim) {
 		this._pieces = null;
-		this._init4D();
+		this._init4D(dim);
 	}
 	
 	getPieces() {
@@ -39,13 +38,16 @@ class GameBoard {
 	}
 	
 	inBounds(x, y, z, w) {
-		return x >= 0 && x < this.n && 
-				y >= 0 && y < this.n && 
-				z >= 0 && z < this.n && 
-				w >= 0 && w < this.n
+		return x >= 0 && x < this._x() && 
+				y >= 0 && y < this._y() && 
+				z >= 0 && z < this._z() && 
+				w >= 0 && w < this._w();
 	}
 	
-	getPossibleMoves(x, y, z, w, legalOnly=true) {
+	getPossibleMoves(x, y, z, w, legalOnly=true, attacksOnly=false) {
+		// Returns list of possible moves for a piece at the given
+		// coordinates. legalOnly=false specifies moves as if there
+		// are no pins/checks
 		let originPiece = this.get(x, y, z, w);
 		let result = [];
 		
@@ -53,8 +55,8 @@ class GameBoard {
 			return result;
 		}
 		
-		// let paramsList = attacksOnly ? originPiece.attackRayCastParams() : originPiece.rayCastParams();
-		let paramsList = originPiece.rayCastParams();
+		let paramsList = attacksOnly ? originPiece.attackRayCastParams() : originPiece.rayCastParams();
+		// let paramsList = originPiece.rayCastParams();
 
 		paramsList.forEach(args => {
 			let moves = this._rayCast(x, y, z, w, args.direction, 
@@ -62,7 +64,7 @@ class GameBoard {
 			result.push(...moves);
 		});
 		
-		result = unique(result);
+		result = unique(result, Move.hash);
 
 		if (legalOnly) {
 			// Must impose this extra condition to prevent mutual recursion 
@@ -86,7 +88,7 @@ class GameBoard {
 			// Must request legalOnly=false to prevent mutual recursion
 			// between inCheck and getPossibleMoves
 			// (getLegalMoves -> isLegal -> inCheck)
-			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, false);
+			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, false, true);
 			let attacks = moves.filter(move => move.isCapture());
 			return attacks.some(move => move.capturedPiece === king);
 		}
@@ -101,11 +103,11 @@ class GameBoard {
 		return attackers;
 	}
 	
-	allPossibleMoves(team) {
+	getAllPossibleMoves(team, legalOnly=true) {
 		let moves = [];
 		let sameTeam = (piece) => piece.team === team;
 		let grabMoves = (piece) => {
-			moves = moves.concat(this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w));
+			moves = moves.concat(this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, legalOnly));
 		}
 		this._applyTo(grabMoves, sameTeam);
 		return moves;
@@ -130,10 +132,10 @@ class GameBoard {
 		// Applies f to all pieces satisfying predicate. If f returns true, 
 		// iteration stops and the piece which caused the exit is returned.
 		predicate = predicate || (() => true);
-		for (let x = 0; x < this._pieces.length; x++) {
-			for (let y = 0; y < this._pieces[0].length; y++) {
-				for (let z = 0; z < this._pieces[0][0].length; z++) {
-					for (let w = 0; w < this._pieces[0][0][0].length; w++) {
+		for (let x = 0; x < this._x(); x++) {
+			for (let y = 0; y < this._y(); y++) {
+				for (let z = 0; z < this._z(); z++) {
+					for (let w = 0; w < this._w(); w++) {
 						let piece = this._pieces[x][y][z][w];
 						if (predicate(piece) && f(piece)) {
 							return piece;
@@ -184,10 +186,10 @@ class GameBoard {
 	}
 	
 	_isPromotionSquare(x, y, z, w) {
-		return (z === 0 && w === 0) || (z === this.n - 1 && w === this. n - 1);
+		return (z === 0 && w === 0) || (z === this._z() - 1 && w === this._w() - 1);
 	}
 	
-	_init4D() {
+	_init4D(dim) {
 		const range = n => [...Array(n)].map((_, i) => i);
 		const rangeIn = dims => {
 		  if (!dims.length) return new Piece();
@@ -195,108 +197,140 @@ class GameBoard {
 		};
 
 		// Create 4D array of Piece objects
-		this._pieces = rangeIn([this.n, this.n, this.n, this.n])
+		this._pieces = rangeIn(dim)
 		
 		console.log(this._pieces)
 		
-		let a = this.n - 1; // Last Rank
-		let b = this.n - 2; // Penultimate Rank
+		let z_0 = this._z() - 1; // Last Rank
+		let z_1 = this._z() - 2; // Penultimate Rank
+		let w_0 = this._w() - 1; // Last Rank
+		let w_1 = this._w() - 2; // Penultimate Rank
 		
-		const initTeam = (team, a, b) => {
+		const initTeam = (team, z_0, z_1, w_0, w_1) => {
 			// a: back rank
 			// b: penultimate rank
-			this.set(0, 0, a, a, new Rook(team));
-			this.set(1, 0, a, a, new Knight(team));
-			this.set(2, 0, a, a, new Knight(team));
-			this.set(3, 0, a, a, new Rook(team));
+			this.set(0, 0, z_0, w_0, new Rook(team));
+			this.set(1, 0, z_0, w_0, new Knight(team));
+			this.set(2, 0, z_0, w_0, new Knight(team));
+			this.set(3, 0, z_0, w_0, new Rook(team));
 
-			this.set(0, 1, a, a, new Bishop(team));
-			this.set(1, 1, a, a, new Queen(team));
-			this.set(2, 1, a, a, new Queen(team));
-			this.set(3, 1, a, a, new Bishop(team));
+			this.set(0, 1, z_0, w_0, new Bishop(team));
+			this.set(1, 1, z_0, w_0, new Queen(team));
+			this.set(2, 1, z_0, w_0, new Queen(team));
+			this.set(3, 1, z_0, w_0, new Bishop(team));
 
-			this.set(0, 2, a, a, new Bishop(team));
-			this.set(1, 2, a, a, new Queen(team));
-			this.set(2, 2, a, a, new King(team));
-			this.set(3, 2, a, a, new Bishop(team));
+			this.set(0, 2, z_0, w_0, new Bishop(team));
+			this.set(1, 2, z_0, w_0, new Queen(team));
+			this.set(2, 2, z_0, w_0, new King(team));
+			this.set(3, 2, z_0, w_0, new Bishop(team));
 
-			this.set(0, 3, a, a, new Rook(team));
-			this.set(1, 3, a, a, new Knight(team));
-			this.set(2, 3, a, a, new Knight(team));
-			this.set(3, 3, a, a, new Rook(team));
+			this.set(0, 3, z_0, w_0, new Rook(team));
+			this.set(1, 3, z_0, w_0, new Knight(team));
+			this.set(2, 3, z_0, w_0, new Knight(team));
+			this.set(3, 3, z_0, w_0, new Rook(team));
 			
 			
 			
 			
 
-			this.set(0, 0, b, a, new Pawn(team));
-			this.set(1, 0, b, a, new Pawn(team));
-			this.set(2, 0, b, a, new Pawn(team));
-			this.set(3, 0, b, a, new Pawn(team));
+			this.set(0, 0, z_1, w_0, new Pawn(team));
+			this.set(1, 0, z_1, w_0, new Pawn(team));
+			this.set(2, 0, z_1, w_0, new Pawn(team));
+			this.set(3, 0, z_1, w_0, new Pawn(team));
 
-			this.set(0, 1, b, a, new Pawn(team));
-			this.set(1, 1, b, a, new Pawn(team));
-			this.set(2, 1, b, a, new Pawn(team));
-			this.set(3, 1, b, a, new Pawn(team));
+			this.set(0, 1, z_1, w_0, new Pawn(team));
+			this.set(1, 1, z_1, w_0, new Pawn(team));
+			this.set(2, 1, z_1, w_0, new Pawn(team));
+			this.set(3, 1, z_1, w_0, new Pawn(team));
 
-			this.set(0, 2, b, a, new Pawn(team));
-			this.set(1, 2, b, a, new Pawn(team));
-			this.set(2, 2, b, a, new Pawn(team));
-			this.set(3, 2, b, a, new Pawn(team));
+			this.set(0, 2, z_1, w_0, new Pawn(team));
+			this.set(1, 2, z_1, w_0, new Pawn(team));
+			this.set(2, 2, z_1, w_0, new Pawn(team));
+			this.set(3, 2, z_1, w_0, new Pawn(team));
 
-			this.set(0, 3, b, a, new Pawn(team));
-			this.set(1, 3, b, a, new Pawn(team));
-			this.set(2, 3, b, a, new Pawn(team));
-			this.set(3, 3, b, a, new Pawn(team));
+			this.set(0, 3, z_1, w_0, new Pawn(team));
+			this.set(1, 3, z_1, w_0, new Pawn(team));
+			this.set(2, 3, z_1, w_0, new Pawn(team));
+			this.set(3, 3, z_1, w_0, new Pawn(team));
 			
 			
 			
 			
-			this.set(0, 0, a, b, new Pawn(team));
-			this.set(1, 0, a, b, new Pawn(team));
-			this.set(2, 0, a, b, new Pawn(team));
-			this.set(3, 0, a, b, new Pawn(team));
+			this.set(0, 0, z_0, w_1, new Pawn(team));
+			this.set(1, 0, z_0, w_1, new Pawn(team));
+			this.set(2, 0, z_0, w_1, new Pawn(team));
+			this.set(3, 0, z_0, w_1, new Pawn(team));
 
-			this.set(0, 1, a, b, new Pawn(team));
-			this.set(1, 1, a, b, new Pawn(team));
-			this.set(2, 1, a, b, new Pawn(team));
-			this.set(3, 1, a, b, new Pawn(team));
+			this.set(0, 1, z_0, w_1, new Pawn(team));
+			this.set(1, 1, z_0, w_1, new Pawn(team));
+			this.set(2, 1, z_0, w_1, new Pawn(team));
+			this.set(3, 1, z_0, w_1, new Pawn(team));
 
-			this.set(0, 2, a, b, new Pawn(team));
-			this.set(1, 2, a, b, new Pawn(team));
-			this.set(2, 2, a, b, new Pawn(team));
-			this.set(3, 2, a, b, new Pawn(team));
+			this.set(0, 2, z_0, w_1, new Pawn(team));
+			this.set(1, 2, z_0, w_1, new Pawn(team));
+			this.set(2, 2, z_0, w_1, new Pawn(team));
+			this.set(3, 2, z_0, w_1, new Pawn(team));
 
-			this.set(0, 3, a, b, new Pawn(team));
-			this.set(1, 3, a, b, new Pawn(team));
-			this.set(2, 3, a, b, new Pawn(team));
-			this.set(3, 3, a, b, new Pawn(team));
+			this.set(0, 3, z_0, w_1, new Pawn(team));
+			this.set(1, 3, z_0, w_1, new Pawn(team));
+			this.set(2, 3, z_0, w_1, new Pawn(team));
+			this.set(3, 3, z_0, w_1, new Pawn(team));
 			
 			
 			
-			this.set(0, 0, b, b, new Pawn(team));
-			this.set(1, 0, b, b, new Pawn(team));
-			this.set(2, 0, b, b, new Pawn(team));
-			this.set(3, 0, b, b, new Pawn(team));
+			this.set(0, 0, z_1, w_1, new Pawn(team));
+			this.set(1, 0, z_1, w_1, new Pawn(team));
+			this.set(2, 0, z_1, w_1, new Pawn(team));
+			this.set(3, 0, z_1, w_1, new Pawn(team));
 
-			this.set(0, 1, b, b, new Pawn(team));
-			this.set(1, 1, b, b, new Pawn(team));
-			this.set(2, 1, b, b, new Pawn(team));
-			this.set(3, 1, b, b, new Pawn(team));
+			this.set(0, 1, z_1, w_1, new Pawn(team));
+			this.set(1, 1, z_1, w_1, new Pawn(team));
+			this.set(2, 1, z_1, w_1, new Pawn(team));
+			this.set(3, 1, z_1, w_1, new Pawn(team));
 
-			this.set(0, 2, b, b, new Pawn(team));
-			this.set(1, 2, b, b, new Pawn(team));
-			this.set(2, 2, b, b, new Pawn(team));
-			this.set(3, 2, b, b, new Pawn(team));
+			this.set(0, 2, z_1, w_1, new Pawn(team));
+			this.set(1, 2, z_1, w_1, new Pawn(team));
+			this.set(2, 2, z_1, w_1, new Pawn(team));
+			this.set(3, 2, z_1, w_1, new Pawn(team));
 
-			this.set(0, 3, b, b, new Pawn(team));
-			this.set(1, 3, b, b, new Pawn(team));
-			this.set(2, 3, b, b, new Pawn(team));
-			this.set(3, 3, b, b, new Pawn(team));
+			this.set(0, 3, z_1, w_1, new Pawn(team));
+			this.set(1, 3, z_1, w_1, new Pawn(team));
+			this.set(2, 3, z_1, w_1, new Pawn(team));
+			this.set(3, 3, z_1, w_1, new Pawn(team));
+		}
+
+		// Debugging tool
+		const initCheckmate = (team, z_0, z_1, w_0, w_1) => {
+			let opp = ChessGame.oppositeTeam(team);
+			this.set(0, 0, z_0, w_0, new King(team));
+
+			this.set(0, 1, z_0, w_0, new Queen(opp));
+			this.set(1, 0, z_0, w_0, new Queen(opp));
+			this.set(1, 1, z_0, w_0, new Queen(opp));
+			this.set(0, 0, z_0, w_1, new Queen(opp));
+			this.set(0, 0, z_1, w_0, new Queen(opp));
+			this.set(0, 0, z_1, w_1, new Queen(opp));
 		}
 		
-		initTeam(ChessGame.WHITE, 0, 1);
-		initTeam(ChessGame.BLACK, a, b);
+		initTeam(ChessGame.WHITE, 0, 1, 0, 1);
+		// initCheckmate(ChessGame.WHITE, 0, 1);
+		initTeam(ChessGame.BLACK, z_0, z_1, w_0, w_1);
+	}
+
+	_x() {
+		return this._pieces.length;
+	}
+
+	_y() {
+		return this._pieces[0].length;
+	}
+
+	_z() {
+		return this._pieces[0][0].length;
+	}
+
+	_w() {
+		return this._pieces[0][0][0].length;
 	}
 	
 }

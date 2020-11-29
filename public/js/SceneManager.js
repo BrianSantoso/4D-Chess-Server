@@ -239,8 +239,6 @@ class SceneManager {
 		let offset = new THREE.Vector3(team * 320, 115, 0);
 		let home = center.clone().add(offset);
 		
-		console.log(home, center)
-		
 		if (numFrames === 0) {
 			this._camera.position.set(home.x, home.y, home.z);
 			this._controls.target.set(center.x, center.y, center.z);

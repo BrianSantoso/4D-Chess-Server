@@ -26,6 +26,28 @@ class Move {
 				this.z1 === z1 &&
 				this.w1 === w1;
 	}
+
+	hash() {
+		return Move.hash(this);
+	}
+}
+
+Move.isEqual = (a, b) => {
+	return a.hash() === b.hash();
+};
+
+Move.hash = (a) => {
+	return JSON.stringify([
+		a.x0,
+		a.y0,
+		a.z0,
+		a.w0,
+		a.x1,
+		a.y1,
+		a.z1,
+		a.w1,
+		a.isCapture()
+	]);
 }
 
 export default Move;
