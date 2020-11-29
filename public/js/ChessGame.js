@@ -4,16 +4,19 @@ import Piece from "./Piece.js";
 import { LocalPlayer3D, OnlinePlayer3D } from "./ChessPlayer.js";
 
 class ChessGame {	
-	constructor(n) {
-		this._board = new GameBoard(n);
+	constructor(dim) {
+		this._board = new GameBoard(dim);
 		this._white = null;
 		this._black = null;
 		this._boardGraphics = null;
 		this._turn = ChessGame.WHITE;
 		// Why not just have subclasses of GameBoard override rules
 		// for custom gamemodes (freeplay, etc.)?
-//		this._mode = null;
+		// A: May want to switch game modes once game ends.
+		this._mode = null;
 		this._moveHistory = []; // TODO: doubly linked list of moves
+		this._status = ChessGame.ONGOING; // Initial board state is assumed to be not game-ending to prevent double computation on first turn. Ideally should be null.
+		this._gameOver = false;
 	}
 	
 	getPlayers() {
@@ -26,6 +29,41 @@ class ChessGame {
 	
 	setBlack(player) {
 		this._black = player;
+	}
+
+	status() {
+		// TODO: Cache status to prevent redundant computation
+		if (this._status) {
+			return this._status;
+		}
+
+		let turnEndTeam = this.currTurn();
+		let oppositeTeam = ChessGame.oppositeTeam(turnEndTeam);
+		let board = this.board();
+
+		let allMoves = board.getAllPossibleMoves(oppositeTeam);
+		let hasMoves = allMoves.length > 0;
+		if (hasMoves) {
+			this._status = ChessGame.ONGOING;
+		} else {
+			let attacking = board.inCheck(oppositeTeam).length > 0;
+			if (attacking) {
+				this._status = turnEndTeam;
+			} else {
+				this._status = ChessGame.TIE;
+			}
+		}
+		console.log('Status recomputed')
+		return this._status;
+	}
+
+	_clearStatus() {
+		this._status = null;
+	}
+
+	isGameOver() {
+		let status = this.status();
+		return status.hasPermissions(ChessGame.WHITE) || status.hasPermissions(ChessGame.BLACK);
 	}
 	
 	setBoardGraphics(boardGraphics) {
@@ -42,12 +80,26 @@ class ChessGame {
 	boardGraphics() {
 		return this._boardGraphics;
 	}
+
+	board() {
+		return this._board;
+	}
 	
 	makeMove(move) {
+		if (this.isGameOver()) {
+			return;
+		}
+		
 		this._board.makeMove(move);
-		this._boardGraphics.makeMove(move, 16);
-		this._switchTurns();
-		// TODO: add move to history
+		this._boardGraphics.makeMove(move, 24);
+		this._clearStatus();
+		// add move to history
+
+		if (this.isGameOver()) {
+			let status = this.status();
+		} else {
+			this._switchTurns();
+		}
 	}
 	
 	assignRoles() {
@@ -202,6 +254,10 @@ class ChessTeam {
 		this.permissions.set(ChessGame.BLACK, blackPerms);
 		this.permissions.set(ChessGame.GHOST, ghostPerms);
 	}
+
+	hasPermissions(team) {
+		return this.permissions.get(team);
+	}
 }
 
 ChessGame.GHOST = new ChessTeam();
@@ -209,13 +265,14 @@ ChessGame.NONE = new ChessTeam(); // TODO: may be problematic since spectator te
 ChessGame.WHITE = new ChessTeam();
 ChessGame.BLACK = new ChessTeam();
 ChessGame.OMNISCIENT = new ChessTeam();
+ChessGame.TIE = ChessGame.OMNISCIENT;
+ChessGame.ONGOING = ChessGame.NONE;
 
+ChessGame.NONE.setPermissions(false, false, false);
 ChessGame.GHOST.setPermissions(false, false, true);
 ChessGame.WHITE.setPermissions(true, false, false);
 ChessGame.BLACK.setPermissions(false, true, false);
 ChessGame.OMNISCIENT.setPermissions(true, true, false);
-
-ChessGame.TIE_GAME = 2;
 
 ChessGame.oppositeTeam = (team) => {
 	if (team === ChessGame.WHITE) {

@@ -10,8 +10,8 @@ import ChessGame from "./ChessGame.js";
 //    -> NullGrahpics
 
 class BoardGraphics {
-	constructor(n) {
-		this.n = n;
+	constructor(dim) {
+		this.dim = dim;
 		this._container = new THREE.Group();
 		this._pieces = new THREE.Group();
 		this._white = new THREE.Group();
@@ -41,11 +41,27 @@ class BoardGraphics {
 		
 		this._init();
 	}
+
+	_x() {
+		return this.dim[0];
+	}
+
+	_y() {
+		return this.dim[1];
+	}
+
+	_z() {
+		return this.dim[2];
+	}
+
+	_w() {
+		return this.dim[3];
+	}
 	
 	to3D(x, y, z, w) {
 		// Board Coordinates to World Coords
-		let boardSize = this._squareSize * this.n;
-		let newZ = (this._deltaW + boardSize) * w + z * this._squareSize;
+		let boardSizeZ = this._squareSize * this._z();
+		let newZ = (this._deltaW + boardSizeZ) * w + z * this._squareSize;
 		return new THREE.Vector3(x * this._squareSize, 
 								 y * this._deltaY, 
 								 -newZ).add(this._container.position);
@@ -76,10 +92,11 @@ class BoardGraphics {
 	getBoundingBox() {
 		let min = new THREE.Vector3(-this._squareSize / 2, 0, this._squareSize / 2).add(this._container.position);
 		
-		let boardSize = this._squareSize * this.n;
-		let max = new THREE.Vector3(boardSize, 
-									this._deltaY * this.n,
-									-(boardSize * this.n + this._deltaW * (this.n - 1))
+		let boardSizeX = this._squareSize * this._x();
+		let boardSizeZ = this._squareSize * this._z();
+		let max = new THREE.Vector3(boardSizeX, 
+									this._deltaY * this._y(),
+									-(boardSizeZ * this._w() + this._deltaW * (this._w() - 1))
 								   ).add(min);
 		
 		return new THREE.Box3(min, max);
@@ -96,7 +113,7 @@ class BoardGraphics {
 	_init() {
 		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
 		let square = 25;
-		this._container.add(checkerboard4D(this.n, square, square * 3, square * 1.5));
+		this._container.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));
 		
 		console.log('BoardGraphics', this._container);
 	}
@@ -191,9 +208,12 @@ class BoardGraphics {
 			
 			if (frames) {
 				let fadeInProm = this._fadeIn(mesh, frames);
-				let growInProm = this._grow(mesh, frames);
 				showAnimationProms.push(fadeInProm);
-				showAnimationProms.push(growInProm);
+
+				if (!move.isCapture()) {
+					let growInProm = this._grow(mesh, frames);
+					showAnimationProms.push(growInProm);
+				}
 			} else {
 				// else do nothing
 			}
@@ -325,14 +345,13 @@ class BoardGraphics {
 			let mesh = this._pieceToMesh.get(move.piece);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
 			let endPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
-			let numFrames = 16;
 			let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
 			
-			let movingPieceProm = this._translate(mesh, numFrames, startPos, endPos)
+			let movingPieceProm = this._translate(mesh, frames, startPos, endPos)
 				.then(() => {
 					this._remove(capturedMesh);
 					if (move.promotionNew) {
-						return this._shrink(mesh, numFrames);
+						return this._shrink(mesh, frames);
 					} else {
 						// End promise chain (Do nothing)
 						// TODO: how to end a promise chain properly?
@@ -345,7 +364,7 @@ class BoardGraphics {
 			
 			let capturedPieceProm = Promise.resolve();
 			if (capturedMesh) {
-				capturedPieceProm = this._shrink(capturedMesh, numFrames);
+				capturedPieceProm = this._shrink(capturedMesh, frames);
 			}
 			moveAnimationProm = Promise.all([movingPieceProm, capturedPieceProm]);
 			
@@ -392,7 +411,7 @@ class BoardGraphics {
 	}
 	
 	_translate(mesh, numFrames, startPos, endPos) {
-		let animation = Animation.translate(Animation.QUADRATIC, mesh, startPos, endPos, numFrames);
+		let animation = Animation.translate(Animation.POLYNOMIAL(3), mesh, startPos, endPos, numFrames);
 		let promise = this._animator.animate(animation);
 		this._allAnimProms.push(promise);
 		return promise;

@@ -1,5 +1,4 @@
 import ChessGame from "./ChessGame.js";
-import { unique } from "./ArrayUtils.js";
 import * as rayCastParams from './rayCastParams.json';
 console.log(rayCastParams)
 class Piece {
@@ -28,9 +27,9 @@ class Piece {
 		return null;
 	}
 	
-	// attackRayCastParams() {
-	// 	return rayCastParams['default'][this._paramKey()]['attack'];
-	// }
+	attackRayCastParams() {
+		return rayCastParams['default'][this._paramKey()]['attack'];
+	}
 	
 	rayCastParams() {
 		return rayCastParams['default'][this._paramKey()]['behavior'];

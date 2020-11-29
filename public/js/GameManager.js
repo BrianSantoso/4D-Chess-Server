@@ -18,16 +18,16 @@ class GameManager {
 	createGame(config) {
 		// Factory to create game, instantiating and injecting required dependencies
 		let defaultConfig = {
-			n: 4,
+			dim: [4, 4, 4, 4],
 			BoardGraphics: BoardGraphics,
 			WhitePlayer: Player3D,
 			BlackPlayer: Player3D
 		}
 		config = Object.assign(defaultConfig, config);
 		
-		let game = new ChessGame(config.n);
+		let game = new ChessGame(config.dim);
 		
-		let boardGraphics = new config.BoardGraphics(config.n);
+		let boardGraphics = new config.BoardGraphics(config.dim);
 		game.setBoardGraphics(boardGraphics);
 		
 		let white = new config.WhitePlayer(ChessGame.WHITE, game);

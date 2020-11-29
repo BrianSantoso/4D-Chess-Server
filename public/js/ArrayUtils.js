@@ -1,17 +1,18 @@
-import { isEqual } from 'lodash';
+import { isEqual, uniqBy, unionBy } from 'lodash';
 
 class ArrayUtils {
 	
 }
 
 const union = function(movesA, movesB) {
-	let result = [...movesA]
-	movesB.forEach(move => {
-		if (!contains(result, move)) {
-			result.push(move);
-		}
-	});
-	return result;
+	// let result = [...movesA]
+	// movesB.forEach(move => {
+	// 	if (!contains(result, move)) {
+	// 		result.push(move);
+	// 	}
+	// });
+	// return result;
+	// return unionBy(movesA, movesB, isEqual);
 }
 
 const contains = function(moveList, move) {
@@ -32,10 +33,11 @@ const indexOf = function(arr, item, predicate=isEqual) {
 	return -1;
 }
 
-const unique = function(arr) {
-	return arr.filter((item, index) => {
-		return indexOf(arr, item) === index
-	});
+const unique = function(arr, identifier) {
+	// return arr.filter((item, index) => {
+	// 	return indexOf(arr, item) === index;
+	// });
+	return uniqBy(arr, identifier);
 }
 
 export default ArrayUtils;

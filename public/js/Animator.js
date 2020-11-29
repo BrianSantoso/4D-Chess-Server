@@ -143,21 +143,27 @@ class AnimationFrame {
 	}
 }
 
+Animation.POLYNOMIAL = (degree) => {
+	return (x) => {
+		return -Math.pow(-(x - 1), degree) + 1
+	}
+}
+
 Animation.LINEAR = x => x;
 
 Animation.QUADRATIC = x => -((x - 1) * (x - 1)) + 1;
 
 Animation.COS = x => -0.5 * Math.cos(Math.PI * x) + 0.5
 
-Animation.GEN_SIN = (hills) => {
+Animation.GEN_SIN = (peaks) => {
 	return (x) => {
-		return 0.5 * Math.sin((2 * hills - 1) * Math.PI * x) + 0.5;
+		return 0.5 * Math.sin((2 * peaks - 1) * Math.PI * x) + 0.5;
 	}
 }
 
-Animation.GEN_COS = (hills) => {
+Animation.GEN_COS = (peaks) => {
 	return (x) => {
-		return -0.5 * Math.cos(2 * hills * Math.PI * x) + 0.5;
+		return -0.5 * Math.cos(2 * peaks * Math.PI * x) + 0.5;
 	}
 }
 
