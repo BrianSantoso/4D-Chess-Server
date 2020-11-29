@@ -351,7 +351,7 @@ class BoardGraphics {
 				.then(() => {
 					this._remove(capturedMesh);
 					if (move.promotionNew) {
-						return this._shrink(mesh, frames);
+						return this._shrink(mesh, 16);
 					} else {
 						// End promise chain (Do nothing)
 						// TODO: how to end a promise chain properly?
@@ -416,7 +416,7 @@ class BoardGraphics {
 		this._allAnimProms.push(promise);
 		return promise;
 	}
-	g
+	
 	_shrink(mesh, numFrames) {
 		let animation = Animation.scale(Animation.LINEAR, mesh, mesh.scale.x, 0, numFrames);
 		let promise = this._animator.animate(animation);
