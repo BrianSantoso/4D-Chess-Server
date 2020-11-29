@@ -267,14 +267,14 @@ class Interactor3DWorker {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
 			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, 10);
+			this._boardGraphics().showPossibleMoves(piece, moves, preview, 12);
 		}
 	}
 	
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, 10);
+			this._boardGraphics().hidePossibleMoves(piece, 12);
 		}
 	}
 	

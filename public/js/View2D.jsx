@@ -36,7 +36,7 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
-		ReactDOM.render(this.root, document.getElementById('gui'));
+		ReactDOM.render(this.root, document.getElementById('react-root'));
 	}
 }
 

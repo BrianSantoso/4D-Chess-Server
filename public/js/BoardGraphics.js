@@ -162,8 +162,8 @@ class BoardGraphics {
 			material = move.capturedPiece.isEmpty() ? 'green' : 'orange';
 		}
 		
-		let scale = move.capturedPiece.isEmpty() ? 1 : 1;
-		let opacity = move.capturedPiece.isEmpty() ? 0.7 : 0.99;
+		let scale = move.isCapture() ? 1 : 1;
+		let opacity = move.isCapture() ? 0.99 : 0.7;
 		let mesh = Models.createMesh(type, material, pos, scale, opacity);
 		let rotation = team === ChessGame.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
@@ -209,8 +209,9 @@ class BoardGraphics {
 			if (frames) {
 				let fadeInProm = this._fadeIn(mesh, frames);
 				showAnimationProms.push(fadeInProm);
-
-				if (!move.isCapture()) {
+				if (move.isCapture()) {
+					
+				} else {
 					let growInProm = this._grow(mesh, frames);
 					showAnimationProms.push(growInProm);
 				}
@@ -234,10 +235,14 @@ class BoardGraphics {
 		if (frames) {
 			meshes.forEach(mesh => {
 				let fadeOutProm = this._fadeOut(mesh, frames);
-				let shrinkOutProm = this._shrink(mesh, frames);
 				hideAnimationProms.push(fadeOutProm);
-				hideAnimationProms.push(shrinkOutProm);
-				Promise.all([fadeOutProm, shrinkOutProm]).then(() => {
+				if (mesh.move.isCapture()) {
+					
+				} else {
+					let shrinkOutProm = this._shrink(mesh, frames);
+					hideAnimationProms.push(shrinkOutProm);
+				}
+				Promise.all(hideAnimationProms).then(() => {
 					this._remove(mesh);
 					meshes.delete(mesh); // I think we already do that here (see above)
 				});
