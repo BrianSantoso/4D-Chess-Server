@@ -143,6 +143,18 @@ class Interactor3D {
 		team = team || this.team; // default to Interactor's team
 		return this.boardGraphics().rayCast(this._rayCaster, team);
 	}
+
+	inCheck(team) {
+		return this._game.inCheck(team);
+	}
+
+	isLegal(move) {
+		return this._game.isLegal(move);
+	}
+
+	explainAll(attackers) {
+		this.boardGraphics().explainAll(attackers);
+	}
 	
 	offerMove(move) {
 //		this._commandQueue.push(move);
@@ -241,8 +253,8 @@ class Interactor3DWorker {
 		let legalMoves = this._getPossibleMoves(pieceToMove);
 		let theoreticalMoves = this._getPossibleMoves(pieceToMove, false);
 		if (notKing && legalMoves.length === 0 && theoreticalMoves.length > 0) {
-			let attackers = this._parent._game._board.inCheck(this._team);
-			this._parent._game.boardGraphics().explainAll(attackers);
+			let attackers = this._inCheck();
+			this._explainAll(attackers);
 			return true;
 		}
 		return false;
@@ -253,6 +265,10 @@ class Interactor3DWorker {
 		if (blockedMove) {
 			this._explainWhyBlocked(blockedMove);
 		}
+	}
+
+	_inCheck() {
+		return this._parent.inCheck(this._team);
 	}
 	
 	_boardGraphics() {
@@ -267,14 +283,14 @@ class Interactor3DWorker {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
 			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, 10);
+			this._boardGraphics().showPossibleMoves(piece, moves, preview, 12);
 		}
 	}
 	
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, 10);
+			this._boardGraphics().hidePossibleMoves(piece, 12);
 		}
 	}
 	
@@ -305,15 +321,19 @@ class Interactor3DWorker {
 			}
 		}
 		return null;
-		// let destinationIs = move => {
-		// 	return move.destinationIs(destination.x, destination.y, destination.z, destination.w);
-		// }
-		// return moves.some(destinationIs);
 	}
 
 	_explainWhyBlocked(move) {
-		let attackers = this._parent._game._board.isLegal(move);
-		this._parent._game.boardGraphics().explainAll(attackers);
+		let attackers = this._isLegal(move);
+		this._explainAll(attackers);
+	}
+
+	_explainAll(attackers) {
+		this._parent.explainAll(attackers);
+	}
+
+	_isLegal(move) {
+		return this._parent.isLegal(move);
 	}
 }
 

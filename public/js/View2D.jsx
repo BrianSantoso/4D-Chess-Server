@@ -36,7 +36,7 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
-		ReactDOM.render(this.root, document.getElementById('gui'));
+		ReactDOM.render(this.root, document.getElementById('react-root'));
 	}
 }
 
@@ -46,7 +46,7 @@ class PlayerInfo extends Component {
 		super(props);
 		this.state = {
 			team: this.props.team,
-			time: 65000,
+			time: -1,
 			playerName: this.props.playerName,
 		}
 	}
