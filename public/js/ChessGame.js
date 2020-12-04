@@ -57,6 +57,10 @@ class ChessGame {
 		return this._status;
 	}
 
+	inCheck(team) {
+		return this.board().inCheck(team);
+	}
+
 	_clearStatus() {
 		this._status = null;
 	}

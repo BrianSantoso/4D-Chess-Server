@@ -46,7 +46,7 @@ class PlayerInfo extends Component {
 		super(props);
 		this.state = {
 			team: this.props.team,
-			time: 65000,
+			time: -1,
 			playerName: this.props.playerName,
 		}
 	}
