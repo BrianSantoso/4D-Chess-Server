@@ -32,7 +32,7 @@
 			
 			:root {
 				/* Define global variables */
-				--icon-size: 5em;
+				--icon-size: 5rem;
 			}
 
 			.overlay {
@@ -108,14 +108,14 @@
 
 			.sidebar {
 				position: absolute;
-				display: inline-block;
 				right: calc(var(--icon-size) / 4);
 				top: 40%;
 			}
 
 			.game-button {
 				/*	position: fixed;*/
-				display: inline-block;
+				margin: calc(var(--icon-size) / 8) 0;
+				display: block;
 				position: relative;
 				pointer-events: auto;
 
@@ -179,6 +179,9 @@
 			<div class='sidebar'>
 				<a class='game-button'>
 					<img draggable="false" src='../assets/icons/home-black-rounded-24dp.svg' />
+				</a>
+				<a class='game-button'>
+					<img draggable="false" src='../assets/icons/undo-black-24dp.svg' />
 				</a>
 			</div>
 		</div>

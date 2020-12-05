@@ -83,7 +83,8 @@
 
 .game-button {
 	/*	position: fixed;*/
-	display: inline-block;
+	margin: calc(var(--icon-size) / 8) 0;
+	display: block;
 	position: relative;
 	pointer-events: auto;
 

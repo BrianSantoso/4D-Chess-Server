@@ -145,6 +145,7 @@ const Models = {
 			newMaterial.opacity = opacity;
 			newMaterial.transparent = true;
 		}
+		newMaterial.originalOpacity = newMaterial.opacity;
 
 		let mesh = new THREE.Mesh(geometry, newMaterial);
 		
@@ -155,6 +156,8 @@ const Models = {
 		mesh.scale.set(Models.SCALE_FACTOR, Models.SCALE_FACTOR, Models.SCALE_FACTOR)
 		mesh.scale.multiplyScalar(scale)
 		mesh.position.set(pos.x, pos.y, pos.z)
+
+		mesh.originalScale = mesh.scale.x;
 //		mesh.canRayCast = canRayCast;
 
 		return mesh

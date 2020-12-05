@@ -4,12 +4,16 @@ import ReactDOM from 'react-dom';
 //import BlackIcon from '../assets/player/king_black.svg';
 import ChessGame from './ChessGame.js';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
+import UndoIcon from '../assets/icons/undo-black-24dp.svg';
+import RedoIcon from '../assets/icons/redo-black-24dp.svg';
 
 class View2D {
 	constructor(gameManager) {
 		this._gameManager = gameManager;
 		
 		this.cameraHome = this.cameraHome.bind(this);
+		this.undo = this.undo.bind(this);
+		this.redo = this.redo.bind(this);
 		// TODO: implement chat later
 		let chat = (<div className='chat'>
 			<ul className='chat-message'>
@@ -25,6 +29,8 @@ class View2D {
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.cameraHome}></CircleButton>
+					<CircleButton icon={UndoIcon} handleClick={this.undo}></CircleButton>
+					<CircleButton icon={RedoIcon} handleClick={this.redo}></CircleButton>
 				</div>
 			</div>
 		);
@@ -32,6 +38,14 @@ class View2D {
 	
 	cameraHome() {
 		this._gameManager.cameraHome();
+	}
+
+	undo() {
+		this._gameManager.undo();
+	}
+
+	redo() {
+		this._gameManager.redo();
 	}
 	
 	draw() {

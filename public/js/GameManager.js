@@ -93,6 +93,14 @@ class ClientGameManager extends GameManager {
 	cameraHome() {
 		this._view3D.configureCamera(this._game._boardGraphics, ChessGame.WHITE, 0);
 	}
+
+	undo() {
+		this._game.undo();
+	}
+
+	redo() {
+		this._game.redo();
+	}
 	
 	loadAssets() {
 		let modelsPromise = Models.loadModels();

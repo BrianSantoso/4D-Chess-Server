@@ -18,6 +18,12 @@ class GameBoard {
 		this._pieces[x][y][z][w] = piece;
 		piece.set(x, y, z, w);
 	}
+
+	undoMove(move) {
+		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
+		this.set(move.x1, move.y1, move.z1, move.w1, move.capturedPiece);
+
+	}
 	
 	makeMove(move) {
 		if (move.promotionNew) {
