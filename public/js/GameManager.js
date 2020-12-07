@@ -18,7 +18,7 @@ class GameManager {
 	createGame(config) {
 		// Factory to create game, instantiating and injecting required dependencies
 		let defaultConfig = {
-			dim: [4, 4, 4, 4],
+			dim: [8, 1, 8, 1],
 			BoardGraphics: BoardGraphics,
 			WhitePlayer: Player3D,
 			BlackPlayer: Player3D

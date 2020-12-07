@@ -18,6 +18,7 @@ class BoardGraphics {
 		this._black = new THREE.Group();
 		this._ghost = new THREE.Group();
 		this._highlight = new THREE.Group();
+		this._checkerboards = new THREE.Group();
 		this._pieces.add(this._white);
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
@@ -28,6 +29,7 @@ class BoardGraphics {
 		this._highlightingFor = new Map(); // map of Piece objects to their temporary highlight meshes
 		
 		this._container.add(this._pieces);
+		this._container.add(this._checkerboards);
 		
 		this._animator = new Animator();
 		this._allAnimProms = [];
@@ -113,7 +115,7 @@ class BoardGraphics {
 	_init() {
 		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
 		let square = 25;
-		this._container.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));
+		this._checkerboards.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));
 		
 		console.log('BoardGraphics', this._container);
 	}
@@ -423,20 +425,18 @@ class BoardGraphics {
 			}
 			
 			
-			restoringMoverProm.then(() => {
+			undoAnimationProm = restoringMoverProm.then(() => {
 				let translateProm = this._translate(mover, frames, startPos, endPos);
 				let capturedGrowProm = Promise.resolve();
 				if (move.isCapture()) {
-					
 					let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
-					console.log(move.capturedPiece, capturedMesh)
 					capturedGrowProm = this._grow(capturedMesh, frames);
 				}
 				return Promise.all([translateProm, capturedGrowProm]);
 			});
 
 			// TODO: is this promise resolved when the restoringMoverProm chain is complete, or...?
-			undoAnimationProm = restoringMoverProm;
+			// undoAnimationProm = restoringMoverProm;
 			
 		} else {
 
