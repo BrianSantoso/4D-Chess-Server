@@ -95,10 +95,18 @@ class ClientGameManager extends GameManager {
 	}
 
 	undo() {
+		// Set interactor's state to unselected
+		this._game.getPlayers().forEach(player => {
+			player.unselect();
+		});
 		this._game.undo();
 	}
 
 	redo() {
+		// Set interactor's state to unselected
+		this._game.getPlayers().forEach(player => {
+			player.unselect();
+		});
 		this._game.redo();
 	}
 	

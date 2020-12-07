@@ -61,12 +61,7 @@ class Interactor3D {
 				// The silver lining is that selecting a capture move will always work.
 				this._moveExplainer.explainIfBlocked(selectedPiece);
 			}
-			this.swapState(this._unselected);
-			this._moveConfirmer.setSelected(null);
-			this._moveExplainer.setSelected(null);
-			this._pieceSelector.setSelected(null);
-			this._pieceSelector.showMovesFor(null);
-			this._pieceSelector.highlight(null);
+			this.unselect();
 			
 			return selectedGhost;
 		}
@@ -112,6 +107,15 @@ class Interactor3D {
 		};
 		
 		this._state = this._unselected;
+	}
+
+	unselect() {
+		this.swapState(this._unselected);
+		this._moveConfirmer.setSelected(null);
+		this._moveExplainer.setSelected(null);
+		this._pieceSelector.setSelected(null);
+		this._pieceSelector.showMovesFor(null);
+		this._pieceSelector.highlight(null);
 	}
 	
 	setRayCaster(rayCaster) {

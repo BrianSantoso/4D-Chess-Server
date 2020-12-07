@@ -101,13 +101,16 @@ class ChessGame {
 		
 		this._board.makeMove(move); // update state
 		this._boardGraphics.makeMove(move, 24); // animate
-		this._clearStatus(); // reset gameover status
+		
 		if (!redoing) {
-			this._moveHistory.add(move); // add to history
+			this._clearStatus(); // reset gameover status
+			let status = this.status(); // recalculate status
+			this._moveHistory.add(move, status); // add to history
 		}
 
+		// implicitly recalculates status if needed
 		if (this.isGameOver()) {
-			let status = this.status();
+
 		} else {
 			this._switchTurns();
 		}
@@ -118,13 +121,15 @@ class ChessGame {
 			// Temporary fix. Make animator able to queue items
 			return;
 		}
-		let moveToUndo = this._moveHistory.undo();
-		console.log('Undoing', moveToUndo);
-		if (moveToUndo) {
+		let undoData = this._moveHistory.undo();
+		if (undoData) {
+			let moveToUndo = undoData.move;
+			let statusToRestore = undoData.status;
 			this._board.undoMove(moveToUndo);
 			this._boardGraphics.undoMove(moveToUndo, 24);
-			this._clearStatus(); // reset gameover status
-			this.status();
+			this._status = statusToRestore;
+			// this._clearStatus(); // reset gameover status
+			// this.status();
 			this._switchTurns();
 		} else {
 			
@@ -136,10 +141,12 @@ class ChessGame {
 			// Temporary fix. Make animator able to queue items
 			return;
 		}
-		let moveToRedo = this._moveHistory.redo();
-		console.log('Redoing', moveToRedo);
-		if (moveToRedo) {
+		let redoData = this._moveHistory.redo();
+		if (redoData) {
+			let moveToRedo = redoData.move;
+			let statusToRestore = redoData.status;
 			this.makeMove(moveToRedo, true);
+			this._status = statusToRestore;
 		}
 	}
 	

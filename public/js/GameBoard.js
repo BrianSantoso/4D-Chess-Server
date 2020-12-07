@@ -22,20 +22,20 @@ class GameBoard {
 	undoMove(move) {
 		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
 		this.set(move.x1, move.y1, move.z1, move.w1, move.capturedPiece);
-
+		move.piece.hasMoved = false;
 	}
 	
 	makeMove(move) {
+		// check for pawn promotion
 		if (move.promotionNew) {
 			this.set(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
 		} else {
 			this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
 		}
-		
-		// check for pawn promotion
+
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
 		
-		// if not undoing a move
+		// Assumes redoing a move is equivalent to making the move.
 		move.piece.update();
 	}
 	
@@ -177,14 +177,16 @@ class GameBoard {
 				promotionNew = new Queen(team);
 				promotionNew.set(x, y, z, w);
 			}
+
+			let isFirstMove = !originPiece.hasMoved;
 			
-			if (originPiece.oppositeTeam(target) && canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
-				break;
-			} else if(target.isEmpty() && !canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
-			} else if (!target.isEmpty()) {
-				break;
+			let isCapture = originPiece.oppositeTeam(target) && canCapture;
+			let normalMove = target.isEmpty() && !canCapture;
+			if (isCapture || normalMove) {
+				let potentialMove = new Move(startX, startY, startZ, startW, 
+									x, y, z, w, originPiece, target, 
+									promotionNew, isFirstMove);
+				moves.push(potentialMove);
 			}
 		}
 		

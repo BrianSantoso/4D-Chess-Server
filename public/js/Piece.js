@@ -1,10 +1,11 @@
 import ChessGame from "./ChessGame.js";
 import * as rayCastParams from './rayCastParams.json';
-console.log(rayCastParams)
+
 class Piece {
 	constructor(team=ChessGame.NONE) {
 		this.team = team;
-		this.metaData = null;
+
+		this.hasMoved = false;
 		this.type = '';
 		this.x = -1;
 		this.y = -1;
@@ -20,7 +21,7 @@ class Piece {
 	}
 	
 	update() {
-		
+		this.hasMoved = true;
 	}
 	
 	movement() {
@@ -61,19 +62,11 @@ class Piece {
 class Pawn extends Piece {
 	constructor(team) {
 		super(team);
-		this.metaData = {
-			hasMoved: false,
-			justMovedTwoSpaces: false
-		};
 		this.type = 'pawn';
-	}
-	
-	update() {
-		this.metaData.hasMoved = true;
 	}
 
 	_paramKey() {
-		let moved = this.metaData.hasMoved ? 'Moved' : 'Unmoved'; 
+		let moved = this.hasMoved ? 'Moved' : 'Unmoved'; 
 		let team = this.team === ChessGame.WHITE ? 'White' : 'Black';
 		return this.type + moved + team;
 	}

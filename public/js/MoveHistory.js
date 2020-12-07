@@ -3,16 +3,19 @@ import Move from './Move.js';
 class MoveHistory {
     constructor() {
         this._index = -1;
-        this._list = [];
+        this._moves = [];
     }
     
-    add(move) {
+    add(move, status) {
         // Chop off future
-        this._list.splice(this._index + 1);
+        this._moves.splice(this._index + 1);
         // New future
-        this._list.push(move);
+        this._moves.push({
+            move: move,
+            status: status
+        });
         this._index += 1;
-        console.log(this._list);
+        console.log(this._moves);
     }
 
     undo() {
@@ -36,7 +39,7 @@ class MoveHistory {
         if (index < 0) {
             return null;
         } else {
-            return this._list[index];
+            return this._moves[index];
         }
     }
 
@@ -45,7 +48,7 @@ class MoveHistory {
     }
 
     length() {
-        return this._list.length;
+        return this._moves.length;
     }
 
     isEmpty() {
