@@ -16,7 +16,7 @@ class ChessGame {
 		// A: May want to switch game modes once game ends.
 		this._mode = null;
 		this._moveHistory = new MoveHistory(); // TODO: doubly linked list of moves
-		this._status = ChessGame.ONGOING; // Initial board state is assumed to be not game-ending to prevent double computation on first turn. Ideally should be null.
+		this._status = this.status();
 		this._gameOver = false;
 	}
 	

@@ -365,7 +365,8 @@ class BoardGraphics {
 						// TODO: how to end a promise chain properly?
 						return Promise.reject();
 					}
-				}).then(() => {
+				})
+				.then(() => {
 					// TODO: 
 					// this._remove(mesh);
 					return this._spawnMeshFromPiece(move.promotionNew, 16);

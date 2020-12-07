@@ -196,6 +196,7 @@ class GameBoard {
 									x, y, z, w, originPiece, target, 
 									promotionNew, isFirstMove);
 				moves.push(potentialMove);
+				break;
 			} else if(normalMove) {
 				let potentialMove = new Move(startX, startY, startZ, startW, 
 									x, y, z, w, originPiece, target, 
