@@ -100,16 +100,10 @@
 				font-size: calc(var(--icon-size) / 3);
 			}
 
-			.chat {
-				position: absolute;
-				bottom: calc(var(--icon-size) / 4);
-				left: 0;
-			}
-
 			.sidebar {
 				position: absolute;
 				right: calc(var(--icon-size) / 4);
-				top: 40%;
+				top: 30%;
 			}
 
 			.game-button {
@@ -138,6 +132,23 @@
 
 			.game-button > img {
 				width: calc(var(--icon-size) / 2);
+			}
+
+			.chat {
+				position: absolute;
+				bottom: calc(var(--icon-size) / 1);
+				right: calc(var(--icon-size) / 4);
+				width: 28vw;
+			}
+
+			.chat-message {
+				font-size: calc(var(--icon-size) / 5);
+				font-weight: 600;
+				color: rgb(255, 255, 255);
+				background-color: rgba(58, 58, 58, 0.418);
+				width: 100%;
+				padding: 0.1em 1em;
+				box-sizing: border-box;
 			}
 		</style>
 	</head>
@@ -170,10 +181,13 @@
 			</div>
 
 			<div class='chat'>
-				<ul class='chat-message'>
+				<div class='chat-message'>[Guest8449947756] good luck have fun!</div>
+				<div class='chat-message'>[AnonymousCow] Thanks, you too</div>
+				<div class='chat-message'>AnonPig has joined the room</div>
+				<!-- <ul class='chat-message'>
 					<li> [Guest8449947756] good luck have fun! </li>
 					<li> [AnonymousCow] Thanks, you too </li>
-				</ul>
+				</ul> -->
 			</div>
 			
 			<div class='sidebar'>
@@ -182,6 +196,12 @@
 				</a>
 				<a class='game-button'>
 					<img draggable="false" src='../assets/icons/undo-black-24dp.svg' />
+				</a>
+				<a class='game-button'>
+					<img draggable="false" src='../assets/icons/redo-black-24dp.svg' />
+				</a>
+				<a class='game-button'>
+					<img draggable="false" src='../assets/icons/chat-black-24dp.svg' />
 				</a>
 			</div>
 		</div>

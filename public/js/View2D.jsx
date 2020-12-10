@@ -6,6 +6,7 @@ import ChessGame from './ChessGame.js';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
 import RedoIcon from '../assets/icons/redo-black-24dp.svg';
+import ChatIcon from '../assets/icons/chat-black-24dp.svg';
 
 class View2D {
 	constructor(gameManager) {
@@ -15,12 +16,7 @@ class View2D {
 		this.undo = this.undo.bind(this);
 		this.redo = this.redo.bind(this);
 		// TODO: implement chat later
-		let chat = (<div className='chat'>
-			<ul className='chat-message'>
-				<li> [Guest8449947756] good luck have fun </li>
-				<li> [AnonymousCow] Thanks, you too! </li>
-			</ul>
-		</div>);
+		this.chat = <Chat ></Chat>
 		
 		this.root = (
 			<div className='overlay'>
@@ -31,7 +27,10 @@ class View2D {
 					<CircleButton icon={HomeIcon} handleClick={this.cameraHome}></CircleButton>
 					<CircleButton icon={UndoIcon} handleClick={this.undo}></CircleButton>
 					<CircleButton icon={RedoIcon} handleClick={this.redo}></CircleButton>
+					<CircleButton icon={ChatIcon} handleClick={() => {}}></CircleButton>
 				</div>
+
+				{this.chat}
 			</div>
 		);
 	}
@@ -132,6 +131,74 @@ class CircleButton extends Component {
 				<img src={this.props.icon} />
 			</a>
 		)
+	}
+}
+
+class Chat extends Component {
+	constructor(props) {
+		super(props);
+
+		this.messages = [];
+		
+		this.state = {
+			showing: []
+		}
+	}
+
+	componentDidMount() {
+		this.addMsg({
+			msg: '[Guest8449947756] good luck have fun!'
+		});
+		this.addMsg({
+			msg: '[AnonymousCow] Thanks, you too'
+		});
+		this.addMsg({
+			msg: 'AnonPig has joined the room'
+		});
+	}
+
+	render() {
+		return (
+			<div className='chat'>
+				{this.state.showing}
+			</div>
+		);
+	}
+
+	addMsg(config) {
+		// TODO: generate uuid for key
+		let key = config.msg;
+		let handleHide = this._getHideMsgHandler(key);
+		let chatMsg = <ChatMessage key={key} text={config.msg} handleHide={handleHide} />;
+		this.messages.push(chatMsg);
+		
+		// TODO: is callback needed in this setState?
+		this.setState(prevState => ({
+			showing: prevState.showing.concat([chatMsg])
+		}));
+	}
+
+	_getHideMsgHandler(key) {
+		return () => {
+			// TODO: is callback needed in this setState?
+			this.setState(prevState => ({
+				showing: prevState.showing.filter(el => el.key !== key)
+			}));
+		}
+	}
+}
+
+class ChatMessage extends Component {
+	constructor(props) {
+		super(props);
+	}
+
+	componentDidMount() {
+		setTimeout(this.props.handleHide, 4000);
+	}
+
+	render() {
+		return (<div className='chat-message'>{this.props.text}</div>);
 	}
 }
 
