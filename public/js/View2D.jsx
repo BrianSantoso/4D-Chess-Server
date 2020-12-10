@@ -16,27 +16,8 @@ class View2D {
 		this.cameraHome = this.cameraHome.bind(this);
 		this.undo = this.undo.bind(this);
 		this.redo = this.redo.bind(this);
-		// TODO: implement chat later
-		this.chat = <Chat />
-		let test = () => {
-			console.log(this.chat.messages)
-			this.chat.test();
-		}
 		
-		this.root = (
-			<div className='overlay'>
-				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
-				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
-				
-				<div className='sidebar'>
-					<CircleButton icon={HomeIcon} handleClick={this.cameraHome}></CircleButton>
-					<CircleButton icon={UndoIcon} handleClick={this.undo}></CircleButton>
-					<CircleButton icon={RedoIcon} handleClick={this.redo}></CircleButton>
-					<CircleButton icon={ChatIcon} handleClick={test}></CircleButton>
-				</div>
-				{this.chat}
-			</div>
-		);
+		this.root = (<Overlay cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} />);
 	}
 	
 	cameraHome() {
@@ -54,6 +35,84 @@ class View2D {
 	draw() {
 		// TODO: just call draw method once on load
 		ReactDOM.render(this.root, document.getElementById('react-root'));
+	}
+}
+
+class Overlay extends Component {
+
+	constructor(props) {
+		super(props);
+
+		this.messages = [];
+		this.state = {
+			showing: []
+		}
+	}
+
+	render() {
+		return (
+			<div className='overlay'>
+				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
+				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
+				
+				<div className='sidebar'>
+					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
+					<CircleButton icon={UndoIcon} handleClick={this.props.undo}></CircleButton>
+					<CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
+					<CircleButton icon={ChatIcon} handleClick={this.test.bind(this)}></CircleButton>
+				</div>
+				<Chat showing={this.state.showing}/>
+			</div>
+		);
+	}
+
+	addMsg(config) {
+		// TODO: generate uuid for key
+		let key = config.msg + Date.now();
+		let handleHide = this._getHideMsgHandler(key);
+		let chatMsg = <ChatMessage key={key} text={config.msg} handleHide={handleHide} />;
+		this.messages.push(chatMsg);
+		
+		// TODO: is callback needed in this setState?
+		this.setState(prevState => ({
+			showing: prevState.showing.concat([chatMsg])
+		}));
+	}
+
+	_getHideMsgHandler(key) {
+		return () => {
+			// TODO: is callback needed in this setState?
+			this.setState(prevState => ({
+				showing: prevState.showing.filter(el => el.key !== key)
+			}));
+		}
+	}
+
+	componentDidMount() {
+		setTimeout(() => {
+			this.addMsg({
+				msg: '[Guest8449947756] good luck have fun!'
+			});
+			this.addMsg({
+				msg: '[AnonymousCow] Thanks, you too'
+			});
+			this.addMsg({
+				msg: 'AnonPig has joined the room'
+			});
+		}, 1000);
+		
+	}
+
+	test() {
+		this.addMsg({
+			msg: '[Guest8449947756] good luck have fun!'
+		});
+		this.addMsg({
+			msg: '[AnonymousCow] Thanks, you too'
+		});
+		this.addMsg({
+			msg: 'AnonPig has joined the room'
+		});
 	}
 }
 
@@ -141,71 +200,17 @@ class CircleButton extends Component {
 class Chat extends Component {
 	constructor(props) {
 		super(props);
-
-		this.messages = [];
-		
-		this.state = {
-			showing: []
-		}
-	}
-
-	componentDidMount() {
-		setTimeout(() => {
-			this.addMsg({
-				msg: '[Guest8449947756] good luck have fun!'
-			});
-			this.addMsg({
-				msg: '[AnonymousCow] Thanks, you too'
-			});
-			this.addMsg({
-				msg: 'AnonPig has joined the room'
-			});
-		}, 1000);
-		
-	}
-
-	test() {
-		this.addMsg({
-			msg: '[Guest8449947756] good luck have fun!'
-		});
-		this.addMsg({
-			msg: '[AnonymousCow] Thanks, you too'
-		});
-		this.addMsg({
-			msg: 'AnonPig has joined the room'
-		});
 	}
 
 	render() {
+		console.log('showing', this.props.showing)
 		return (
 			<div className='chat'>
 				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-					{this.state.showing}
+					{this.props.showing}
 				</CSSTransitionGroup>
 			</div>
 		);
-	}
-
-	addMsg(config) {
-		// TODO: generate uuid for key
-		let key = config.msg;
-		let handleHide = this._getHideMsgHandler(key);
-		let chatMsg = <ChatMessage key={key} text={config.msg} handleHide={handleHide} />;
-		this.messages.push(chatMsg);
-		
-		// TODO: is callback needed in this setState?
-		this.setState(prevState => ({
-			showing: prevState.showing.concat([chatMsg])
-		}));
-	}
-
-	_getHideMsgHandler(key) {
-		return () => {
-			// TODO: is callback needed in this setState?
-			this.setState(prevState => ({
-				showing: prevState.showing.filter(el => el.key !== key)
-			}));
-		}
 	}
 }
 

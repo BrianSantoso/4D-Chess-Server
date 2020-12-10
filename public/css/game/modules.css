@@ -1,6 +1,11 @@
 :root {
 	/* Define global variables */
 	--icon-size: 5em;
+	--chatMsg-font-size: 1em;
+	--chatMsg-paddingV: calc(var(--chatMsg-font-size) / 10);
+	--chatMsg-paddingH: var(--chatMsg-font-size);
+	/* The height of one line of chat message */
+	--chatMsg-unitHeight: calc(var(--chatMsg-font-size) + var(--chatMsg-paddingV));
 }
 
 .overlay {
@@ -110,12 +115,13 @@
 }
 
 .chat-message {
-	font-size: calc(var(--icon-size) / 5);
+	font-size: var(--chatMsg-font-size);
 	font-weight: 600;
 	color: rgb(255, 255, 255);
 	background-color: rgba(58, 58, 58, 0.418);
 	width: 100%;
-	padding: 0.1em 1em;
+	min-height: var(--chatMsg-unitHeight);
+	padding: var(--chatMsg-paddingV) var(--chatMsg-paddingH);
 	box-sizing: border-box;
 }
 
