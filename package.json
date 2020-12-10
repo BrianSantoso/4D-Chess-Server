@@ -26,6 +26,7 @@
     "path": "^0.12.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-transition-group": "^1.2.1",
     "socket.io": "^2.3.0",
     "three": "^0.118.3",
     "three-gltf-loader": "^1.111.0"

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { CSSTransitionGroup } from 'react-transition-group';
 //import WhiteIcon from '../assets/player/king_white.svg';
 //import BlackIcon from '../assets/player/king_black.svg';
 import ChessGame from './ChessGame.js';
@@ -16,7 +17,11 @@ class View2D {
 		this.undo = this.undo.bind(this);
 		this.redo = this.redo.bind(this);
 		// TODO: implement chat later
-		this.chat = <Chat ></Chat>
+		this.chat = <Chat />
+		let test = () => {
+			console.log(this.chat.messages)
+			this.chat.test();
+		}
 		
 		this.root = (
 			<div className='overlay'>
@@ -27,9 +32,8 @@ class View2D {
 					<CircleButton icon={HomeIcon} handleClick={this.cameraHome}></CircleButton>
 					<CircleButton icon={UndoIcon} handleClick={this.undo}></CircleButton>
 					<CircleButton icon={RedoIcon} handleClick={this.redo}></CircleButton>
-					<CircleButton icon={ChatIcon} handleClick={() => {}}></CircleButton>
+					<CircleButton icon={ChatIcon} handleClick={test}></CircleButton>
 				</div>
-
 				{this.chat}
 			</div>
 		);
@@ -146,6 +150,21 @@ class Chat extends Component {
 	}
 
 	componentDidMount() {
+		setTimeout(() => {
+			this.addMsg({
+				msg: '[Guest8449947756] good luck have fun!'
+			});
+			this.addMsg({
+				msg: '[AnonymousCow] Thanks, you too'
+			});
+			this.addMsg({
+				msg: 'AnonPig has joined the room'
+			});
+		}, 1000);
+		
+	}
+
+	test() {
 		this.addMsg({
 			msg: '[Guest8449947756] good luck have fun!'
 		});
@@ -160,7 +179,9 @@ class Chat extends Component {
 	render() {
 		return (
 			<div className='chat'>
-				{this.state.showing}
+				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+					{this.state.showing}
+				</CSSTransitionGroup>
 			</div>
 		);
 	}
@@ -198,7 +219,11 @@ class ChatMessage extends Component {
 	}
 
 	render() {
-		return (<div className='chat-message'>{this.props.text}</div>);
+		return (
+			<div className='chat-message'>
+				{this.props.text}
+			</div>
+		);
 	}
 }
 
