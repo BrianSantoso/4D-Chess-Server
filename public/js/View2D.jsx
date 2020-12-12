@@ -43,10 +43,16 @@ class Overlay extends Component {
 	constructor(props) {
 		super(props);
 
-		this.messages = [];
+		// this.messages = [];
 		this.state = {
-			showing: []
+			messages: [],
+			showing: [],
+			chatOpen: false
 		}
+
+		this.toggleChat = this.toggleChat.bind(this);
+		this.addMsg = this.addMsg.bind(this);
+		this.closeChat = this.closeChat.bind(this);
 	}
 
 	render() {
@@ -59,9 +65,9 @@ class Overlay extends Component {
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
 					<CircleButton icon={UndoIcon} handleClick={this.props.undo}></CircleButton>
 					<CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
-					<CircleButton icon={ChatIcon} handleClick={this.test.bind(this)}></CircleButton>
+					<CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
 				</div>
-				<Chat showing={this.state.showing}/>
+				<Chat messages={this.state.messages} showing={this.state.showing} chatOpen={this.state.chatOpen} handleMsg={this.addMsg} handleCloseChat={this.closeChat}/>
 			</div>
 		);
 	}
@@ -70,11 +76,12 @@ class Overlay extends Component {
 		// TODO: generate uuid for key
 		let key = config.msg + Date.now();
 		let handleHide = this._getHideMsgHandler(key);
-		let chatMsg = <ChatMessage key={key} text={config.msg} handleHide={handleHide} />;
-		this.messages.push(chatMsg);
+		let chatMsg = <ChatMessage key={key} text={config.msg} style={config.style} handleHide={handleHide} />;
+		// this.messages.push(chatMsg);
 		
 		// TODO: is callback needed in this setState?
 		this.setState(prevState => ({
+			messages: prevState.messages.concat([chatMsg]),
 			showing: prevState.showing.concat([chatMsg])
 		}));
 	}
@@ -89,18 +96,7 @@ class Overlay extends Component {
 	}
 
 	componentDidMount() {
-		setTimeout(() => {
-			this.addMsg({
-				msg: '[Guest8449947756] good luck have fun!'
-			});
-			this.addMsg({
-				msg: '[AnonymousCow] Thanks, you too'
-			});
-			this.addMsg({
-				msg: 'AnonPig has joined the room'
-			});
-		}, 1000);
-		
+		setTimeout(this.test.bind(this), 1000);
 	}
 
 	test() {
@@ -111,7 +107,22 @@ class Overlay extends Component {
 			msg: '[AnonymousCow] Thanks, you too'
 		});
 		this.addMsg({
-			msg: 'AnonPig has joined the room'
+			msg: 'AnonPig has joined the room',
+			style: {
+				color: 'rgb(255, 251, 13)'
+			}
+		});
+	}
+
+	toggleChat() {
+		this.setState(prevState => ({
+			chatOpen: !prevState.chatOpen
+		}));
+	}
+
+	closeChat() {
+		this.setState({
+			chatOpen: false
 		});
 	}
 }
@@ -203,13 +214,30 @@ class Chat extends Component {
 	}
 
 	render() {
-		console.log('showing', this.props.showing)
 		return (
 			<div className='chat'>
-				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-					{this.props.showing}
-				</CSSTransitionGroup>
+				{ this.props.chatOpen ? this._opened() : this._notOpened() }
 			</div>
+		);
+	}
+
+	_opened() {
+		return (
+			<div className=''>
+				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+					{ this.props.messages }
+				</CSSTransitionGroup>
+				<ChatInput handleMsg={this.props.handleMsg} handleCloseChat={this.props.handleCloseChat}></ChatInput>
+			</div>
+		);
+	}
+
+	_notOpened() {
+		// console.log('showing', this.props.showing)
+		return (
+			<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+				{ this.props.showing }
+			</CSSTransitionGroup>
 		);
 	}
 }
@@ -226,9 +254,51 @@ class ChatMessage extends Component {
 	render() {
 		return (
 			<div className='chat-message'>
-				{this.props.text}
+				<span style={this.props.style}> {this.props.text} </span>
 			</div>
 		);
+	}
+}
+
+class ChatInput extends Component {
+	constructor(props) {
+		super(props);
+		// TODO: Use a controlled component instead, and handle input inside
+		// this react component instead of in the DOM
+		this.textInput = React.createRef();
+
+		this._handleKeyDown = this._handleKeyDown.bind(this);
+		this._handleEnter = this._handleEnter.bind(this);
+	}
+
+	componentDidMount() {
+		this.textInput.current.focus();
+	}
+
+	render() {
+		return (
+			<div ref={this.textInput} contentEditable={true} className='chat-message' onKeyDown={this._handleKeyDown}></div>
+		);
+	}
+
+	_handleKeyDown(event) {
+		if (event.key === 'Enter') {
+			this._handleEnter();
+		}
+	}
+
+	_handleEnter() {
+		let text = this.textInput.current.innerText;
+		// TODO: sanitize
+		console.log('text:', text)
+		if (text) {
+			this.props.handleMsg({
+				msg: text
+			});
+			this.textInput.current.innerText = '';
+		} else {
+			this.props.handleCloseChat();
+		}
 	}
 }
 

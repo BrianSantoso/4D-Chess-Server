@@ -6,6 +6,9 @@
 	--chatMsg-paddingH: var(--chatMsg-font-size);
 	/* The height of one line of chat message */
 	--chatMsg-unitHeight: calc(var(--chatMsg-font-size) + var(--chatMsg-paddingV));
+
+	--chat-maxHeight: calc(var(--chatMsg-unitHeight) * 12);
+	--chat-width: 28vw;
 }
 
 .overlay {
@@ -111,7 +114,11 @@
 	position: absolute;
 	bottom: calc(var(--icon-size) / 1);
 	right: calc(var(--icon-size) / 4);
-	width: 28vw;
+	width: var(--chat-width);
+	pointer-events: auto;
+	/* height: var(--chat-maxHeight); */
+	/* overflow: hidden; */
+	/* clip-path: polygon(0% 0%, var(--chat-width) 0%, var(--chat-width) var(--chat-maxHeight), 0 var(--chat-maxHeight)); */
 }
 
 .chat-message {
@@ -123,6 +130,8 @@
 	min-height: var(--chatMsg-unitHeight);
 	padding: var(--chatMsg-paddingV) var(--chatMsg-paddingH);
 	box-sizing: border-box;
+
+	transition: 300ms ease-in-out;
 }
 
 .fade-enter {
