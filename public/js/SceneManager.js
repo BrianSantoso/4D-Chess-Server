@@ -20,11 +20,7 @@ class SceneManager {
 		this._initScene();
 		this._initControls();
 		
-		this._subscribers = {
-			mouvemove: new Set(),
-			mousedown: new Set(),
-			mouseup: new Set()
-		}
+		this._subscribers = {}
 		
 		this._initEventListeners();
 	}
@@ -132,6 +128,8 @@ class SceneManager {
 		
 	}
 	
+
+	// TODO: Move event listeners to view2d
 	_addEventListener(event, f) {
 		// https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
 		

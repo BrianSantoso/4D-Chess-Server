@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
+import FocusLock from 'react-focus-lock';
 //import WhiteIcon from '../assets/player/king_white.svg';
 //import BlackIcon from '../assets/player/king_black.svg';
 import ChessGame from './ChessGame.js';
@@ -17,7 +18,12 @@ class View2D {
 		this.undo = this.undo.bind(this);
 		this.redo = this.redo.bind(this);
 		
-		this.root = (<Overlay cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} />);
+		this.root = React.createRef();
+		
+	}
+
+	keydown(event) {
+		this.root.current.keydown(event);
 	}
 	
 	cameraHome() {
@@ -34,7 +40,7 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
-		ReactDOM.render(this.root, document.getElementById('react-root'));
+		ReactDOM.render(<Overlay ref={this.root} cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} />, document.getElementById('react-root'));
 	}
 }
 
@@ -47,17 +53,27 @@ class Overlay extends Component {
 		this.state = {
 			messages: [],
 			showing: [],
-			chatOpen: false
+			chatOpen: false,
+			focused: true // set false when embed is minimized
 		}
+
+		this.keybinds = {
+			TOGGLE_CHAT: new Set(['Enter']), // Enter
+			OPEN_CHAT: new Set(['Enter', 'KeyC', 'KeyT', 'KeyY']), // C, T, Y
+			CLOSE_CHAT: new Set(['Escape']), // Escape
+			UNDO: new Set(['ArrowLeft']),
+			REDO: new Set(['ArrowRight'])
+		};
 
 		this.toggleChat = this.toggleChat.bind(this);
 		this.addMsg = this.addMsg.bind(this);
 		this.closeChat = this.closeChat.bind(this);
+		this._handleKeyPress = this._handleKeyPress.bind(this);
 	}
 
 	render() {
 		return (
-			<div className='overlay'>
+			<div className='overlay' onKeyPress={this._handleKeyPress}>
 				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
 				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
 				
@@ -72,11 +88,27 @@ class Overlay extends Component {
 		);
 	}
 
+	keydown(event) {
+		if (!this.state.focused) {
+			return;
+		}
+		// TODO: figure out how to utilize state pattern with react components.
+		// Finding a way to force focus would fix all problems...
+		let key = event.code;
+		if (this.keybinds['OPEN_CHAT'].has(key)) {
+			if (!this.state.chatOpen) {
+				this.openChat();
+				event.preventDefault();
+			}
+		} else {
+		}
+	}
+
 	addMsg(config) {
 		// TODO: generate uuid for key
 		let key = config.msg + Date.now();
 		let handleHide = this._getHideMsgHandler(key);
-		let chatMsg = <ChatMessage key={key} text={config.msg} style={config.style} handleHide={handleHide} />;
+		let chatMsg = <ChatMessage key={key} text={config.msg} style={config.style} sender={config.sender} handleHide={handleHide} />;
 		// this.messages.push(chatMsg);
 		
 		// TODO: is callback needed in this setState?
@@ -84,6 +116,13 @@ class Overlay extends Component {
 			messages: prevState.messages.concat([chatMsg]),
 			showing: prevState.showing.concat([chatMsg])
 		}));
+	}
+
+	_handleKeyPress(event) {
+		console.log(event.key)
+		if (event.key === 'Enter' && !this.state.chatOpen) {
+			this.openChat();
+		}
 	}
 
 	_getHideMsgHandler(key) {
@@ -118,6 +157,12 @@ class Overlay extends Component {
 		this.setState(prevState => ({
 			chatOpen: !prevState.chatOpen
 		}));
+	}
+
+	openChat() {
+		this.setState({
+			chatOpen: true
+		});
 	}
 
 	closeChat() {
@@ -201,7 +246,7 @@ class CircleButton extends Component {
 	
 	render() {
 		return (
-			<a className='game-button' onClick={this.props.handleClick} >
+			<a className='game-button' onClick={this.props.handleClick}>
 				<img src={this.props.icon} />
 			</a>
 		)
@@ -252,53 +297,103 @@ class ChatMessage extends Component {
 	}
 
 	render() {
+		let senderStr = this.props.sender ? `[${this.props.sender}] ` : '';
 		return (
 			<div className='chat-message'>
-				<span style={this.props.style}> {this.props.text} </span>
+				<span style={this.props.style}> {senderStr + this.props.text} </span>
 			</div>
 		);
 	}
 }
 
+// class ChatInput extends Component {
+// 	constructor(props) {
+// 		super(props);
+// 		// TODO: Use a controlled component instead, and handle input inside
+// 		// this react component instead of in the DOM
+// 		this.textInput = React.createRef();
+
+// 		this._handleKeyDown = this._handleKeyDown.bind(this);
+// 		this._handleEnter = this._handleEnter.bind(this);
+// 	}
+
+// 	componentDidMount() {
+// 		this.textInput.current.focus();
+// 	}
+
+// 	render() {
+// 		return (
+// 			<div ref={this.textInput} contentEditable={true} className='chat-message' onKeyDown={this._handleKeyDown}></div>
+// 		);
+// 	}
+
+// 	_handleKeyDown(event) {
+// 		if (event.key === 'Enter') {
+// 			this._handleEnter();
+// 		}
+// 	}
+
+// 	_handleEnter() {
+// 		let text = this.textInput.current.innerText;
+// 		// TODO: sanitize
+// 		console.log('text:', text)
+// 		if (text) {
+// 			this.props.handleMsg({
+// 				msg: text
+// 			});
+// 			this.textInput.current.innerText = '';
+// 		} else {
+// 			this.props.handleCloseChat();
+// 		}
+// 	}
+// }
+
 class ChatInput extends Component {
 	constructor(props) {
 		super(props);
-		// TODO: Use a controlled component instead, and handle input inside
-		// this react component instead of in the DOM
-		this.textInput = React.createRef();
 
-		this._handleKeyDown = this._handleKeyDown.bind(this);
-		this._handleEnter = this._handleEnter.bind(this);
-	}
+		this.state = {
+			value: ''
+		};
 
-	componentDidMount() {
-		this.textInput.current.focus();
+		this._handleChange = this._handleChange.bind(this);
+		this._handleSubmit = this._handleSubmit.bind(this);
 	}
 
 	render() {
 		return (
-			<div ref={this.textInput} contentEditable={true} className='chat-message' onKeyDown={this._handleKeyDown}></div>
+			<FocusLock>
+				<form onSubmit={this._handleSubmit}>
+					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} autoFocus={true}></input>
+				</form>
+			</FocusLock>
 		);
 	}
 
-	_handleKeyDown(event) {
-		if (event.key === 'Enter') {
-			this._handleEnter();
-		}
+	_handleChange(event) {
+		this.setState({value: event.target.value});
 	}
 
-	_handleEnter() {
-		let text = this.textInput.current.innerText;
-		// TODO: sanitize
-		console.log('text:', text)
+	_handleSubmit(event) {
+		event.preventDefault();
+		let text = this.state.value;
+		// TODO: sanitize input if not already handled natively by react
 		if (text) {
+			console.log('text:', text)
 			this.props.handleMsg({
-				msg: text
+				msg: text,
+				sender: 'AnonPig'
 			});
-			this.textInput.current.innerText = '';
+			this._clear();
 		} else {
 			this.props.handleCloseChat();
 		}
+	}
+
+	_clear() {
+		this.setState({
+			value: ''
+		});
 	}
 }
 

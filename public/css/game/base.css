@@ -8,10 +8,13 @@
 
 #embed > canvas {
 	margin: 0;
+	/* Prevent focus outline on canvas */
+	outline: none;
 }
 
 #embed img {
 	/* Prevent highlighting of images */
+	/* TODO: perhaps move this to .overlay in modules.css? */
     -khtml-user-select: none;
     -o-user-select: none;
     -moz-user-select: none;

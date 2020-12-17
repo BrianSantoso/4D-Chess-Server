@@ -134,6 +134,12 @@
 	transition: 300ms ease-in-out;
 }
 
+input.chat-message {
+	font-family: inherit;
+	border: none;
+	outline: none;
+}
+
 .fade-enter {
 	opacity: 0;
 }

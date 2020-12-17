@@ -5,6 +5,7 @@ import ChessGame from "./ChessGame.js";
 import { Player3D } from "./ChessPlayer.js";
 import BoardGraphics from "./BoardGraphics.js";
 import View2D from "./View2D.jsx";
+import EventHandler from "./EventHandler.js";
 
 class GameManager {
 	constructor() {
@@ -46,9 +47,11 @@ class ClientGameManager extends GameManager {
 		this._domElement = document.getElementById("embed");
 		this._view2D = new View2D(this);
 		this._view3D = new SceneManager(this._domElement);
-		
+		this._events = new EventHandler(document);
 		this._controller = null;
 		
+		// this._events.addEventListener('keydown');
+		// this._events.subscribe(this._view2D, 'keydown');
 	}
 	
 	setGame(game) {
