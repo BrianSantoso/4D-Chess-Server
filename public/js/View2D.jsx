@@ -5,6 +5,7 @@ import FocusLock from 'react-focus-lock';
 //import WhiteIcon from '../assets/player/king_white.svg';
 //import BlackIcon from '../assets/player/king_black.svg';
 import ChessGame from './ChessGame.js';
+import EventHandler from './EventHandler.js';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
 import RedoIcon from '../assets/icons/redo-black-24dp.svg';
@@ -20,10 +21,15 @@ class View2D {
 		
 		this.root = React.createRef();
 		
-	}
+		this._events = new EventHandler(document);
+		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY'], (e) => {
+			console.log('openChat triggered')
+		});
+		this._events.addEventListener('keydown', (event) => {
+			// event.preventDefault();
+			this._events.triggerByKey(event.code);
+		});
 
-	keydown(event) {
-		this.root.current.keydown(event);
 	}
 	
 	cameraHome() {
@@ -40,7 +46,7 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
-		ReactDOM.render(<Overlay ref={this.root} cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} />, document.getElementById('react-root'));
+		ReactDOM.render(<Overlay ref={this.root} cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} events={this._events}/>, document.getElementById('react-root'));
 	}
 }
 
@@ -54,26 +60,17 @@ class Overlay extends Component {
 			messages: [],
 			showing: [],
 			chatOpen: false,
-			focused: true // set false when embed is minimized
 		}
-
-		this.keybinds = {
-			TOGGLE_CHAT: new Set(['Enter']), // Enter
-			OPEN_CHAT: new Set(['Enter', 'KeyC', 'KeyT', 'KeyY']), // C, T, Y
-			CLOSE_CHAT: new Set(['Escape']), // Escape
-			UNDO: new Set(['ArrowLeft']),
-			REDO: new Set(['ArrowRight'])
-		};
 
 		this.toggleChat = this.toggleChat.bind(this);
 		this.addMsg = this.addMsg.bind(this);
 		this.closeChat = this.closeChat.bind(this);
-		this._handleKeyPress = this._handleKeyPress.bind(this);
+		this.openChat = this.openChat.bind(this);
 	}
 
 	render() {
 		return (
-			<div className='overlay' onKeyPress={this._handleKeyPress}>
+			<div className='overlay'>
 				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
 				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
 				
@@ -86,22 +83,6 @@ class Overlay extends Component {
 				<Chat messages={this.state.messages} showing={this.state.showing} chatOpen={this.state.chatOpen} handleMsg={this.addMsg} handleCloseChat={this.closeChat}/>
 			</div>
 		);
-	}
-
-	keydown(event) {
-		if (!this.state.focused) {
-			return;
-		}
-		// TODO: figure out how to utilize state pattern with react components.
-		// Finding a way to force focus would fix all problems...
-		let key = event.code;
-		if (this.keybinds['OPEN_CHAT'].has(key)) {
-			if (!this.state.chatOpen) {
-				this.openChat();
-				event.preventDefault();
-			}
-		} else {
-		}
 	}
 
 	addMsg(config) {
@@ -118,13 +99,6 @@ class Overlay extends Component {
 		}));
 	}
 
-	_handleKeyPress(event) {
-		console.log(event.key)
-		if (event.key === 'Enter' && !this.state.chatOpen) {
-			this.openChat();
-		}
-	}
-
 	_getHideMsgHandler(key) {
 		return () => {
 			// TODO: is callback needed in this setState?
@@ -136,6 +110,12 @@ class Overlay extends Component {
 
 	componentDidMount() {
 		setTimeout(this.test.bind(this), 1000);
+		this.props.events.subscribe(this, 'openChat');
+		console.log(this, this.props.events)
+	}
+	
+	componentWillUnmount() {
+		this.props.events.unsubscribe(this, 'openChat');
 	}
 
 	test() {
@@ -159,10 +139,11 @@ class Overlay extends Component {
 		}));
 	}
 
-	openChat() {
+	openChat(event) {
 		this.setState({
 			chatOpen: true
 		});
+		console.log(event, 'openChat received!');
 	}
 
 	closeChat() {
@@ -305,48 +286,6 @@ class ChatMessage extends Component {
 		);
 	}
 }
-
-// class ChatInput extends Component {
-// 	constructor(props) {
-// 		super(props);
-// 		// TODO: Use a controlled component instead, and handle input inside
-// 		// this react component instead of in the DOM
-// 		this.textInput = React.createRef();
-
-// 		this._handleKeyDown = this._handleKeyDown.bind(this);
-// 		this._handleEnter = this._handleEnter.bind(this);
-// 	}
-
-// 	componentDidMount() {
-// 		this.textInput.current.focus();
-// 	}
-
-// 	render() {
-// 		return (
-// 			<div ref={this.textInput} contentEditable={true} className='chat-message' onKeyDown={this._handleKeyDown}></div>
-// 		);
-// 	}
-
-// 	_handleKeyDown(event) {
-// 		if (event.key === 'Enter') {
-// 			this._handleEnter();
-// 		}
-// 	}
-
-// 	_handleEnter() {
-// 		let text = this.textInput.current.innerText;
-// 		// TODO: sanitize
-// 		console.log('text:', text)
-// 		if (text) {
-// 			this.props.handleMsg({
-// 				msg: text
-// 			});
-// 			this.textInput.current.innerText = '';
-// 		} else {
-// 			this.props.handleCloseChat();
-// 		}
-// 	}
-// }
 
 class ChatInput extends Component {
 	constructor(props) {

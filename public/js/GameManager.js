@@ -47,11 +47,7 @@ class ClientGameManager extends GameManager {
 		this._domElement = document.getElementById("embed");
 		this._view2D = new View2D(this);
 		this._view3D = new SceneManager(this._domElement);
-		this._events = new EventHandler(document);
 		this._controller = null;
-		
-		// this._events.addEventListener('keydown');
-		// this._events.subscribe(this._view2D, 'keydown');
 	}
 	
 	setGame(game) {
