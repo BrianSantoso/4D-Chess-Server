@@ -22,13 +22,8 @@ class View2D {
 		this.root = React.createRef();
 		
 		this._events = new EventHandler(document);
-		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY'], (e) => {
-			console.log('openChat triggered')
-		});
-		this._events.addEventListener('keydown', (event) => {
-			// event.preventDefault();
-			this._events.triggerByKey(event.code);
-		});
+		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY']);
+		this._events.defineKeyboardEvent('closeChat', ['Escape']);
 
 	}
 	
@@ -59,13 +54,13 @@ class Overlay extends Component {
 		this.state = {
 			messages: [],
 			showing: [],
-			chatOpen: false,
+			chatOpened: false // chat state is maintained up here so that toggle chat button can toggle chat
 		}
 
-		this.toggleChat = this.toggleChat.bind(this);
 		this.addMsg = this.addMsg.bind(this);
-		this.closeChat = this.closeChat.bind(this);
+		this.toggleChat = this.toggleChat.bind(this);
 		this.openChat = this.openChat.bind(this);
+		this.closeChat = this.closeChat.bind(this);
 	}
 
 	render() {
@@ -80,7 +75,7 @@ class Overlay extends Component {
 					<CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
 					<CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
 				</div>
-				<Chat messages={this.state.messages} showing={this.state.showing} chatOpen={this.state.chatOpen} handleMsg={this.addMsg} handleCloseChat={this.closeChat}/>
+				<Chat chatOpened={this.state.chatOpened} handleMsg={this.addMsg} handleOpenChat={this.openChat} handleCloseChat={this.closeChat} messages={this.state.messages} showing={this.state.showing} events={this.props.events}/>
 			</div>
 		);
 	}
@@ -110,12 +105,9 @@ class Overlay extends Component {
 
 	componentDidMount() {
 		setTimeout(this.test.bind(this), 1000);
-		this.props.events.subscribe(this, 'openChat');
-		console.log(this, this.props.events)
 	}
 	
 	componentWillUnmount() {
-		this.props.events.unsubscribe(this, 'openChat');
 	}
 
 	test() {
@@ -135,20 +127,19 @@ class Overlay extends Component {
 
 	toggleChat() {
 		this.setState(prevState => ({
-			chatOpen: !prevState.chatOpen
+			chatOpened: !prevState.chatOpened
 		}));
 	}
 
-	openChat(event) {
+	openChat() {
 		this.setState({
-			chatOpen: true
+			chatOpened: true
 		});
-		console.log(event, 'openChat received!');
 	}
 
 	closeChat() {
 		this.setState({
-			chatOpen: false
+			chatOpened: false
 		});
 	}
 }
@@ -242,29 +233,95 @@ class Chat extends Component {
 	render() {
 		return (
 			<div className='chat'>
-				{ this.props.chatOpen ? this._opened() : this._notOpened() }
+				{ this.props.chatOpened ? 
+					<ChatOpened handleCloseChat={this.props.handleCloseChat}
+					handleMsg={this.props.handleMsg} 
+					messages={this.props.messages} 
+					events={this.props.events}></ChatOpened> 
+				: 
+					<ChatClosed handleOpenChat={this.props.handleOpenChat} showing={this.props.showing} events={this.props.events}></ChatClosed> 
+				}
 			</div>
 		);
 	}
 
-	_opened() {
-		return (
-			<div className=''>
-				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-					{ this.props.messages }
-				</CSSTransitionGroup>
-				<ChatInput handleMsg={this.props.handleMsg} handleCloseChat={this.props.handleCloseChat}></ChatInput>
-			</div>
-		);
+	// _opened() {
+	// 	return (
+	// 		<div className=''>
+	// 			<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+	// 				{ this.props.messages }
+	// 			</CSSTransitionGroup>
+	// 			<ChatInput handleMsg={this.props.handleMsg} handleCloseChat={this.props.handleCloseChat}></ChatInput>
+	// 		</div>
+	// 	);
+	// }
+
+	// _notOpened() {
+	// 	// console.log('showing', this.props.showing)
+	// 	return (
+	// 		<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+	// 			{ this.props.showing }
+	// 		</CSSTransitionGroup>
+	// 	);
+	// }
+}
+
+class ChatClosed extends Component {
+	constructor(props) {
+		super(props);
 	}
 
-	_notOpened() {
-		// console.log('showing', this.props.showing)
+	render() {
 		return (
 			<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
 				{ this.props.showing }
 			</CSSTransitionGroup>
 		);
+	}
+
+	componentDidMount() {
+		this.props.events.subscribe(this, 'openChat');
+	}
+
+	componentWillUnmount() {
+		this.props.events.unsubscribe(this, 'openChat');
+	}
+
+	openChat(event) {
+		event.preventDefault();
+		console.log(event)
+		this.props.handleOpenChat();
+	}
+}
+
+class ChatOpened extends Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		return (
+			<div className=''>
+				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+					{ this.props.messages }
+				</CSSTransitionGroup>
+				<ChatInput handleCloseChat={this.props.handleCloseChat} handleMsg={this.props.handleMsg}></ChatInput>
+			</div>
+		);
+	}
+
+	componentDidMount() {
+		this.props.events.subscribe(this, 'closeChat');
+	}
+
+	componentWillUnmount() {
+		this.props.events.unsubscribe(this, 'closeChat');
+	}
+
+	closeChat(event) {
+		event.preventDefault();
+		console.log(event)
+		this.props.handleCloseChat();
 	}
 }
 

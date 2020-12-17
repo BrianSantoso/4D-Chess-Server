@@ -2,7 +2,6 @@ class EventHandler {
     constructor(domElement) {
         this._domElement = domElement;
 		this._subscribers = {};
-		this._customEvents = {};
 		this._keyBinds = {};
     }
 
@@ -16,36 +15,65 @@ class EventHandler {
 		});
 	}
 
-	defineKeyboardEvent(eventName, triggerKeys, f) {
-		let customEvent = this.defineCustomEvent(eventName, f);
-		triggerKeys.forEach(key => {
-			this._bindKey(key, eventName);
-		});
-		return customEvent;
-	}
+	// defineKeyboardEvent(eventName, triggerKeys) {
+	// 	this.defineCustomEvent(eventName, (event) => {
+	// 		this.triggerByKey(event);
+	// 	}, 'keydown');
 
-	defineCustomEvent(eventName, f) {
-		let customEvent = new Event(eventName);
-		this._customEvents[eventName] = customEvent;
-		this.addEventListener(eventName, f);
-		return customEvent;
-	}
+	// 	triggerKeys.forEach(key => {
+	// 		this._bindKey(key, eventName);
+	// 	});
+	// }
+
+	// defineCustomEvent(eventName, f, parentEventName) {
+	// 	this._customEvents[eventName] = f;
+	// 	this.addEventListener(parentEventName, (e) => {
+
+	// 	});
+	// }
 
 	_bindKey(key, eventName) {
 		let binds = this._keyBinds[key];
 		if (!binds) {
-			binds = this._keyBinds[key] = [];
+			binds = this._keyBinds[key] = new Set();
 		}
-		let event = this._customEvents[eventName];
-		binds.push(event);
+		binds.add(eventName);
 	}
 
-	triggerByKey(key) {
+	_unbindKey(key, eventName) {
+		this._keyBinds[key].delete(eventName);
+	}
+
+	triggerByKey(keydownEvent) {
+		let key = keydownEvent.code;
 		let eventsToTrigger = this._keyBinds[key];
 		if (eventsToTrigger) {
-			eventsToTrigger.forEach(customEvent => {
-				this._domElement.dispatchEvent(customEvent);
+			eventsToTrigger.forEach(eventName => {
+				this.triggerCustomEvent(eventName, keydownEvent);
 			});
+		}
+	}
+
+	triggerCustomEvent(eventName, parentEvent) {
+		this._subscribers[eventName].forEach(subscriber => {
+			subscriber[eventName](parentEvent);
+		});
+	}
+
+	defineKeyboardEvent(eventName, triggerKeys) {
+		let howToTrigger = this.triggerByKey.bind(this);
+		this.defineCustomEvent(eventName, 'keydown', howToTrigger);
+
+		triggerKeys.forEach(key => {
+			this._bindKey(key, eventName);
+		});
+	}
+
+	defineCustomEvent(eventName, parentEventName, f) {
+		// TODO: add to customEvents map
+		this.addEventListener(parentEventName, f);
+		if (!(eventName in this._subscribers)) {
+			this._subscribers[eventName] = new Set();
 		}
 	}
 
