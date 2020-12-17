@@ -2,6 +2,7 @@ import GameBoard from "./GameBoard.js";
 import BoardGraphics, { EmptyBoardGraphics } from "./BoardGraphics.js";
 import Piece from "./Piece.js";
 import { LocalPlayer3D, OnlinePlayer3D } from "./ChessPlayer.js";
+import MoveHistory from "./MoveHistory.js";
 
 class ChessGame {	
 	constructor(dim) {
@@ -14,8 +15,8 @@ class ChessGame {
 		// for custom gamemodes (freeplay, etc.)?
 		// A: May want to switch game modes once game ends.
 		this._mode = null;
-		this._moveHistory = []; // TODO: doubly linked list of moves
-		this._status = ChessGame.ONGOING; // Initial board state is assumed to be not game-ending to prevent double computation on first turn. Ideally should be null.
+		this._moveHistory = new MoveHistory(); // TODO: doubly linked list of moves
+		this._status = this.status();
 		this._gameOver = false;
 	}
 	
@@ -61,6 +62,10 @@ class ChessGame {
 		return this.board().inCheck(team);
 	}
 
+	isLegal(move) {
+		return this.board().isLegal(move);
+	}
+
 	_clearStatus() {
 		this._status = null;
 	}
@@ -89,20 +94,59 @@ class ChessGame {
 		return this._board;
 	}
 	
-	makeMove(move) {
+	makeMove(move, redoing=false) {
 		if (this.isGameOver()) {
 			return;
 		}
 		
-		this._board.makeMove(move);
-		this._boardGraphics.makeMove(move, 24);
-		this._clearStatus();
-		// add move to history
+		this._board.makeMove(move); // update state
+		this._boardGraphics.makeMove(move, 24); // animate
+		
+		if (!redoing) {
+			this._clearStatus(); // reset gameover status
+			let status = this.status(); // recalculate status
+			this._moveHistory.add(move, status); // add to history
+		}
 
+		// implicitly recalculates status if needed
 		if (this.isGameOver()) {
-			let status = this.status();
+
 		} else {
 			this._switchTurns();
+		}
+	}
+
+	undo() {
+		if (!this._boardGraphics._canInteract) {
+			// Temporary fix. Make animator able to queue items
+			return;
+		}
+		let undoData = this._moveHistory.undo();
+		if (undoData) {
+			let moveToUndo = undoData.move;
+			let statusToRestore = undoData.status;
+			this._board.undoMove(moveToUndo);
+			this._boardGraphics.undoMove(moveToUndo, 24);
+			this._status = statusToRestore;
+			// this._clearStatus(); // reset gameover status
+			// this.status();
+			this._switchTurns();
+		} else {
+			
+		}
+	}
+
+	redo() {
+		if (!this._boardGraphics._canInteract) {
+			// Temporary fix. Make animator able to queue items
+			return;
+		}
+		let redoData = this._moveHistory.redo();
+		if (redoData) {
+			let moveToRedo = redoData.move;
+			let statusToRestore = redoData.status;
+			this.makeMove(moveToRedo, true);
+			this._status = statusToRestore;
 		}
 	}
 	

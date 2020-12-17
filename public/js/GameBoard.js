@@ -1,5 +1,6 @@
 import ChessGame from "./ChessGame.js";
 import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
+import { initTeam8181, initTeam4444 } from "./BoardConfigs.js";
 import Move from "./Move.js";
 
 import { unique } from "./ArrayUtils.js";
@@ -18,18 +19,26 @@ class GameBoard {
 		this._pieces[x][y][z][w] = piece;
 		piece.set(x, y, z, w);
 	}
+
+	undoMove(move) {
+		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
+		this.set(move.x1, move.y1, move.z1, move.w1, move.capturedPiece);
+		if (move.isFirstMove) {
+			move.piece.hasMoved = false;
+		}
+	}
 	
 	makeMove(move) {
+		// check for pawn promotion
 		if (move.promotionNew) {
 			this.set(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
 		} else {
 			this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
 		}
-		
-		// check for pawn promotion
+
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
 		
-		// if not undoing a move
+		// Assumes redoing a move is equivalent to making the move.
 		move.piece.update();
 	}
 	
@@ -42,6 +51,10 @@ class GameBoard {
 				y >= 0 && y < this._y() && 
 				z >= 0 && z < this._z() && 
 				w >= 0 && w < this._w();
+	}
+
+	isClassic() {
+		return this._z() === 1 && this._w() === 1;
 	}
 	
 	getPossibleMoves(x, y, z, w, legalOnly=true, attacksOnly=false) {
@@ -171,13 +184,25 @@ class GameBoard {
 				promotionNew = new Queen(team);
 				promotionNew.set(x, y, z, w);
 			}
+
+			let isFirstMove = !originPiece.hasMoved;
 			
-			if (originPiece.oppositeTeam(target) && canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
+			let isCapture = originPiece.oppositeTeam(target) && canCapture;
+			let normalMove = target.isEmpty() && !canCapture;
+			let obstructed = !target.isEmpty();
+
+			if (isCapture) {
+				let potentialMove = new Move(startX, startY, startZ, startW, 
+									x, y, z, w, originPiece, target, 
+									promotionNew, isFirstMove);
+				moves.push(potentialMove);
 				break;
-			} else if(target.isEmpty() && !canCapture) {
-				moves.push(new Move(startX, startY, startZ, startW, x, y, z, w, originPiece, target, promotionNew));
-			} else if (!target.isEmpty()) {
+			} else if(normalMove) {
+				let potentialMove = new Move(startX, startY, startZ, startW, 
+									x, y, z, w, originPiece, target, 
+									promotionNew, isFirstMove);
+				moves.push(potentialMove);
+			} else if (obstructed) {
 				break;
 			}
 		}
@@ -197,124 +222,19 @@ class GameBoard {
 		};
 
 		// Create 4D array of Piece objects
-		this._pieces = rangeIn(dim)
+		this._pieces = rangeIn(dim);
 		
-		console.log(this._pieces)
+		console.log(this._pieces);
 		
-		let z_0 = this._z() - 1; // Last Rank
-		let z_1 = this._z() - 2; // Penultimate Rank
-		let w_0 = this._w() - 1; // Last Rank
-		let w_1 = this._w() - 2; // Penultimate Rank
+		let z0 = this._z() - 1; // Last Rank
+		let z1 = this._z() - 2; // Penultimate Rank
+		let w0 = this._w() - 1; // Last Rank
+		let w1 = this._w() - 2; // Penultimate Rank
 		
-		const initTeam = (team, z_0, z_1, w_0, w_1) => {
-			// a: back rank
-			// b: penultimate rank
-			this.set(0, 0, z_0, w_0, new Rook(team));
-			this.set(1, 0, z_0, w_0, new Knight(team));
-			this.set(2, 0, z_0, w_0, new Knight(team));
-			this.set(3, 0, z_0, w_0, new Rook(team));
-
-			this.set(0, 1, z_0, w_0, new Bishop(team));
-			this.set(1, 1, z_0, w_0, new Queen(team));
-			this.set(2, 1, z_0, w_0, new Queen(team));
-			this.set(3, 1, z_0, w_0, new Bishop(team));
-
-			this.set(0, 2, z_0, w_0, new Bishop(team));
-			this.set(1, 2, z_0, w_0, new Queen(team));
-			this.set(2, 2, z_0, w_0, new King(team));
-			this.set(3, 2, z_0, w_0, new Bishop(team));
-
-			this.set(0, 3, z_0, w_0, new Rook(team));
-			this.set(1, 3, z_0, w_0, new Knight(team));
-			this.set(2, 3, z_0, w_0, new Knight(team));
-			this.set(3, 3, z_0, w_0, new Rook(team));
-			
-			
-			
-			
-
-			this.set(0, 0, z_1, w_0, new Pawn(team));
-			this.set(1, 0, z_1, w_0, new Pawn(team));
-			this.set(2, 0, z_1, w_0, new Pawn(team));
-			this.set(3, 0, z_1, w_0, new Pawn(team));
-
-			this.set(0, 1, z_1, w_0, new Pawn(team));
-			this.set(1, 1, z_1, w_0, new Pawn(team));
-			this.set(2, 1, z_1, w_0, new Pawn(team));
-			this.set(3, 1, z_1, w_0, new Pawn(team));
-
-			this.set(0, 2, z_1, w_0, new Pawn(team));
-			this.set(1, 2, z_1, w_0, new Pawn(team));
-			this.set(2, 2, z_1, w_0, new Pawn(team));
-			this.set(3, 2, z_1, w_0, new Pawn(team));
-
-			this.set(0, 3, z_1, w_0, new Pawn(team));
-			this.set(1, 3, z_1, w_0, new Pawn(team));
-			this.set(2, 3, z_1, w_0, new Pawn(team));
-			this.set(3, 3, z_1, w_0, new Pawn(team));
-			
-			
-			
-			
-			this.set(0, 0, z_0, w_1, new Pawn(team));
-			this.set(1, 0, z_0, w_1, new Pawn(team));
-			this.set(2, 0, z_0, w_1, new Pawn(team));
-			this.set(3, 0, z_0, w_1, new Pawn(team));
-
-			this.set(0, 1, z_0, w_1, new Pawn(team));
-			this.set(1, 1, z_0, w_1, new Pawn(team));
-			this.set(2, 1, z_0, w_1, new Pawn(team));
-			this.set(3, 1, z_0, w_1, new Pawn(team));
-
-			this.set(0, 2, z_0, w_1, new Pawn(team));
-			this.set(1, 2, z_0, w_1, new Pawn(team));
-			this.set(2, 2, z_0, w_1, new Pawn(team));
-			this.set(3, 2, z_0, w_1, new Pawn(team));
-
-			this.set(0, 3, z_0, w_1, new Pawn(team));
-			this.set(1, 3, z_0, w_1, new Pawn(team));
-			this.set(2, 3, z_0, w_1, new Pawn(team));
-			this.set(3, 3, z_0, w_1, new Pawn(team));
-			
-			
-			
-			this.set(0, 0, z_1, w_1, new Pawn(team));
-			this.set(1, 0, z_1, w_1, new Pawn(team));
-			this.set(2, 0, z_1, w_1, new Pawn(team));
-			this.set(3, 0, z_1, w_1, new Pawn(team));
-
-			this.set(0, 1, z_1, w_1, new Pawn(team));
-			this.set(1, 1, z_1, w_1, new Pawn(team));
-			this.set(2, 1, z_1, w_1, new Pawn(team));
-			this.set(3, 1, z_1, w_1, new Pawn(team));
-
-			this.set(0, 2, z_1, w_1, new Pawn(team));
-			this.set(1, 2, z_1, w_1, new Pawn(team));
-			this.set(2, 2, z_1, w_1, new Pawn(team));
-			this.set(3, 2, z_1, w_1, new Pawn(team));
-
-			this.set(0, 3, z_1, w_1, new Pawn(team));
-			this.set(1, 3, z_1, w_1, new Pawn(team));
-			this.set(2, 3, z_1, w_1, new Pawn(team));
-			this.set(3, 3, z_1, w_1, new Pawn(team));
-		}
-
-		// Debugging tool
-		const initCheckmate = (team, z_0, z_1, w_0, w_1) => {
-			let opp = ChessGame.oppositeTeam(team);
-			this.set(0, 0, z_0, w_0, new King(team));
-
-			this.set(0, 1, z_0, w_0, new Queen(opp));
-			this.set(1, 0, z_0, w_0, new Queen(opp));
-			this.set(1, 1, z_0, w_0, new Queen(opp));
-			this.set(0, 0, z_0, w_1, new Queen(opp));
-			this.set(0, 0, z_1, w_0, new Queen(opp));
-			this.set(0, 0, z_1, w_1, new Queen(opp));
-		}
-		
-		initTeam(ChessGame.WHITE, 0, 1, 0, 1);
-		// initCheckmate(ChessGame.WHITE, 0, 1);
-		initTeam(ChessGame.BLACK, z_0, z_1, w_0, w_1);
+		// initTeam4444.apply(this, ChessGame.WHITE, 0, 1, 0, 1);
+		// initTeam4444.apply(this, ChessGame.BLACK, z0, z1, w0, w1);
+		initTeam8181.call(this, ChessGame.WHITE, 0, 1);
+		initTeam8181.call(this, ChessGame.BLACK, z0, z1);
 	}
 
 	_x() {

@@ -5,6 +5,7 @@ import ChessGame from "./ChessGame.js";
 import { Player3D } from "./ChessPlayer.js";
 import BoardGraphics from "./BoardGraphics.js";
 import View2D from "./View2D.jsx";
+import EventHandler from "./EventHandler.js";
 
 class GameManager {
 	constructor() {
@@ -18,7 +19,7 @@ class GameManager {
 	createGame(config) {
 		// Factory to create game, instantiating and injecting required dependencies
 		let defaultConfig = {
-			dim: [4, 4, 4, 4],
+			dim: [8, 1, 8, 1],
 			BoardGraphics: BoardGraphics,
 			WhitePlayer: Player3D,
 			BlackPlayer: Player3D
@@ -46,9 +47,7 @@ class ClientGameManager extends GameManager {
 		this._domElement = document.getElementById("embed");
 		this._view2D = new View2D(this);
 		this._view3D = new SceneManager(this._domElement);
-		
 		this._controller = null;
-		
 	}
 	
 	setGame(game) {
@@ -92,6 +91,22 @@ class ClientGameManager extends GameManager {
 	
 	cameraHome() {
 		this._view3D.configureCamera(this._game._boardGraphics, ChessGame.WHITE, 0);
+	}
+
+	undo() {
+		// Set interactor's state to unselected
+		this._game.getPlayers().forEach(player => {
+			player.unselect();
+		});
+		this._game.undo();
+	}
+
+	redo() {
+		// Set interactor's state to unselected
+		this._game.getPlayers().forEach(player => {
+			player.unselect();
+		});
+		this._game.redo();
 	}
 	
 	loadAssets() {

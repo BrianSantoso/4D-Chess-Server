@@ -18,6 +18,7 @@ class BoardGraphics {
 		this._black = new THREE.Group();
 		this._ghost = new THREE.Group();
 		this._highlight = new THREE.Group();
+		this._checkerboards = new THREE.Group();
 		this._pieces.add(this._white);
 		this._pieces.add(this._black);
 		this._pieces.add(this._ghost);
@@ -28,6 +29,7 @@ class BoardGraphics {
 		this._highlightingFor = new Map(); // map of Piece objects to their temporary highlight meshes
 		
 		this._container.add(this._pieces);
+		this._container.add(this._checkerboards);
 		
 		this._animator = new Animator();
 		this._allAnimProms = [];
@@ -113,7 +115,7 @@ class BoardGraphics {
 	_init() {
 		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
 		let square = 25;
-		this._container.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));
+		this._checkerboards.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));
 		
 		console.log('BoardGraphics', this._container);
 	}
@@ -354,7 +356,8 @@ class BoardGraphics {
 			
 			let movingPieceProm = this._translate(mesh, frames, startPos, endPos)
 				.then(() => {
-					this._remove(capturedMesh);
+					// TODO:
+					// this._remove(capturedMesh);
 					if (move.promotionNew) {
 						return this._shrink(mesh, 16);
 					} else {
@@ -362,8 +365,10 @@ class BoardGraphics {
 						// TODO: how to end a promise chain properly?
 						return Promise.reject();
 					}
-				}).then(() => {
-					this._remove(mesh);
+				})
+				.then(() => {
+					// TODO: 
+					// this._remove(mesh);
 					return this._spawnMeshFromPiece(move.promotionNew, 16);
 				}, () => { /* Do nothing */ });
 			
@@ -379,10 +384,12 @@ class BoardGraphics {
 
 			let newPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 			mesh.position.set(newPos.x, newPos.y, newPos.z);
-			this._remove(capturedMesh);
+			// TODO:
+			// this._remove(capturedMesh);
 
 			if (move.promotionNew) {
-				this._remove(mesh);
+				// TODO:
+				// this._remove(mesh);
 				return this._spawnMeshFromPiece(move.promotionNew);
 			}
 			moveAnimationProm = Promise.resolve();
@@ -391,9 +398,52 @@ class BoardGraphics {
 //		Promise.all([moveAnimationProm]).then(() => {
 //			this._enableInteraction();
 //		});
-		
 		// Reenable interaction when all animations have finished
 		this._allAnimProms.push(moveAnimationProm);
+		Promise.all(this._allAnimProms).then(() => {
+			this._enableInteraction();
+		});
+	}
+
+	undoMove(move, frames=0) {
+		// TODO: Spamming undo button will make animations overlap. Can break if 
+		// first undo animation is longer than second undo animation.
+		let undoAnimationProm;
+		this._disableInteraction();
+		if (frames) {
+			let mover = this._pieceToMesh.get(move.piece);
+			let startPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
+			let endPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
+			let restoringMoverProm = Promise.resolve();
+			if (move.promotionNew) {
+				// If the original piece was promoted, then we need to get it back
+				// and remove the promoted mesh
+				let promotedMesh = this._pieceToMesh.get(move.promotionNew);
+				restoringMoverProm = this._shrink(promotedMesh, 16)
+					.then(() => {
+						return this._grow(mover, 16);
+					});
+			}
+			
+			
+			undoAnimationProm = restoringMoverProm.then(() => {
+				let translateProm = this._translate(mover, frames, startPos, endPos);
+				let capturedGrowProm = Promise.resolve();
+				if (move.isCapture()) {
+					let capturedMesh = this._pieceToMesh.get(move.capturedPiece);
+					capturedGrowProm = this._grow(capturedMesh, frames);
+				}
+				return Promise.all([translateProm, capturedGrowProm]);
+			});
+
+			// TODO: is this promise resolved when the restoringMoverProm chain is complete, or...?
+			// undoAnimationProm = restoringMoverProm;
+			
+		} else {
+
+		}
+
+		this._allAnimProms.push(undoAnimationProm);
 		Promise.all(this._allAnimProms).then(() => {
 			this._enableInteraction();
 		});
@@ -425,12 +475,17 @@ class BoardGraphics {
 	_shrink(mesh, numFrames) {
 		let animation = Animation.scale(Animation.LINEAR, mesh, mesh.scale.x, 0, numFrames);
 		let promise = this._animator.animate(animation);
+		// TODO: Spamming undo button will make animations overlap. Can break if 
+		// first undo animation is longer than second undo animation.
 		this._allAnimProms.push(promise);
 		return promise;
 	}
 	
 	_grow(mesh, numFrames) {
-		let animation = Animation.scale(Animation.LINEAR, mesh, 0, mesh.scale.x, numFrames);
+		let animation = Animation.scale(Animation.LINEAR, mesh, 0, mesh.originalScale, numFrames);
+		// TODO: Spamming undo button will make animations overlap. Can break if 
+		// first undo animation is longer than second undo animation.
+		animation.override = true;
 		let promise = this._animator.animate(animation);
 		this._allAnimProms.push(promise);
 		return promise;
@@ -439,7 +494,7 @@ class BoardGraphics {
 	_fadeIn(mesh, numFrames) {
 		// Assumes mesh.material.transparent
 		// mode, mesh, startOpacity, endOpacity, numFrames, onFinishCallback
-		let animation = Animation.opacity(Animation.QUADRATIC, mesh, 0, mesh.material.opacity, numFrames);
+		let animation = Animation.opacity(Animation.QUADRATIC, mesh, 0, mesh.material.originalOpacity, numFrames);
 		animation.override = true;
 		
 		let promise = this._animator.animate(animation);

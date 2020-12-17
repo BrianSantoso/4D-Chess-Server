@@ -50,6 +50,10 @@ class Player3D extends ChessPlayer {
 		super(team, chessGame);
 		this._interactor = new Interactor3D(team, chessGame, this._commandQueue);
 	}
+
+	unselect() {
+		this._interactor.unselect();
+	}
 	
 	setRayCaster(rayCaster) {
 		this._interactor.setRayCaster(rayCaster);
