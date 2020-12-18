@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
 import FocusLock from 'react-focus-lock';
-//import WhiteIcon from '../assets/player/king_white.svg';
-//import BlackIcon from '../assets/player/king_black.svg';
+import WhiteIcon from '../assets/player/king_white.svg';
+import BlackIcon from '../assets/player/king_black.svg';
 import ChessGame from './ChessGame.js';
 import EventHandler from './EventHandler.js';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
@@ -66,8 +66,8 @@ class Overlay extends Component {
 	render() {
 		return (
 			<div className='overlay'>
-				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
-				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
+				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'} position={'playerInfoLeft'} time={-1}></PlayerInfo>
+				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'} position={'playerInfoRight'} time={-1}></PlayerInfo>
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
@@ -148,11 +148,6 @@ class PlayerInfo extends Component {
 	
 	constructor(props) {
 		super(props);
-		this.state = {
-			team: this.props.team,
-			time: -1,
-			playerName: this.props.playerName,
-		}
 	}
 	
 	msToHMS(duration) {
@@ -174,37 +169,23 @@ class PlayerInfo extends Component {
 	}
 	
 	render() {
-		let className;
-		let footer;
-		let playerTime = <div className='playerTime'>{this.msToHMS(this.state.time)}</div>;
+		let className = 'playerInfo ' + this.props.position;
+		let isWhite = this.props.team === ChessGame.WHITE;
+		let playerTime = <div className='playerTime'>{this.msToHMS(this.props.time)}</div>;
 		let playerStatus = <img className='playerStatus' src='../assets/player/online.svg' />
-		
-		if (this.state.team === ChessGame.WHITE) {
-			className = 'playerInfo playerWhite';
-			footer = (
-				<div className='playerFooter'>
-					{playerTime}
-					{playerStatus}
-				</div>
-			)
-		} else {
-			className = 'playerInfo playerBlack';
-			footer = (
-				<div className='playerFooter'>
-					{playerStatus}
-					{playerTime}
-				</div>
-			)
-		}
+		let playerIcon = <img className='playerIcon' src={isWhite ? WhiteIcon : BlackIcon}/>;
 			
 		return (
 			<div className={className}>
-				<img className='playerIcon' />
+				{playerIcon}
 				<div className='playerText'>
 					<div className='playerName'>
-						{this.state.playerName}
+						{this.props.playerName}
 					</div>
-					{footer}
+					<div className='playerFooter'>
+						{playerStatus}
+						{playerTime}
+					</div>
 				</div>
 			</div>
 		)
@@ -360,7 +341,7 @@ class ChatInput extends Component {
 		return (
 			<FocusLock>
 				<form onSubmit={this._handleSubmit}>
-					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} autoFocus={true}></input>
+					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} maxLength={200} autoFocus={true}></input>
 				</form>
 			</FocusLock>
 		);
@@ -382,8 +363,9 @@ class ChatInput extends Component {
 			});
 			this._clear();
 		} else {
-			this.props.handleCloseChat();
+			// this.props.handleCloseChat();
 		}
+		this.props.handleCloseChat();
 	}
 
 	_clear() {

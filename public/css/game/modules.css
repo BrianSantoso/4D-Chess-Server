@@ -30,22 +30,22 @@
 	padding-top: calc(var(--icon-size) / 4);
 }
 
-.playerWhite .playerIcon {
+.playerInfoLeft .playerIcon {
 	float: left; /* Justify-left icon */
-	content: url('../../assets/player/king_white.svg');
+	/* content: url('../../assets/player/king_white.svg'); */
 }
 
-.playerWhite {
+.playerInfoLeft {
 	left: 0; /* Make playerInfo appear on left side of screen */
 	text-align: left; /* Justify-left all text */
 }
 
-.playerBlack .playerIcon {
+.playerInfoRight .playerIcon {
 	float: right;
-	content: url('../../assets/player/king_black.svg');
+	/* content: url('../../assets/player/king_black.svg'); */
 }
 
-.playerBlack {
+.playerInfoRight {
 	right: 0;
 	text-align: right;
 }
@@ -130,6 +130,7 @@
 	min-height: var(--chatMsg-unitHeight);
 	padding: var(--chatMsg-paddingV) var(--chatMsg-paddingH);
 	box-sizing: border-box;
+	word-wrap: break-word;
 
 	transition: 300ms ease-in-out;
 }
