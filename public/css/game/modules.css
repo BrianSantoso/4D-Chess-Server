@@ -18,6 +18,17 @@
 	pointer-events: none;
 }
 
+.statusBanner {
+	display: inline-block;
+	position: absolute;
+	left: 50%;
+	transform: translate(-50%, 0%);
+	font-size: calc(var(--icon-size) / 3);
+
+	 /* This is messy. Change in playerText also, to margin*/
+	padding-top: calc(var(--icon-size) / 6);
+}
+
 .playerInfo {
 	width: calc(var(--icon-size) * 5);
 	display: inline-block;
@@ -48,11 +59,12 @@
 .playerInfoRight {
 	right: 0;
 	text-align: right;
+	direction: rtl;
 }
 
 .playerIcon {
 	width: var(--icon-size);
-	margin: 0 calc(var(--icon-size) / 6);
+	margin: calc(var(--icon-size) / 6);
 }
 
 .playerFooter {
@@ -158,3 +170,23 @@ input.chat-message {
 	opacity: 0;
 	transition: opacity 300ms ease-in;
 }
+
+/* .idleFloat {
+	transform: translatey(0);
+	animation: float 1s ease-in-out infinite;
+}
+
+@keyframes float {
+	0% {
+		transform: translatey(0);
+	}
+	30% {
+		transform: translatey(.5em);
+	}
+	60% {
+		transform: translatey(0);
+	}
+	100% {
+		transform: translatey(0);
+	}
+} */

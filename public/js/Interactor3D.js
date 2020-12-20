@@ -1,5 +1,5 @@
 import ChessGame from "./ChessGame.js";
-import { King } from "./Piece.js";
+import config from "./config.json";
 
 class Interactor3D {
 	constructor(team, chessGame, commandQueue, rayCaster) {
@@ -26,10 +26,14 @@ class Interactor3D {
 				this._movePreviewer.showMovesFor(null);
 
 				let unadressedCheck = this._pieceSelector.explainIfUnadressedCheck(selected);
-				if (unadressedCheck) {
-					this._pieceSelector.setSelected(null);
-					return;
-				}
+
+				// Uncomment if you want to disable ability to select pieces which are pinned OR
+				// do not address a check
+				// if (unadressedCheck) {
+				// 	this._pieceSelector.setSelected(null);
+				// 	return;
+				// }
+
 				// Show the moves for what was selected
 				this._pieceSelector.showMovesFor(this._pieceSelector.selected());
 				this._pieceSelector.highlight(this._pieceSelector.selected());
@@ -287,28 +291,28 @@ class Interactor3DWorker {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
 			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, 12);
+			this._boardGraphics().showPossibleMoves(piece, moves, preview, config.animFrames.showMoves);
 		}
 	}
 	
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, 12);
+			this._boardGraphics().hidePossibleMoves(piece, config.animFrames.hideMoves);
 		}
 	}
 	
 	_highlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().highlight(piece, 3);
+			this._boardGraphics().highlight(piece, config.animFrames.highlight);
 		}
 	}
 	
 	_unhighlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
 			let piece = mesh.piece;
-			this._boardGraphics().unhighlight(piece, 10);
+			this._boardGraphics().unhighlight(piece, config.animFrames.unhighlight);
 		}
 	}
 

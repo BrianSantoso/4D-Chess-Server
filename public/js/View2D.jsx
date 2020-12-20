@@ -10,6 +10,8 @@ import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
 import RedoIcon from '../assets/icons/redo-black-24dp.svg';
 import ChatIcon from '../assets/icons/chat-black-24dp.svg';
+import config from './config.json';
+import { set } from 'lodash';
 
 class View2D {
 	constructor(gameManager) {
@@ -24,7 +26,6 @@ class View2D {
 		this._events = new EventHandler(document);
 		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY']);
 		this._events.defineKeyboardEvent('closeChat', ['Escape']);
-
 	}
 	
 	cameraHome() {
@@ -66,8 +67,9 @@ class Overlay extends Component {
 	render() {
 		return (
 			<div className='overlay'>
-				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'} position={'playerInfoLeft'} time={-1}></PlayerInfo>
-				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'} position={'playerInfoRight'} time={-1}></PlayerInfo>
+				<PlayerInfo team={ChessGame.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>
+				<StatusBanner messages={config.banner.noOpponent}></StatusBanner>
+				<PlayerInfo team={ChessGame.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
@@ -174,6 +176,14 @@ class PlayerInfo extends Component {
 		let playerTime = <div className='playerTime'>{this.msToHMS(this.props.time)}</div>;
 		let playerStatus = <img className='playerStatus' src='../assets/player/online.svg' />
 		let playerIcon = <img className='playerIcon' src={isWhite ? WhiteIcon : BlackIcon}/>;
+		let elo = `(${this.props.elo})`;
+		let footer = (
+			<div className='playerFooter'>
+				{elo}
+				{playerStatus}
+				{playerTime}
+			</div>
+		);
 			
 		return (
 			<div className={className}>
@@ -182,13 +192,47 @@ class PlayerInfo extends Component {
 					<div className='playerName'>
 						{this.props.playerName}
 					</div>
-					<div className='playerFooter'>
-						{playerStatus}
-						{playerTime}
-					</div>
+					{footer}
 				</div>
 			</div>
 		)
+	}
+}
+
+class StatusBanner extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			frame: 0
+		}
+
+		this.tick = this.tick.bind(this);
+	}
+
+	tick() {
+		this.setState(prevState => ({
+			frame: (prevState.frame + 1) % this.props.messages.length
+		}));
+	}
+
+	currMessage() {
+		return this.props.messages[this.state.frame];
+	}
+
+	componentDidMount() {
+		this.timerID = setInterval(this.tick, config.banner.msPerMsg);
+	}
+
+	componentWillUnmount() {
+		clearInterval(this.timerID);
+	}
+
+	render() {
+		return (
+			<div className='statusBanner'>
+				{this.currMessage()}
+			</div>
+		);
 	}
 }
 
@@ -341,7 +385,7 @@ class ChatInput extends Component {
 		return (
 			<FocusLock>
 				<form onSubmit={this._handleSubmit}>
-					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} maxLength={200} autoFocus={true}></input>
+					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} maxLength={config.chat.maxLength} autoFocus={true}></input>
 				</form>
 			</FocusLock>
 		);

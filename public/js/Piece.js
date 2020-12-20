@@ -1,5 +1,5 @@
 import ChessGame from "./ChessGame.js";
-import * as rayCastParams from './rayCastParams.json';
+import rayCastParams from './rayCastParams.json';
 
 class Piece {
 	constructor(team=ChessGame.NONE) {
@@ -29,11 +29,11 @@ class Piece {
 	}
 	
 	attackRayCastParams() {
-		return rayCastParams['default'][this._paramKey()]['attack'];
+		return rayCastParams[this._paramKey()]['attack'];
 	}
 	
 	rayCastParams() {
-		return rayCastParams['default'][this._paramKey()]['behavior'];
+		return rayCastParams[this._paramKey()]['behavior'];
 	}
 	
 	oppositeTeam(otherPiece) {
