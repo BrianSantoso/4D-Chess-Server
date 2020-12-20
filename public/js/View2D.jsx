@@ -11,7 +11,6 @@ import UndoIcon from '../assets/icons/undo-black-24dp.svg';
 import RedoIcon from '../assets/icons/redo-black-24dp.svg';
 import ChatIcon from '../assets/icons/chat-black-24dp.svg';
 import config from './config.json';
-import { set } from 'lodash';
 
 class View2D {
 	constructor(gameManager) {
@@ -269,26 +268,6 @@ class Chat extends Component {
 			</div>
 		);
 	}
-
-	// _opened() {
-	// 	return (
-	// 		<div className=''>
-	// 			<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-	// 				{ this.props.messages }
-	// 			</CSSTransitionGroup>
-	// 			<ChatInput handleMsg={this.props.handleMsg} handleCloseChat={this.props.handleCloseChat}></ChatInput>
-	// 		</div>
-	// 	);
-	// }
-
-	// _notOpened() {
-	// 	// console.log('showing', this.props.showing)
-	// 	return (
-	// 		<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-	// 			{ this.props.showing }
-	// 		</CSSTransitionGroup>
-	// 	);
-	// }
 }
 
 class ChatClosed extends Component {
