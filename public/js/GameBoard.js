@@ -224,8 +224,6 @@ class GameBoard {
 		// Create 4D array of Piece objects
 		this._pieces = rangeIn(dim);
 		
-		console.log(this._pieces);
-		
 		let z0 = this._z() - 1; // Last Rank
 		let z1 = this._z() - 2; // Penultimate Rank
 		let w0 = this._w() - 1; // Last Rank
@@ -235,6 +233,11 @@ class GameBoard {
 		// initTeam4444.apply(this, ChessGame.BLACK, z0, z1, w0, w1);
 		initTeam8181.call(this, ChessGame.WHITE, 0, 1);
 		initTeam8181.call(this, ChessGame.BLACK, z0, z1);
+
+		// let str = JSON.stringify(this._pieces);
+		// let obj = JSON.parse(str);
+		// console.log(str);
+		// console.log(obj);
 	}
 
 	_x() {

@@ -13,7 +13,7 @@ import ChatIcon from '../assets/icons/chat-black-24dp.svg';
 import config from './config.json';
 
 class View2D {
-	constructor(gameManager) {
+	constructor(gameManager, client) {
 		this._gameManager = gameManager;
 		
 		this.cameraHome = this.cameraHome.bind(this);
@@ -25,6 +25,18 @@ class View2D {
 		this._events = new EventHandler(document);
 		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY']);
 		this._events.defineKeyboardEvent('closeChat', ['Escape']);
+
+		this._room = null;
+		this._client = client;
+	}
+
+	addMsg(message) {
+		// TODO: don't use refs. Consider moving messages list to View2D instead of Overlay.
+		this.root.current.addMsg(message);
+	}
+
+	setRoom(room) {
+		this._room = room;
 	}
 	
 	cameraHome() {
@@ -41,7 +53,17 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
-		ReactDOM.render(<Overlay ref={this.root} cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} events={this._events}/>, document.getElementById('react-root'));
+		ReactDOM.render(
+			(<Overlay 
+				ref={this.root} 
+				room={this._room}
+				client={this._client} 
+				cameraHome={this.cameraHome} 
+				undo={this.undo} 
+				redo={this.redo} 
+				events={this._events}
+			/>),
+		document.getElementById('react-root'));
 	}
 }
 
@@ -76,7 +98,18 @@ class Overlay extends Component {
 					<CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
 					<CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
 				</div>
-				<Chat chatOpened={this.state.chatOpened} handleMsg={this.addMsg} handleOpenChat={this.openChat} handleCloseChat={this.closeChat} messages={this.state.messages} showing={this.state.showing} events={this.props.events}/>
+
+				<Chat 
+					room={this.props.room} 
+					client={this.props.client} 
+					chatOpened={this.state.chatOpened} 
+					handleMsg={this.addMsg} 
+					handleOpenChat={this.openChat} 
+					handleCloseChat={this.closeChat} 
+					messages={this.state.messages} 
+					showing={this.state.showing} 
+					events={this.props.events}
+				/>
 			</div>
 		);
 	}
@@ -85,7 +118,14 @@ class Overlay extends Component {
 		// TODO: generate uuid for key
 		let key = config.msg + Date.now();
 		let handleHide = this._getHideMsgHandler(key);
-		let chatMsg = <ChatMessage key={key} text={config.msg} style={config.style} sender={config.sender} handleHide={handleHide} />;
+		let chatMsg = (
+			<ChatMessage 
+				key={key} 
+				text={config.msg} 
+				style={config.style} 
+				sender={config.sender} 
+				handleHide={handleHide} 
+			/>);
 		// this.messages.push(chatMsg);
 		
 		// TODO: is callback needed in this setState?
@@ -99,6 +139,7 @@ class Overlay extends Component {
 		return () => {
 			// TODO: is callback needed in this setState?
 			this.setState(prevState => ({
+				// remove message from showing
 				showing: prevState.showing.filter(el => el.key !== key)
 			}));
 		}
@@ -112,18 +153,18 @@ class Overlay extends Component {
 	}
 
 	test() {
-		this.addMsg({
-			msg: '[Guest8449947756] good luck have fun!'
-		});
-		this.addMsg({
-			msg: '[AnonymousCow] Thanks, you too'
-		});
-		this.addMsg({
-			msg: 'AnonPig has joined the room',
-			style: {
-				color: 'rgb(255, 251, 13)'
-			}
-		});
+		// this.addMsg({
+		// 	msg: '[Guest8449947756] good luck have fun!'
+		// });
+		// this.addMsg({
+		// 	msg: '[AnonymousCow] Thanks, you too'
+		// });
+		// this.addMsg({
+		// 	msg: 'AnonPig has joined the room',
+		// 	style: {
+		// 		color: 'rgb(255, 251, 13)'
+		// 	}
+		// });
 	}
 
 	toggleChat() {
@@ -258,7 +299,10 @@ class Chat extends Component {
 		return (
 			<div className='chat'>
 				{ this.props.chatOpened ? 
-					<ChatOpened handleCloseChat={this.props.handleCloseChat}
+					<ChatOpened 
+					room={this.props.room}
+					client={this.props.client}
+					handleCloseChat={this.props.handleCloseChat}
 					handleMsg={this.props.handleMsg} 
 					messages={this.props.messages} 
 					events={this.props.events}></ChatOpened> 
@@ -309,7 +353,7 @@ class ChatOpened extends Component {
 				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
 					{ this.props.messages }
 				</CSSTransitionGroup>
-				<ChatInput handleCloseChat={this.props.handleCloseChat} handleMsg={this.props.handleMsg}></ChatInput>
+				<ChatInput room={this.props.room} client={this.props.client} handleCloseChat={this.props.handleCloseChat} handleMsg={this.props.handleMsg}></ChatInput>
 			</div>
 		);
 	}
@@ -380,10 +424,18 @@ class ChatInput extends Component {
 		// TODO: sanitize input if not already handled natively by react
 		if (text) {
 			console.log('text:', text)
-			this.props.handleMsg({
+
+			let message = {
 				msg: text,
-				sender: 'AnonPig'
-			});
+				sender: this.props.client
+			}
+
+			if (this.props.room) {
+				this.props.room.send('chatMsg', message);
+			} else {
+				this.props.handleMsg(message);
+			}
+
 			this._clear();
 		} else {
 			// this.props.handleCloseChat();

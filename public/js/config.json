@@ -1,4 +1,7 @@
 {
+    "dims": {
+        "standard": [8, 1, 8, 1]
+    },
     "chat": {
         "maxLength": 200
     },
@@ -13,5 +16,9 @@
         "whitesTurn": ["White to Move"],
         "blacksTurn": ["Black to Move"],
         "noOpponent": ["Waiting for opponent", "Waiting for opponent.", "Waiting for opponent..", "Waiting for opponent..."]
+    },
+    "schema": {
+        "white": "white",
+        "black": "black"
     }
 }

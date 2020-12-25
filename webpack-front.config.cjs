@@ -2,7 +2,8 @@ const path = require('path');
 
 // TODO: move entry to /dist/ dir
 module.exports = {
-  entry: './public/js/main.jsx',
+  // Need @babel/polyfill for async/await: https://medium.com/@tanbt/configure-async-await-es7-in-webpack-4-78adfda46eac
+  entry: ['@babel/polyfill', './public/js/main.jsx'],
   output: {
     filename: 'bundle-front.js',
     path: path.resolve(__dirname, 'public', 'build'),

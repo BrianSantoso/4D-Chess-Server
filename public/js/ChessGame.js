@@ -1,7 +1,4 @@
 import GameBoard from "./GameBoard.js";
-import BoardGraphics, { EmptyBoardGraphics } from "./BoardGraphics.js";
-import Piece from "./Piece.js";
-import { LocalPlayer3D, OnlinePlayer3D } from "./ChessPlayer.js";
 import MoveHistory from "./MoveHistory.js";
 
 class ChessGame {	
@@ -15,7 +12,7 @@ class ChessGame {
 		// for custom gamemodes (freeplay, etc.)?
 		// A: May want to switch game modes once game ends.
 		this._mode = null;
-		this._moveHistory = new MoveHistory(); // TODO: doubly linked list of moves
+		this._moveHistory = new MoveHistory();
 		this._status = this.status();
 		this._gameOver = false;
 	}
@@ -54,7 +51,7 @@ class ChessGame {
 				this._status = ChessGame.TIE;
 			}
 		}
-		console.log('Status recomputed')
+		console.log('[ChessGame] Status recomputed')
 		return this._status;
 	}
 
@@ -190,107 +187,6 @@ class ChessGame {
 		return this._turn;
 	}
 }
-
-//class GraphicalChessGame extends ChessGame {
-//	constructor(n) {
-//		super(n);
-//		
-//		this._rayCaster = null;
-//		this._controllers = [ // TODO: assign teams dynamically...
-//			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
-//		];
-//		this._boardGraphics = new BoardGraphics(n); // 3D View
-//		this._layerStack; // 2D View
-//	}
-//	
-//	initGraphics() {
-//		this._boardGraphics.spawnPieces(this._board.getPieces());
-//	}
-//	
-//	setRayCaster(rayCaster) {
-//		this._rayCaster = rayCaster;
-//	}
-//	
-//	showPossibleMoves(piece) {
-//		let moves = this.board().getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
-//		this.boardGraphics().showPossibleMoves(piece, moves);
-//	}
-//	
-//	previewPossibleMoves(piece) {
-//		let moves = this.board().getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
-//		this.boardGraphics().previewPossibleMoves(piece, moves);
-//	}
-//	
-//	hidePossibleMoves() {
-//		this.boardGraphics().hidePossibleMoves();
-//	}
-//	
-//	rayCast(targetTeam) {
-//		return this.boardGraphics().rayCast(this._rayCaster, targetTeam);
-//	}
-//	
-//	boardGraphics() {
-//		return this._boardGraphics;
-//	}
-//	
-//	view3D() {
-//		return this.boardGraphics().view3D();
-//	}
-//	
-//	keyInputs() {
-//		this._controllers.forEach(controller => {
-//			controller.keyInputs();
-//		});
-//	}
-//	
-//	intentionalClick() {
-//		this._controllers.forEach(controller => {
-//			controller.onclick();
-//		});
-//	}
-//	
-//	update() {
-//		this._boardGraphics.update();
-//	}
-//	
-//	makeMove(move) {
-//		super.makeMove(move);
-//		// TODO: tell graphics to move piece
-//		this.boardGraphics().makeMove(move, true);
-//	}
-//}
-
-//class LocalChessGame extends GraphicalChessGame {
-//	constructor(n) {
-//		super(n);
-//		this._rayCaster = null;
-//		this.controllers = [ // TODO: assign teams dynamically...
-////			new LocalPlayer3D(this, ChessGame.OMNISCIENT), 
-//			new LocalPlayer3D(this, ChessGame.OMNISCIENT)
-//		];
-//	}
-//	
-//	keyInputs() {
-//		this.controllers.forEach(controller => {
-//			controller.keyInputs();
-//		});
-//	}
-//	
-//	intentionalClick() {
-//		this.controllers.forEach(controller => {
-//			controller.onclick();
-//		});
-//	}
-//}
-
-//class OnlineChessGame extends GraphicalChessGame /* Implements Online */ {
-//	constructor(n) {
-//		super(n);
-//		
-//		this.controllers = [new OnlinePlayer3D(this), new MoveTransmitter(this)];
-//	}
-//}
-
 
 class ChessTeam {
 	constructor() {
