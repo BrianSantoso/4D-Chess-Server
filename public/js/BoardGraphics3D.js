@@ -228,13 +228,13 @@ class BoardGraphics3D extends BoardGrahpics {
 			meshes.add(mesh);
 		});
 		// TODO: is this even doing anything?
-		this._showingMovesFor.set(piece, meshes);
+		this._showingMovesFor.set(piece.id, meshes);
 		
 		return Promise.all(showAnimationProms.concat([hideAnimationProms]));
 	}
 	
 	hidePossibleMoves(piece, frames=0) {
-		let meshes = this._showingMovesFor.get(piece);
+		let meshes = this._showingMovesFor.get(piece.id);
 		let hideAnimationProms = [];
 		if (!meshes) {
 			return Promise.resolve();
@@ -268,11 +268,11 @@ class BoardGraphics3D extends BoardGrahpics {
 		if (frames) {
 			this._fadeIn(mesh, frames);
 		}
-		this._highlightingFor.set(piece, mesh);
+		this._highlightingFor.set(piece.id, mesh);
 	}
 	
 	unhighlight(piece, frames=0) {
-		let mesh = this._highlightingFor.get(piece);
+		let mesh = this._highlightingFor.get(piece.id);
 		if (!mesh) {
 			return;
 		}
@@ -282,10 +282,10 @@ class BoardGraphics3D extends BoardGrahpics {
 				// TODO: somehow having this here breaks?
 				// this._highlightingFor.delete(piece);
 			});
-			this._highlightingFor.delete(piece);
+			this._highlightingFor.delete(piece.id);
 		} else {
 			this._remove(mesh);
-			this._highlightingFor.delete(piece);
+			this._highlightingFor.delete(piece.id);
 		}
 	}
 	
