@@ -19,6 +19,10 @@ class Piece {
 		this.z = z;
 		this.w = w;
 	}
+
+	assignId(id) {
+		this.id = id;
+	}
 	
 	update() {
 		this.hasMoved = true;

@@ -6,11 +6,12 @@ import Move from "./Move.js";
 import { unique } from "./ArrayUtils.js";
 
 class GameBoard {
-	constructor(dim) {
+	constructor() {
+		this._numPieces = 0;
 		this._pieces = null;
-		if (dim) { // TODO: temporary. init board state with config in factory
-			this._init4D(dim);
-		}
+		// if (dim) { // TODO: temporary. init board state with config in factory
+		// 	this._init4D(dim);
+		// }
 	}
 
 	initialized() {
@@ -19,6 +20,11 @@ class GameBoard {
 	
 	getPieces() {
 		return this._pieces;
+	}
+
+	spawn(x, y, z, w, piece) {
+		piece.assignId(this._numPieces++);
+		this.set(x, y, z, w, piece);
 	}
 	
 	set(x, y, z, w, piece) {
@@ -33,8 +39,8 @@ class GameBoard {
 			move.piece.hasMoved = false;
 		}
 	}
-	
-	makeMove(move) {
+
+	redoMove(move) {
 		// check for pawn promotion
 		if (move.promotionNew) {
 			this.set(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
@@ -45,6 +51,19 @@ class GameBoard {
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
 		
 		// Assumes redoing a move is equivalent to making the move.
+		move.piece.update();
+	}
+	
+	makeMove(move) {
+		// check for pawn promotion
+		if (move.promotionNew) {
+			this.spawn(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
+		} else {
+			this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
+		}
+
+		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
+		
 		move.piece.update();
 	}
 	
@@ -262,6 +281,12 @@ class GameBoard {
 		return this._pieces[0][0][0].length;
 	}
 	
+}
+
+GameBoard.create = (dim) => {
+	let board = new GameBoard();
+	board._init4D(dim);
+	return board;
 }
 
 GameBoard.revive = (fields) => {

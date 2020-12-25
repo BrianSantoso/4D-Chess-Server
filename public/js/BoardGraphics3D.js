@@ -71,7 +71,7 @@ class BoardGraphics3D extends BoardGrahpics {
 	}
 
 	pieceToMesh(piece) {
-		let mesh = this._pieceToMesh.get(piece);
+		let mesh = this._pieceToMesh.get(piece.id);
 		// if (!mesh) {
 		// 	this._spawnMeshFromPiece(piece, 0);
 		// 	mesh = this._pieceToMesh.get(piece);
@@ -142,7 +142,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		// bind associated piece to mesh
 		mesh.piece = pieceObj;
 		
-		this._pieceToMesh.set(pieceObj, mesh);
+		this._pieceToMesh.set(pieceObj.id, mesh);
 		
 		if (frames) {
 			return this._grow(mesh, frames);

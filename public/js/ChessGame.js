@@ -3,8 +3,12 @@ import MoveHistory from "./MoveHistory.js";
 import ChessTeam from "./ChessTeam.js";
 
 class ChessGame {	
-	constructor(dim) {
-		this._board = new GameBoard(dim);
+	constructor() {
+		// We want to leave some fields undefined because if we create a ChessGame without
+		// assigning Players, GameBoard, BoardGraphics, those undefined fields will not
+		// override a templated (A game with those aforementioned fields specified) 
+		// game's config
+		this._board;
 		this._white;
 		this._black;
 		this._boardGraphics;
@@ -15,11 +19,11 @@ class ChessGame {
 		// this._mode = null;
 		this._moveHistory = new MoveHistory();
 		this._allPossibleMoves;
-		this._status = null;
+		this._status;
 
-		if (this._board.initialized()) {
-			this.status(); // computes board status and allPossibleMoves
-		}
+		// if (this._board.initialized()) {
+		// 	this.status(); // computes board status and allPossibleMoves
+		// }
 	}
 
 	toJSON() {
@@ -27,12 +31,17 @@ class ChessGame {
 			_board: this._board,
 			_turn: this._turn,
 			_moveHistory: this._moveHistory,
-			_status: this._status,
+			_status: this._status
 		};
 	}
 	
 	getPlayers() {
 		return [this._white, this._black];
+	}
+
+	setBoard(board) {
+		this._board = board;
+		this.status(); // computes board status and allPossibleMoves
 	}
 	
 	setWhite(player) {
@@ -118,7 +127,7 @@ class ChessGame {
 		return this._board;
 	}
 	
-	makeMove(move, redoing=false) {
+	makeMove(move) {
 		if (this.isGameOver()) {
 			return;
 		}
@@ -126,16 +135,32 @@ class ChessGame {
 		this._board.makeMove(move); // update state
 		this._boardGraphics.makeMove(move, 24); // animate
 		
-		if (!redoing) {
-			this._clearStatus(); // reset gameover status
-			let status = this.status(); // recalculate status
-			this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
-		}
+		this._clearStatus(); // reset gameover status
+		let status = this.status(); // recalculate status
+		this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
 
 		// implicitly recalculates status if needed
 		if (this.isGameOver()) {
 
 		} else {
+			this._switchTurns();
+		}
+	}
+
+	redo() {
+		if (!this._boardGraphics._canInteract) {
+			// Temporary fix. Make animator able to queue items
+			return;
+		}
+		let redoData = this._moveHistory.redo();
+		if (redoData) {
+			let moveToRedo = redoData.move;
+			let statusToRestore = redoData.status;
+			let allPossibleMovesToRestore = redoData.allPossibleMoves;
+			this._board.redoMove(moveToRedo);
+			this._boardGraphics.makeMove(moveToRedo, 24);
+			this._status = statusToRestore;
+			this._allPossibleMoves = allPossibleMovesToRestore;
 			this._switchTurns();
 		}
 	}
@@ -159,22 +184,6 @@ class ChessGame {
 			this._switchTurns();
 		} else {
 			
-		}
-	}
-
-	redo() {
-		if (!this._boardGraphics._canInteract) {
-			// Temporary fix. Make animator able to queue items
-			return;
-		}
-		let redoData = this._moveHistory.redo();
-		if (redoData) {
-			let moveToRedo = redoData.move;
-			let statusToRestore = redoData.status;
-			let allPossibleMovesToRestore = redoData.allPossibleMoves;
-			this.makeMove(moveToRedo, true);
-			this._status = statusToRestore;
-			this._allPossibleMoves = allPossibleMovesToRestore;
 		}
 	}
 	
@@ -226,6 +235,23 @@ class ChessGame {
 		return this._boardGraphics.view3D();
 	}
 }
+
+ChessGame.create = (options) => {
+	// Factory to create game, instantiating and injecting required dependencies
+	let game = new ChessGame();
+	let board = GameBoard.create(options.dim);
+	game.setBoard(board);
+	
+	let boardGraphics = new options.BoardGraphics(options.dim);
+	game.setBoardGraphics(boardGraphics);
+	
+	let white = new options.WhitePlayer(ChessTeam.WHITE, game);
+	let black = new options.BlackPlayer(ChessTeam.BLACK, game);
+	game.setWhite(white);
+	game.setBlack(black);
+	
+	return game;
+};
 
 ChessGame.revive = (fields) => {
 	return Object.assign(new ChessGame(), fields, {

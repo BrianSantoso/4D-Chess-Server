@@ -20,6 +20,7 @@ class ClientGameManager extends GameManager {
 		this._client = client;
 		this._room = null;
 		this._view2D = new View2D(this, this._client);
+		this._view2D.draw();
 	}
 
 	async join(roomName) {
@@ -101,12 +102,13 @@ class ClientGameManager extends GameManager {
 		let str = JSON.stringify(games.basic);
 		let obj = JSON.parse(str);
 		let template = this.createGame({});
-		console.log(template)
 		let newGame = Object.assign(template, ChessGame.revive(obj));
 		this.setGame(newGame);
 	}
 
 	undo() {
+		// let str = JSON.stringify(this._game);
+		// console.log(str)
 		// Set interactor's state to unselected
 		this._game.getPlayers().forEach(player => {
 			player.unselect();
@@ -138,7 +140,7 @@ class ClientGameManager extends GameManager {
 	
 	_draw() {
 		this._view3D.draw();
-		this._view2D.draw();
+		// this._view2D.draw();
 	}
 	
 	_startLoop() {

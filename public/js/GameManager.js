@@ -17,20 +17,7 @@ class GameManager {
 	}
 	
 	createGame(options) {
-		// Factory to create game, instantiating and injecting required dependencies
-		let game = new ChessGame(options.dim);
-		// TODO: move this into ChessGame under initPieces(layout)
-		// game._init4D(options.dim);
-		
-		let boardGraphics = new options.BoardGraphics(options.dim);
-		game.setBoardGraphics(boardGraphics);
-		
-		let white = new options.WhitePlayer(ChessTeam.WHITE, game);
-		let black = new options.BlackPlayer(ChessTeam.BLACK, game);
-		game.setWhite(white);
-		game.setBlack(black);
-		
-		return game;
+		return ChessGame.create(options);
 		// TODO: set controllers and subscriptions, etc.
 	}
 
