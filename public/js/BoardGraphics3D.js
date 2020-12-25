@@ -27,9 +27,11 @@ class BoardGraphics3D extends BoardGrahpics {
 		this._pieces.add(this._highlight);
 		
 		this._canInteract = true;
+		// TODO: use Piece id as key
 		this._showingMovesFor = new Map(); // map of Piece objects to their Set of possible move meshes (Ghost meshes)
 		this._highlightingFor = new Map(); // map of Piece objects to their temporary highlight meshes
-		
+		this._pieceToMesh = new Map();
+
 		this._container.add(this._pieces);
 		this._container.add(this._checkerboards);
 		
@@ -39,9 +41,6 @@ class BoardGraphics3D extends BoardGrahpics {
 		this._squareSize = 25;
 		this._deltaY = this._squareSize * 3;
 		this._deltaW = this._squareSize * 1.5;
-		
-		// TODO: add a get(piece) method
-		this._pieceToMesh = new Map();
 		
 		this._init();
 	}
@@ -73,10 +72,10 @@ class BoardGraphics3D extends BoardGrahpics {
 
 	pieceToMesh(piece) {
 		let mesh = this._pieceToMesh.get(piece);
-		if (!mesh) {
-			this._spawnMeshFromPiece(piece, 0);
-			mesh = this._pieceToMesh.get(piece);
-		}
+		// if (!mesh) {
+		// 	this._spawnMeshFromPiece(piece, 0);
+		// 	mesh = this._pieceToMesh.get(piece);
+		// }
 		return mesh;
 	}
 	

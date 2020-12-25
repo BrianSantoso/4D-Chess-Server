@@ -7,6 +7,7 @@ import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 import View2D from "./View2D.jsx";
 import ChessGame from "./ChessGame.js";
+import games from "./Games.json";
 // import Piece, { Pawn } from "./Piece.js";
 
 class ClientGameManager extends GameManager {
@@ -62,6 +63,7 @@ class ClientGameManager extends GameManager {
 		}
 		
 		// TODO: Is this structure okay to assume since this is a 3D game manager?
+		game._boardGraphics.spawnPieces(game._board.getPieces());
 		this._view3D.add(game._boardGraphics.view3D());
 		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
 		
@@ -84,7 +86,6 @@ class ClientGameManager extends GameManager {
 			BlackPlayer: Player3D
 		}
         options = Object.assign(defaultOptions, options);
-        
 		let game = super.createGame(options);
 		game.getPlayers().forEach(player => {
 			if (player.needsRayCaster()) {
@@ -97,9 +98,12 @@ class ClientGameManager extends GameManager {
 	cameraHome() {
 		this._view3D.configureCamera(this._game._boardGraphics, ChessTeam.WHITE, 0);
 
-		let str = JSON.stringify(this._game);
+		let str = JSON.stringify(games.basic);
 		let obj = JSON.parse(str);
-		console.log(ChessGame.revive(obj));
+		let template = this.createGame({});
+		console.log(template)
+		let newGame = Object.assign(template, ChessGame.revive(obj));
+		this.setGame(newGame);
 	}
 
 	undo() {

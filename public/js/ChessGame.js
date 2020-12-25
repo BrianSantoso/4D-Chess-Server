@@ -5,16 +5,16 @@ import ChessTeam from "./ChessTeam.js";
 class ChessGame {	
 	constructor(dim) {
 		this._board = new GameBoard(dim);
-		this._white = null;
-		this._black = null;
-		this._boardGraphics = null;
+		this._white;
+		this._black;
+		this._boardGraphics;
 		this._turn = ChessTeam.WHITE;
 		// Why not just have subclasses of GameBoard override rules
 		// for custom gamemodes (freeplay, etc.)?
 		// A: May want to switch game modes once game ends.
-		this._mode = null;
+		// this._mode = null;
 		this._moveHistory = new MoveHistory();
-		this._allPossibleMoves = null;
+		this._allPossibleMoves;
 		this._status = null;
 
 		if (this._board.initialized()) {
@@ -101,7 +101,7 @@ class ChessGame {
 	
 	setBoardGraphics(boardGraphics) {
 		this._boardGraphics = boardGraphics;
-		this._boardGraphics.spawnPieces(this._board.getPieces());
+		// this._boardGraphics.spawnPieces(this._board.getPieces());
 		
 		// Managing these dependencies is cumbersome, so for the sake
 		// of simplicity I am willing to compromise the fact that
@@ -218,9 +218,12 @@ class ChessGame {
 		return this._turn;
 	}
 
-	restoreFrom(fields) {
-		Object.assign(this, ChessGame.revive(fields));
-		this.allPossibleMoves();
+	// restoreFrom(fields) {
+	// 	Object.assign(this, ChessGame.revive(fields));
+	// 	this.allPossibleMoves();
+	// }
+	view3D() {
+		return this._boardGraphics.view3D();
 	}
 }
 
