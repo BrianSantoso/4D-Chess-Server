@@ -2,7 +2,7 @@ import GameManager from "./GameManager.js";
 import config from "./config.json";
 import BoardGraphics3D from "./BoardGraphics3D.js";
 import { Player3D } from "./ChessPlayer.js";
-import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 import View2D from "./View2D.jsx";
@@ -37,6 +37,11 @@ class ClientGameManager extends GameManager {
 			this._view2D.addMsg(message);
 		});
 
+		room.onMessage('move', (moveJSON) => {
+			let move = Move.revive(moveJSON);
+			this.makeMove(move);
+		});
+
 		this._room = room;
 		this._view2D.setRoom(room);
 	}
@@ -57,7 +62,7 @@ class ClientGameManager extends GameManager {
 		
 		// TODO: Is this structure okay to assume since this is a 3D game manager?
 		this._view3D.add(game._boardGraphics.view3D());
-		this._view3D.configureCamera(game._boardGraphics, ChessGame.WHITE);
+		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
 		
 		super.setGame(game);
 		
@@ -89,7 +94,7 @@ class ClientGameManager extends GameManager {
 	}
 	
 	cameraHome() {
-		this._view3D.configureCamera(this._game._boardGraphics, ChessGame.WHITE, 0);
+		this._view3D.configureCamera(this._game._boardGraphics, ChessTeam.WHITE, 0);
 	}
 
 	undo() {

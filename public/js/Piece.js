@@ -1,12 +1,12 @@
-import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 import rayCastParams from './rayCastParams.json';
 
 class Piece {
-	constructor(team=ChessGame.NONE) {
+	constructor(team=ChessTeam.NONE, type='Empty') {
 		this.team = team;
 
 		this.hasMoved = false;
-		this.type = '';
+		this.type = type;
 		this.x = -1;
 		this.y = -1;
 		this.z = -1;
@@ -37,10 +37,10 @@ class Piece {
 	}
 	
 	oppositeTeam(otherPiece) {
-		if (this.team === ChessGame.WHITE) {
-			return otherPiece.team === ChessGame.BLACK;
-		} else if (this.team === ChessGame.BLACK) {
-			return otherPiece.team === ChessGame.WHITE;
+		if (this.team === ChessTeam.WHITE) {
+			return otherPiece.team === ChessTeam.BLACK;
+		} else if (this.team === ChessTeam.BLACK) {
+			return otherPiece.team === ChessTeam.WHITE;
 		} else {
 			return false;
 		}
@@ -51,7 +51,7 @@ class Piece {
 	}
 	
 	isEmpty() {
-		return this.team == ChessGame.NONE;
+		return this.team == ChessTeam.NONE;
 	}
 
 	_paramKey() {
@@ -59,53 +59,68 @@ class Piece {
 	}
 }
 
+Piece.revive = (json) => {
+	let fields = JSON.parse(JSON.stringify(json), Piece.reviver);
+	let piece = new Piece[fields.type]();
+	return Object.assign(piece, fields);
+};
+
+Piece.reviver = (key, value) => {
+	if (key === 'team') {
+		return ChessTeam.revive(value);
+	}
+	return value;
+};
+
 class Pawn extends Piece {
 	constructor(team) {
-		super(team);
-		this.type = 'pawn';
+		super(team, 'Pawn');
 	}
 
 	_paramKey() {
 		let moved = this.hasMoved ? 'Moved' : 'Unmoved'; 
-		let team = this.team === ChessGame.WHITE ? 'White' : 'Black';
+		let team = this.team.type;
 		return this.type + moved + team;
 	}
 }
 
 class King extends Piece {
 	constructor(team) {
-		super(team);
-		this.type = 'king';
+		super(team, 'King');
 	}
 }
 
 class Queen extends Piece {
 	constructor(team) {
-		super(team);
-		this.type = 'queen';
+		super(team, 'Queen');
 	}
 }
 
 class Bishop extends Piece {
 	constructor(team) {
-		super(team);
-		this.type = 'bishop';
+		super(team, 'Bishop');
 	}
 }
 
 class Knight extends Piece {
 	constructor(team) {
-		super(team);
-		this.type = 'knight';
+		super(team, 'Knight');
 	}
 }
 
 class Rook extends Piece {
 	constructor(team) {
-		super(team);
-		this.type = 'rook';
+		super(team, 'Rook');
 	}
 }
+
+Piece.Pawn = Pawn;
+Piece.Rook = Rook;
+Piece.Knight = Knight;
+Piece.Bishop = Bishop;
+Piece.King = King;
+Piece.Queen = Queen;
+Piece.Empty = Piece;
 
 export default Piece;
 export { Pawn, Rook, Knight, Bishop, King, Queen };

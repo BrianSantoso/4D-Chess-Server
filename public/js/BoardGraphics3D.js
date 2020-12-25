@@ -3,7 +3,7 @@ import * as THREE from "three";
 import Animator, { Animation } from "./Animator.js";
 import { debugSphere, rotateObject, checkerboard4D } from "./Utils3D.js";
 import Models from "./Models.js";
-import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 
 // TODO: update graphics hierarchy
 // BoardGrahpics
@@ -130,14 +130,14 @@ class BoardGraphics3D extends BoardGrahpics {
 		if (pieceObj.isEmpty()) {
 			return null;
 		}
-		let material = pieceObj.team === ChessGame.WHITE ? 'white' : 'black';
+		let material = pieceObj.team === ChessTeam.WHITE ? 'white' : 'black';
 		let pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
 		let mesh = Models.createMesh(pieceObj.type, material, pos);
-		let rotation = pieceObj.team === ChessGame.WHITE ? 180 : 0;
+		let rotation = pieceObj.team === ChessTeam.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
-		if (pieceObj.team === ChessGame.WHITE) {
+		if (pieceObj.team === ChessTeam.WHITE) {
 			this._white.add(mesh);
-		} else if (pieceObj.team === ChessGame.BLACK) {
+		} else if (pieceObj.team === ChessTeam.BLACK) {
 			this._black.add(mesh);
 		}
 		// bind associated piece to mesh
@@ -173,7 +173,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		let scale = move.isCapture() ? 1 : 1;
 		let opacity = move.isCapture() ? 0.99 : 0.7;
 		let mesh = Models.createMesh(type, material, pos, scale, opacity);
-		let rotation = team === ChessGame.WHITE ? 180 : 0;
+		let rotation = team === ChessTeam.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
 		this._ghost.add(mesh);
 		
@@ -297,7 +297,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		let material = 'blue';
 		let scale = 1;
 		let mesh = Models.createMesh(type, material, pos, scale);
-		let rotation = team === ChessGame.WHITE ? 180 : 0;
+		let rotation = team === ChessTeam.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
 		this._highlight.add(mesh);
 		// Fixes issue with transparent board hiding transparent pieces
@@ -307,7 +307,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		return mesh;		
 	}
 	
-	rayCast(rayCaster, targetTeam=ChessGame.OMNISCIENT) {
+	rayCast(rayCaster, targetTeam=ChessTeam.OMNISCIENT) {
 		
 		if (!this._canInteract) {
 			return null;
@@ -316,13 +316,13 @@ class BoardGraphics3D extends BoardGrahpics {
 		let group;
 		let candidates = [];
 		
-		if (targetTeam.permissions.get(ChessGame.WHITE)) {
+		if (targetTeam.permissions.get(ChessTeam.WHITE)) {
 			candidates = candidates.concat(this._white.children);
 		}
-		if (targetTeam.permissions.get(ChessGame.BLACK)) {
+		if (targetTeam.permissions.get(ChessTeam.BLACK)) {
 			candidates = candidates.concat(this._black.children);
 		}
-		if (targetTeam.permissions.get(ChessGame.GHOST)) {
+		if (targetTeam.permissions.get(ChessTeam.GHOST)) {
 			candidates = candidates.concat(this._ghost.children);
 		}
 		

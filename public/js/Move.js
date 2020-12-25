@@ -1,4 +1,5 @@
 import { isEqual } from 'lodash';
+import Piece from './Piece';
 
 class Move {
 	constructor(x0, y0, z0, w0, x1, y1, z1, w1, piece, capturedPiece, promotionNew, isFirstMove) {
@@ -52,6 +53,24 @@ Move.hash = (a) => {
 		a.w1,
 		a.isCapture()
 	]);
-}
+};
+
+Move.revive = (json) => {
+	let fields = JSON.parse(JSON.stringify(json), Move.reviver);
+	return Object.assign(new Move(), fields);
+};
+
+Move.reviver = (key, value) => {
+	let pieceObjs = new Set([
+		'piece',
+		'capturedPiece',
+		'promotionNew',
+		'promotionOld'
+	]);
+	if (pieceObjs.has(key)) {
+		return Piece.revive(value);
+	}
+	return value;
+};
 
 export default Move;

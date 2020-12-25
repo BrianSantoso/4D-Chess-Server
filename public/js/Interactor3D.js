@@ -1,4 +1,4 @@
-import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
 
 class Interactor3D {
@@ -8,10 +8,10 @@ class Interactor3D {
 		this._rayCaster = rayCaster;
 		this._commandQueue = commandQueue;
 		
-		this._movePreviewer = new MovePreviewer(this, ChessGame.OMNISCIENT);
+		this._movePreviewer = new MovePreviewer(this, ChessTeam.OMNISCIENT);
 		this._pieceSelector = new PieceSelector(this, team);
-		this._moveConfirmer = new MoveConfirmer(this, ChessGame.GHOST);
-		this._moveExplainer = new MoveExplainer(this, ChessGame.oppositeTeam(team));
+		this._moveConfirmer = new MoveConfirmer(this, ChessTeam.GHOST);
+		this._moveExplainer = new MoveExplainer(this, ChessTeam.oppositeTeam(team));
 		
 		
 		let trySelectPiece = () => {

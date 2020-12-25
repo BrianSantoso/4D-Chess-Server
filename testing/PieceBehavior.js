@@ -44,12 +44,12 @@ class PieceParamsTemplate {
 
 class PawnUnmoved extends PieceParamsTemplate {
 	constructor(team) {
-		super('pawnUnmoved'+team);
+		super('PawnUnmoved'+team);
 		this.team = team;
 	}
 	
 	movement() {
-		let forwards = this.team == 'White' ? 
+		let forwards = this.team == 'WHITE' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		let movement = [
 			PieceBehavior.create([1], 2, false, [
@@ -63,7 +63,7 @@ class PawnUnmoved extends PieceParamsTemplate {
 	}
 	
 	attack() {
-		let forwards = this.team == 'White' ? 
+		let forwards = this.team == 'WHITE' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		return [
 			PieceBehavior.create([1, 1], 1, true, [
@@ -78,12 +78,12 @@ class PawnUnmoved extends PieceParamsTemplate {
 
 class PawnMoved extends PieceParamsTemplate {
 	constructor(team) {
-		super('pawnMoved'+team);
+		super('PawnMoved'+team);
 		this.team = team;
 	}
 	
 	movement() {
-		let forwards = this.team == 'White' ? 
+		let forwards = this.team == 'WHITE' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		let movement = [
 			PieceBehavior.create([1], 1, false, [
@@ -97,7 +97,7 @@ class PawnMoved extends PieceParamsTemplate {
 	}
 	
 	attack() {
-		let forwards = this.team == 'White' ? 
+		let forwards = this.team == 'WHITE' ? 
 			PieceBehavior.FORWARD : PieceBehavior.BACKWARD;
 		return [
 			PieceBehavior.create([1, 1], 1, true, [
@@ -112,7 +112,7 @@ class PawnMoved extends PieceParamsTemplate {
 
 class King extends PieceParamsTemplate {
 	constructor() {
-		super('king');
+		super('King');
 	}
 	movement() {
 		let orthogonal = PieceBehavior.create([1], 1);
@@ -123,7 +123,7 @@ class King extends PieceParamsTemplate {
 
 class Queen extends PieceParamsTemplate {
 	constructor() {
-		super('queen');
+		super('Queen');
 	}
 	movement() {
 		let orthogonal = PieceBehavior.create([1], Infinity);
@@ -134,7 +134,7 @@ class Queen extends PieceParamsTemplate {
 
 class Bishop extends PieceParamsTemplate {
 	constructor() {
-		super('bishop');
+		super('Bishop');
 	}
 	movement() {
 		let diagonal = PieceBehavior.create([1, 1], Infinity);
@@ -144,7 +144,7 @@ class Bishop extends PieceParamsTemplate {
 
 class Knight extends PieceParamsTemplate {
 	constructor() {
-		super('knight');
+		super('Knight');
 	}
 	movement() {
 		let L = PieceBehavior.create([1, 2], 1);
@@ -154,7 +154,7 @@ class Knight extends PieceParamsTemplate {
 
 class Rook extends PieceParamsTemplate {
 	constructor() {
-		super('rook');
+		super('Rook');
 	}
 	movement() {
 		let orthogonal = PieceBehavior.create([1], Infinity);
@@ -298,10 +298,10 @@ PieceBehavior.ALL_DIRS = [
 PieceBehavior.computeAll = () => {
 	let output = {};
 	let templates = [
-		new PawnUnmoved('White'),
-		new PawnUnmoved('Black'),
-		new PawnMoved('White'),
-		new PawnMoved('Black'),
+		new PawnUnmoved('WHITE'),
+		new PawnUnmoved('BLACK'),
+		new PawnMoved('WHITE'),
+		new PawnMoved('BLACK'),
 		new Rook(),
 		new Knight(),
 		new Bishop(),

@@ -1,5 +1,6 @@
 import GameBoard from "./GameBoard.js";
 import MoveHistory from "./MoveHistory.js";
+import ChessTeam from "./ChessTeam.js";
 
 class ChessGame {	
 	constructor(dim) {
@@ -7,7 +8,7 @@ class ChessGame {
 		this._white = null;
 		this._black = null;
 		this._boardGraphics = null;
-		this._turn = ChessGame.WHITE;
+		this._turn = ChessTeam.WHITE;
 		// Why not just have subclasses of GameBoard override rules
 		// for custom gamemodes (freeplay, etc.)?
 		// A: May want to switch game modes once game ends.
@@ -15,6 +16,16 @@ class ChessGame {
 		this._moveHistory = new MoveHistory();
 		this._status = this.status();
 		this._gameOver = false;
+	}
+
+	toJSON() {
+		return {
+			_board: this._board,
+			_turn: this._turn,
+			_moveHistory: this._moveHistory,
+			_status: this._status,
+			_gameOver: this._gameOver
+		};
 	}
 	
 	getPlayers() {
@@ -36,19 +47,19 @@ class ChessGame {
 		}
 
 		let turnEndTeam = this.currTurn();
-		let oppositeTeam = ChessGame.oppositeTeam(turnEndTeam);
+		let oppositeTeam = ChessTeam.oppositeTeam(turnEndTeam);
 		let board = this.board();
 
 		let allMoves = board.getAllPossibleMoves(oppositeTeam);
 		let hasMoves = allMoves.length > 0;
 		if (hasMoves) {
-			this._status = ChessGame.ONGOING;
+			this._status = ChessTeam.ONGOING;
 		} else {
 			let attacking = board.inCheck(oppositeTeam).length > 0;
 			if (attacking) {
 				this._status = turnEndTeam;
 			} else {
-				this._status = ChessGame.TIE;
+				this._status = ChessTeam.TIE;
 			}
 		}
 		console.log('[ChessGame] Status recomputed')
@@ -69,7 +80,7 @@ class ChessGame {
 
 	isGameOver() {
 		let status = this.status();
-		return status.hasPermissions(ChessGame.WHITE) || status.hasPermissions(ChessGame.BLACK);
+		return status.hasPermissions(ChessTeam.WHITE) || status.hasPermissions(ChessTeam.BLACK);
 	}
 	
 	setBoardGraphics(boardGraphics) {
@@ -157,9 +168,9 @@ class ChessGame {
 	}
 	
 	_getCurrentPlayer() {
-		if (this._turn === ChessGame.WHITE) {
+		if (this._turn === ChessTeam.WHITE) {
 			return this._white;
-		} else if (this._turn === ChessGame.BLACK) {
+		} else if (this._turn === ChessTeam.BLACK) {
 			return this._black;
 		} else {
 			return null; // TODO: not sure what to return (ghost, none?)
@@ -167,10 +178,10 @@ class ChessGame {
 	}
 	
 	_switchTurns() {
-		if (this._turn === ChessGame.WHITE) {
-			this._turn = ChessGame.BLACK;
-		} else if (this._turn === ChessGame.BLACK) {
-			this._turn = ChessGame.WHITE;
+		if (this._turn === ChessTeam.WHITE) {
+			this._turn = ChessTeam.BLACK;
+		} else if (this._turn === ChessTeam.BLACK) {
+			this._turn = ChessTeam.WHITE;
 		}
 	}
 	
@@ -187,45 +198,5 @@ class ChessGame {
 		return this._turn;
 	}
 }
-
-class ChessTeam {
-	constructor() {
-		this.permissions = new Map();
-	}
-	
-	setPermissions(whitePerms, blackPerms, ghostPerms) {
-		this.permissions.set(ChessGame.WHITE, whitePerms);
-		this.permissions.set(ChessGame.BLACK, blackPerms);
-		this.permissions.set(ChessGame.GHOST, ghostPerms);
-	}
-
-	hasPermissions(team) {
-		return this.permissions.get(team);
-	}
-}
-
-ChessGame.GHOST = new ChessTeam();
-ChessGame.NONE = new ChessTeam(); // TODO: may be problematic since spectator team is NONE and empty piece team is NONE
-ChessGame.WHITE = new ChessTeam();
-ChessGame.BLACK = new ChessTeam();
-ChessGame.OMNISCIENT = new ChessTeam();
-ChessGame.TIE = ChessGame.OMNISCIENT;
-ChessGame.ONGOING = ChessGame.NONE;
-
-ChessGame.NONE.setPermissions(false, false, false);
-ChessGame.GHOST.setPermissions(false, false, true);
-ChessGame.WHITE.setPermissions(true, false, false);
-ChessGame.BLACK.setPermissions(false, true, false);
-ChessGame.OMNISCIENT.setPermissions(true, true, false);
-
-ChessGame.oppositeTeam = (team) => {
-	if (team === ChessGame.WHITE) {
-		return ChessGame.BLACK;
-	} else if (team === ChessGame.BLACK) {
-		return ChessGame.WHITE;
-	} else {
-		return null;
-	}
-};
 
 export default ChessGame;

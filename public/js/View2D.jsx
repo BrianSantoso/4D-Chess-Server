@@ -4,7 +4,7 @@ import { CSSTransitionGroup } from 'react-transition-group';
 import FocusLock from 'react-focus-lock';
 import WhiteIcon from '../assets/player/king_white.svg';
 import BlackIcon from '../assets/player/king_black.svg';
-import ChessGame from './ChessGame.js';
+import ChessTeam from './ChessTeam.js';
 import EventHandler from './EventHandler.js';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
@@ -88,9 +88,9 @@ class Overlay extends Component {
 	render() {
 		return (
 			<div className='overlay'>
-				<PlayerInfo team={ChessGame.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>
+				<PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>
 				<StatusBanner messages={config.banner.noOpponent}></StatusBanner>
-				<PlayerInfo team={ChessGame.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>
+				<PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
@@ -212,7 +212,7 @@ class PlayerInfo extends Component {
 	
 	render() {
 		let className = 'playerInfo ' + this.props.position;
-		let isWhite = this.props.team === ChessGame.WHITE;
+		let isWhite = this.props.team === ChessTeam.WHITE;
 		let playerTime = <div className='playerTime'>{this.msToHMS(this.props.time)}</div>;
 		let playerStatus = <img className='playerStatus' src='../assets/player/online.svg' />
 		let playerIcon = <img className='playerIcon' src={isWhite ? WhiteIcon : BlackIcon}/>;

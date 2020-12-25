@@ -1,4 +1,4 @@
-import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
 import { initTeam8181, initTeam4444 } from "./BoardConfigs.js";
 import Move from "./Move.js";
@@ -26,6 +26,12 @@ class GameBoard {
 		if (move.isFirstMove) {
 			move.piece.hasMoved = false;
 		}
+
+		let str = JSON.stringify(move);
+		let objLiteral = JSON.parse(str);
+		// console.log(str)
+		let obj = Move.revive(objLiteral);
+		console.log(obj);
 	}
 	
 	makeMove(move) {
@@ -91,7 +97,7 @@ class GameBoard {
 	
 	inCheck(team) {
 		let isKing = (piece) => {
-			return piece.type === 'king' && piece.team === team;
+			return piece.type === 'King' && piece.team === team;
 		}
 		let exit = (piece) => true;
 		let king = this._applyTo(exit, isKing);
@@ -177,7 +183,7 @@ class GameBoard {
 			
 			let target = this.get(x, y, z, w);
 								  
-			let promotion = originPiece.type === 'pawn' && this._isPromotionSquare(x, y, z, w);
+			let promotion = originPiece.type === 'Pawn' && this._isPromotionSquare(x, y, z, w);
 			let promotionNew = null;
 			if (promotion) {
 				// why not call this.set(x, y, z, w, promotionNew) ?
@@ -229,10 +235,10 @@ class GameBoard {
 		let w0 = this._w() - 1; // Last Rank
 		let w1 = this._w() - 2; // Penultimate Rank
 		
-		// initTeam4444.apply(this, ChessGame.WHITE, 0, 1, 0, 1);
-		// initTeam4444.apply(this, ChessGame.BLACK, z0, z1, w0, w1);
-		initTeam8181.call(this, ChessGame.WHITE, 0, 1);
-		initTeam8181.call(this, ChessGame.BLACK, z0, z1);
+		// initTeam4444.apply(this, ChessTeam.WHITE, 0, 1, 0, 1);
+		// initTeam4444.apply(this, ChessTeam.BLACK, z0, z1, w0, w1);
+		initTeam8181.call(this, ChessTeam.WHITE, 0, 1);
+		initTeam8181.call(this, ChessTeam.BLACK, z0, z1);
 
 		// let str = JSON.stringify(this._pieces);
 		// let obj = JSON.parse(str);
@@ -257,5 +263,14 @@ class GameBoard {
 	}
 	
 }
+
+GameBoard.revive = (json) => {
+	let fields = JSON.parse(JSON.stringify(json), GameBoard.reviver);
+	return Object.assign(new GameBoard(), fields);
+};
+
+GameBoard.reviver = (key, value) => {
+	return value;
+};
 
 export default GameBoard;

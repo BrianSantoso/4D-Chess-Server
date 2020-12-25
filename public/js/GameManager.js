@@ -1,4 +1,5 @@
 import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 
 class GameManager {
 	constructor() {
@@ -22,13 +23,17 @@ class GameManager {
 		let boardGraphics = new options.BoardGraphics(options.dim);
 		game.setBoardGraphics(boardGraphics);
 		
-		let white = new options.WhitePlayer(ChessGame.WHITE, game);
-		let black = new options.BlackPlayer(ChessGame.BLACK, game);
+		let white = new options.WhitePlayer(ChessTeam.WHITE, game);
+		let black = new options.BlackPlayer(ChessTeam.BLACK, game);
 		game.setWhite(white);
 		game.setBlack(black);
 		
 		return game;
 		// TODO: set controllers and subscriptions, etc.
+	}
+
+	makeMove(move) {
+		this._game.makeMove(move);
 	}
 
 	undo() {

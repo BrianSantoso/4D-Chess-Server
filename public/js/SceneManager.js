@@ -4,7 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import TrackballControls from "./TrackballControls.js";
 import Animator, { Animation } from "./Animator.js";
 import { debugSphere } from "./Utils3D.js";
-import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
 
 class SceneManager {
 	
@@ -232,7 +232,7 @@ class SceneManager {
 	}
 	
 	configureCamera(boardGraphics, team, numFrames=0) {
-		team = team === ChessGame.WHITE ? 1 : - 1;
+		team = team === ChessTeam.WHITE ? 1 : - 1;
 		let center = boardGraphics.getCenter();
 		let offset = new THREE.Vector3(team * 320, 115, 0);
 		let home = center.clone().add(offset);
