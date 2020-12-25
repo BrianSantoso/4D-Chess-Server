@@ -59,17 +59,14 @@ class Piece {
 	}
 }
 
-Piece.revive = (json) => {
-	let fields = JSON.parse(JSON.stringify(json), Piece.reviver);
-	let piece = new Piece[fields.type]();
-	return Object.assign(piece, fields);
-};
-
-Piece.reviver = (key, value) => {
-	if (key === 'team') {
-		return ChessTeam.revive(value);
+Piece.revive = (fields) => {
+	if (!fields) {
+		return null;
 	}
-	return value;
+	let piece = new Piece[fields.type]();
+	return Object.assign(piece, fields, {
+		team: ChessTeam.revive(fields.team)
+	});
 };
 
 class Pawn extends Piece {

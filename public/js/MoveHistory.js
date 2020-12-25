@@ -6,13 +6,14 @@ class MoveHistory {
         this._moves = [];
     }
     
-    add(move, status) {
+    add(move, status, allPossibleMoves) {
         // Chop off future
         this._moves.splice(this._index + 1);
         // New future
         this._moves.push({
             move: move,
-            status: status
+            status: status,
+            allPossibleMoves: allPossibleMoves
         });
         this._index += 1;
         console.log(this._moves);
@@ -63,6 +64,23 @@ class MoveHistory {
     atOrigin() {
         return this._index === -1;
     }
+
+    // toJSON() {
+    //     return {
+    //         _index: this._index,
+
+    //     };
+    // }
 }
+
+MoveHistory.revive = (fields) => {
+    return Object.assign(new MoveHistory(), fields, {
+        _moves: fields._moves.map((moveData) => ({
+            move: Move.revive(moveData.move),
+            status: moveData.status,
+            allPossibleMoves: moveData.allPossibleMoves || null
+        }))
+    });
+};
 
 export default MoveHistory;

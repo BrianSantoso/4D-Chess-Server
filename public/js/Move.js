@@ -55,22 +55,13 @@ Move.hash = (a) => {
 	]);
 };
 
-Move.revive = (json) => {
-	let fields = JSON.parse(JSON.stringify(json), Move.reviver);
-	return Object.assign(new Move(), fields);
-};
-
-Move.reviver = (key, value) => {
-	let pieceObjs = new Set([
-		'piece',
-		'capturedPiece',
-		'promotionNew',
-		'promotionOld'
-	]);
-	if (pieceObjs.has(key)) {
-		return Piece.revive(value);
-	}
-	return value;
+Move.revive = (fields) => {
+	return Object.assign(new Move(), fields, {
+		piece: Piece.revive(fields.piece),
+		capturedPiece: Piece.revive(fields.capturedPiece),
+		promotionNew: Piece.revive(fields.promotionNew),
+		promotionOld: Piece.revive(fields.promotionOld),
+	});
 };
 
 export default Move;

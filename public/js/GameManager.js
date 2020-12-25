@@ -19,6 +19,8 @@ class GameManager {
 	createGame(options) {
 		// Factory to create game, instantiating and injecting required dependencies
 		let game = new ChessGame(options.dim);
+		// TODO: move this into ChessGame under initPieces(layout)
+		// game._init4D(options.dim);
 		
 		let boardGraphics = new options.BoardGraphics(options.dim);
 		game.setBoardGraphics(boardGraphics);

@@ -8,7 +8,13 @@ import { unique } from "./ArrayUtils.js";
 class GameBoard {
 	constructor(dim) {
 		this._pieces = null;
-		this._init4D(dim);
+		if (dim) { // TODO: temporary. init board state with config in factory
+			this._init4D(dim);
+		}
+	}
+
+	initialized() {
+		return !!this.getPieces();
 	}
 	
 	getPieces() {
@@ -26,12 +32,6 @@ class GameBoard {
 		if (move.isFirstMove) {
 			move.piece.hasMoved = false;
 		}
-
-		let str = JSON.stringify(move);
-		let objLiteral = JSON.parse(str);
-		// console.log(str)
-		let obj = Move.revive(objLiteral);
-		console.log(obj);
 	}
 	
 	makeMove(move) {
@@ -264,13 +264,38 @@ class GameBoard {
 	
 }
 
-GameBoard.revive = (json) => {
-	let fields = JSON.parse(JSON.stringify(json), GameBoard.reviver);
-	return Object.assign(new GameBoard(), fields);
-};
+GameBoard.revive = (fields) => {
 
-GameBoard.reviver = (key, value) => {
-	return value;
+	const range = n => [...Array(n)].map((_, i) => i);
+	const rangeIn = dims => {
+		if (!dims.length) return null;
+		return range(dims[0]).map(_ => rangeIn(dims.slice(1)));
+	};
+
+	// Create 4D array with same dimensions
+	let dim = [
+		fields._pieces.length,
+		fields._pieces[0].length,
+		fields._pieces[0][0].length,
+		fields._pieces[0][0][0].length
+	];
+	let [_x, _y, _z, _w] = dim;
+	let _pieces = rangeIn(dim);
+
+	for (let x = 0; x < _x; x++) {
+		for (let y = 0; y < _y; y++) {
+			for (let z = 0; z < _z; z++) {
+				for (let w = 0; w < _w; w++) {
+					let piece = fields._pieces[x][y][z][w];
+					_pieces[x][y][z][w] = Piece.revive(piece);
+				}
+			}
+		}
+	}
+
+	return Object.assign(new GameBoard(), fields, {
+		_pieces: _pieces
+	});
 };
 
 export default GameBoard;

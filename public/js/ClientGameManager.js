@@ -6,6 +6,7 @@ import ChessTeam from "./ChessTeam.js";
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 import View2D from "./View2D.jsx";
+import ChessGame from "./ChessGame.js";
 // import Piece, { Pawn } from "./Piece.js";
 
 class ClientGameManager extends GameManager {
@@ -95,6 +96,10 @@ class ClientGameManager extends GameManager {
 	
 	cameraHome() {
 		this._view3D.configureCamera(this._game._boardGraphics, ChessTeam.WHITE, 0);
+
+		let str = JSON.stringify(this._game);
+		let obj = JSON.parse(str);
+		console.log(ChessGame.revive(obj));
 	}
 
 	undo() {

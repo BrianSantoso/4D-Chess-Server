@@ -14,8 +14,12 @@ class ChessGame {
 		// A: May want to switch game modes once game ends.
 		this._mode = null;
 		this._moveHistory = new MoveHistory();
-		this._status = this.status();
-		this._gameOver = false;
+		this._allPossibleMoves = null;
+		this._status = null;
+
+		if (this._board.initialized()) {
+			this.status(); // computes board status and allPossibleMoves
+		}
 	}
 
 	toJSON() {
@@ -24,7 +28,6 @@ class ChessGame {
 			_turn: this._turn,
 			_moveHistory: this._moveHistory,
 			_status: this._status,
-			_gameOver: this._gameOver
 		};
 	}
 	
@@ -63,7 +66,19 @@ class ChessGame {
 			}
 		}
 		console.log('[ChessGame] Status recomputed')
+		this._allPossibleMoves = allMoves;
 		return this._status;
+	}
+
+	allPossibleMoves() {
+		if (this._allPossibleMoves) {
+			return this._allPossibleMoves;
+		}
+
+		this._clearStatus();
+		this.status();
+
+		return this._allPossibleMoves;
 	}
 
 	inCheck(team) {
@@ -75,6 +90,7 @@ class ChessGame {
 	}
 
 	_clearStatus() {
+		this._allPossibleMoves = null;
 		this._status = null;
 	}
 
@@ -113,7 +129,7 @@ class ChessGame {
 		if (!redoing) {
 			this._clearStatus(); // reset gameover status
 			let status = this.status(); // recalculate status
-			this._moveHistory.add(move, status); // add to history
+			this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
 		}
 
 		// implicitly recalculates status if needed
@@ -133,9 +149,11 @@ class ChessGame {
 		if (undoData) {
 			let moveToUndo = undoData.move;
 			let statusToRestore = undoData.status;
+			let allPossibleMovesToRestore = undoData.allPossibleMoves;
 			this._board.undoMove(moveToUndo);
 			this._boardGraphics.undoMove(moveToUndo, 24);
 			this._status = statusToRestore;
+			this._allPossibleMoves = allPossibleMovesToRestore;
 			// this._clearStatus(); // reset gameover status
 			// this.status();
 			this._switchTurns();
@@ -153,8 +171,10 @@ class ChessGame {
 		if (redoData) {
 			let moveToRedo = redoData.move;
 			let statusToRestore = redoData.status;
+			let allPossibleMovesToRestore = redoData.allPossibleMoves;
 			this.makeMove(moveToRedo, true);
 			this._status = statusToRestore;
+			this._allPossibleMoves = allPossibleMovesToRestore;
 		}
 	}
 	
@@ -197,6 +217,20 @@ class ChessGame {
 	currTurn() {
 		return this._turn;
 	}
+
+	restoreFrom(fields) {
+		Object.assign(this, ChessGame.revive(fields));
+		this.allPossibleMoves();
+	}
 }
+
+ChessGame.revive = (fields) => {
+	return Object.assign(new ChessGame(), fields, {
+		_board: GameBoard.revive(fields._board),
+		_turn: ChessTeam.revive(fields._turn),
+		_moveHistory: MoveHistory.revive(fields._moveHistory),
+		_status: ChessTeam.revive(fields._status)
+	});
+};
 
 export default ChessGame;
