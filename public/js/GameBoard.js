@@ -33,38 +33,44 @@ class GameBoard {
 	}
 
 	undoMove(move) {
-		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
-		this.set(move.x1, move.y1, move.z1, move.w1, move.capturedPiece);
+		let piece = this.getById(move.piece.id);
+		let capturedPiece = this.getById(move.capturedPiece.id);
+		this.set(move.x0, move.y0, move.z0, move.w0, piece);
+		this.set(move.x1, move.y1, move.z1, move.w1, capturedPiece);
 		if (move.isFirstMove) {
-			move.piece.hasMoved = false;
+			piece.hasMoved = false;
 		}
 	}
 
 	redoMove(move) {
+		let piece = this.getById(move.piece.id);
 		// check for pawn promotion
 		if (move.promotionNew) {
-			this.set(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
+			let promotionNew = this.getById(move.promotionNew.id);
+			this.set(move.x1, move.y1, move.z1, move.w1, promotionNew);
 		} else {
-			this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
+			this.set(move.x1, move.y1, move.z1, move.w1, piece);
 		}
 
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
 		
 		// Assumes redoing a move is equivalent to making the move.
-		move.piece.update();
+		piece.update();
 	}
 	
 	makeMove(move) {
+		let piece = this.getById(move.piece.id);
 		// check for pawn promotion
 		if (move.promotionNew) {
 			this.spawn(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
 		} else {
-			this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
+			let piece = this.getById(move.piece.id);
+			this.set(move.x1, move.y1, move.z1, move.w1, piece);
 		}
 
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece());
 		
-		move.piece.update();
+		piece.update();
 	}
 	
 	get(x, y, z, w) {
@@ -164,6 +170,12 @@ class GameBoard {
 		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
 		
 		return attackers;
+	}
+
+	getById(id) {
+		let all = (piece) => true;
+		let grab = (piece) => piece.id === id;
+		return this._applyTo(grab, all);
 	}
 	
 	_applyTo(f, predicate) {

@@ -3,6 +3,7 @@ import config from "./config.json";
 
 class Interactor3D {
 	constructor(team, chessGame, commandQueue, rayCaster) {
+		// TODO: replace all mesh.piece with mesh.id
 		this._team = team;
 		this._game = chessGame;
 		this._rayCaster = rayCaster;
@@ -143,8 +144,8 @@ class Interactor3D {
 		return this._game.boardGraphics();
 	}
 	
-	getPossibleMoves(piece, legalOnly=true) {
-		return this._game.getPossibleMoves(piece, legalOnly);
+	getPossibleMoves(id, legalOnly=true) {
+		return this._game.getPossibleMoves(id, legalOnly);
 	}
 	
 	rayCast(team) {
@@ -175,7 +176,7 @@ class Interactor3D {
 }
 
 Interactor3D.isPiece = function(mesh) {
-	return mesh && !!mesh.piece;
+	return mesh && typeof mesh.piece === 'number';
 }
 	
 Interactor3D.isGhost = function(mesh) {

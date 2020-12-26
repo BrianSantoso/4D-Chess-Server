@@ -104,6 +104,8 @@ class ClientGameManager extends GameManager {
 		let template = this.createGame({});
 		let newGame = Object.assign(template, ChessGame.revive(obj));
 		this.setGame(newGame);
+
+		console.log(newGame)
 	}
 
 	undo() {

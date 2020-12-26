@@ -191,7 +191,8 @@ class ChessGame {
 		
 	}
 	
-	getPossibleMoves(piece, legalOnly=true) {
+	getPossibleMoves(id, legalOnly=true) {
+		let piece = this._board.getById(id);
 		// TODO: interact with mode to determine altered possible moves
 		return this._board.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, legalOnly);
 	}

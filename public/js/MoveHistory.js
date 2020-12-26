@@ -1,4 +1,5 @@
 import Move from './Move.js';
+import ChessTeam from './ChessTeam.js';
 
 class MoveHistory {
     constructor() {
@@ -77,7 +78,7 @@ MoveHistory.revive = (fields) => {
     return Object.assign(new MoveHistory(), fields, {
         _moves: fields._moves.map((moveData) => ({
             move: Move.revive(moveData.move),
-            status: moveData.status,
+            status: ChessTeam.revive(moveData.status),
             allPossibleMoves: moveData.allPossibleMoves || null
         }))
     });

@@ -30,7 +30,8 @@ class BoardGraphics3D extends BoardGrahpics {
 		// TODO: use Piece id as key
 		this._showingMovesFor = new Map(); // map of Piece objects to their Set of possible move meshes (Ghost meshes)
 		this._highlightingFor = new Map(); // map of Piece objects to their temporary highlight meshes
-		this._pieceToMesh = new Map();
+		this._idToMesh = new Map();
+		this._idToPiece = new Map();
 
 		this._container.add(this._pieces);
 		this._container.add(this._checkerboards);
@@ -70,13 +71,17 @@ class BoardGraphics3D extends BoardGrahpics {
 								 -newZ).add(this._container.position);
 	}
 
-	pieceToMesh(piece) {
-		let mesh = this._pieceToMesh.get(piece.id);
+	idToMesh(id) {
+		let mesh = this._idToMesh.get(id);
 		// if (!mesh) {
 		// 	this._spawnMeshFromPiece(piece, 0);
 		// 	mesh = this._pieceToMesh.get(piece);
 		// }
 		return mesh;
+	}
+
+	idToPiece(id) {
+		return this._idToPiece.get(id);
 	}
 	
 	update() {
@@ -140,9 +145,10 @@ class BoardGraphics3D extends BoardGrahpics {
 			this._black.add(mesh);
 		}
 		// bind associated piece to mesh
-		mesh.piece = pieceObj;
+		mesh.piece = pieceObj.id;
 		
-		this._pieceToMesh.set(pieceObj.id, mesh);
+		this._idToMesh.set(pieceObj.id, mesh);
+		this._idToPiece.set(pieceObj.id, pieceObj);
 		
 		if (frames) {
 			return this._grow(mesh, frames);
@@ -153,7 +159,8 @@ class BoardGraphics3D extends BoardGrahpics {
 //		return mesh;
 	}
 	
-	_spawnGhostMesh(pieceObj, move, preview) {
+	_spawnGhostMesh(id, move, preview) {
+		let pieceObj = this.idToPiece(id);
 		let pos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 		let team = pieceObj.team;
 		let type = pieceObj.type;
@@ -262,17 +269,17 @@ class BoardGraphics3D extends BoardGrahpics {
 		return Promise.all(hideAnimationProms);
 	}
 	
-	highlight(piece, frames=0) {
-		this.unhighlight(piece, frames);
-		let mesh = this._spawnHighlightMesh(piece);
+	highlight(id, frames=0) {
+		this.unhighlight(id, frames);
+		let mesh = this._spawnHighlightMesh(id);
 		if (frames) {
 			this._fadeIn(mesh, frames);
 		}
-		this._highlightingFor.set(piece.id, mesh);
+		this._highlightingFor.set(id, mesh);
 	}
 	
-	unhighlight(piece, frames=0) {
-		let mesh = this._highlightingFor.get(piece.id);
+	unhighlight(id, frames=0) {
+		let mesh = this._highlightingFor.get(id);
 		if (!mesh) {
 			return;
 		}
@@ -282,14 +289,15 @@ class BoardGraphics3D extends BoardGrahpics {
 				// TODO: somehow having this here breaks?
 				// this._highlightingFor.delete(piece);
 			});
-			this._highlightingFor.delete(piece.id);
+			this._highlightingFor.delete(id);
 		} else {
 			this._remove(mesh);
-			this._highlightingFor.delete(piece.id);
+			this._highlightingFor.delete(id);
 		}
 	}
 	
-	_spawnHighlightMesh(pieceObj) {
+	_spawnHighlightMesh(id) {
+		let pieceObj = this.idToPiece(id);
 		let pos = this.to3D(pieceObj.x, pieceObj.y, pieceObj.z, pieceObj.w);
 		let team = pieceObj.team;
 		let type = pieceObj.type;
@@ -344,10 +352,10 @@ class BoardGraphics3D extends BoardGrahpics {
 		this._disableInteraction();
 		
 		if (frames) {
-			let mesh = this.pieceToMesh(move.piece);
+			let mesh = this.idToMesh(move.piece.id);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
 			let endPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
-			let capturedMesh = this.pieceToMesh(move.capturedPiece);
+			let capturedMesh = this.idToMesh(move.capturedPiece.id);
 			
 			let movingPieceProm = this._translate(mesh, frames, startPos, endPos)
 				.then(() => {
@@ -374,8 +382,8 @@ class BoardGraphics3D extends BoardGrahpics {
 			moveAnimationProm = Promise.all([movingPieceProm, capturedPieceProm]);
 			
 		} else {
-			let mesh = this.pieceToMesh(move.piece);
-			let capturedMesh = this.pieceToMesh(move.capturedPiece);
+			let mesh = this.idToMesh(move.piece.id);
+			let capturedMesh = this.idToMesh(move.capturedPiece.id);
 
 			let newPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 			mesh.position.set(newPos.x, newPos.y, newPos.z);
@@ -406,14 +414,14 @@ class BoardGraphics3D extends BoardGrahpics {
 		let undoAnimationProm;
 		this._disableInteraction();
 		if (frames) {
-			let mover = this.pieceToMesh(move.piece);
+			let mover = this.idToMesh(move.piece.id);
 			let startPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 			let endPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
 			let restoringMoverProm = Promise.resolve();
 			if (move.promotionNew) {
 				// If the original piece was promoted, then we need to get it back
 				// and remove the promoted mesh
-				let promotedMesh = this.pieceToMesh(move.promotionNew);
+				let promotedMesh = this.idToMesh(move.promotionNew.id);
 				restoringMoverProm = this._shrink(promotedMesh, 16)
 					.then(() => {
 						return this._grow(mover, 16);
@@ -425,7 +433,7 @@ class BoardGraphics3D extends BoardGrahpics {
 				let translateProm = this._translate(mover, frames, startPos, endPos);
 				let capturedGrowProm = Promise.resolve();
 				if (move.isCapture()) {
-					let capturedMesh = this.pieceToMesh(move.capturedPiece);
+					let capturedMesh = this.idToMesh(move.capturedPiece.id);
 					capturedGrowProm = this._grow(capturedMesh, frames);
 				}
 				return Promise.all([translateProm, capturedGrowProm]);
@@ -446,7 +454,7 @@ class BoardGraphics3D extends BoardGrahpics {
 
 	explainAll(attackers) {
 		attackers.forEach(attacker => {
-			let mesh = this.pieceToMesh(attacker);
+			let mesh = this.idToMesh(attacker.id);
 			this._blink(mesh, 64);
 		})
 	}
