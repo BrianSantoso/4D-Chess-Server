@@ -45,6 +45,11 @@ class ClientGameManager extends GameManager {
 			this.makeMove(move);
 		});
 
+		room.onMessage('chessGame', (jsonData) => {
+			console.log('received chessGame')
+			this.loadFrom(jsonData);
+		});
+
 		this._room = room;
 		this._view2D.setRoom(room);
 	}
@@ -98,8 +103,6 @@ class ClientGameManager extends GameManager {
 	
 	cameraHome() {
 		this._view3D.configureCamera(this._game._boardGraphics, ChessTeam.WHITE, 0);
-
-		this.loadFrom(games.basic);
 	}
 
 	undo() {
@@ -110,8 +113,6 @@ class ClientGameManager extends GameManager {
 			player.unselect();
 		});
 		super.undo();
-
-		// console.log(JSON.stringify(this._game))
 	}
 
 	redo() {
@@ -132,7 +133,9 @@ class ClientGameManager extends GameManager {
 	}
 	
 	_update() {
-		this._game.update();
+		if (this._game) {
+			this._game.update();
+		}
 		this._view3D.update();
 	}
 	
@@ -171,6 +174,14 @@ class ClientGameManager extends GameManager {
 			requestAnimationFrame(frame); // repeat the loop
 		}
 		requestAnimationFrame(frame);
+	}
+
+	debugLoad(event) {
+		this.loadFrom(games.basic);
+	}
+
+	debugExport(event) {
+		console.log(JSON.stringify(this._game))
 	}
 }
 

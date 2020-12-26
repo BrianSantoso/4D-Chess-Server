@@ -3,7 +3,6 @@ import config from "./config.json";
 
 class Interactor3D {
 	constructor(team, chessGame, commandQueue, rayCaster) {
-		// TODO: replace all mesh.piece with mesh.id
 		this._team = team;
 		this._game = chessGame;
 		this._rayCaster = rayCaster;
@@ -176,7 +175,7 @@ class Interactor3D {
 }
 
 Interactor3D.isPiece = function(mesh) {
-	return mesh && typeof mesh.piece !== undefined;
+	return mesh && typeof mesh.pieceId !== undefined;
 }
 	
 Interactor3D.isGhost = function(mesh) {
@@ -201,7 +200,6 @@ class Interactor3DWorker {
 	
 	showMovesFor(mesh, preview=false) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
 			if (this._showingMovesFor !== mesh) {
 				// If different than already showing, hide previous and show new
 				this._hidePossibleMoves(this._showingMovesFor);
@@ -215,7 +213,6 @@ class Interactor3DWorker {
 	
 	highlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
 			if (this._highlighting !== mesh) {
 				// If different than already showing, hide previous and show new
 				this._unhighlight(this._highlighting);
@@ -257,10 +254,10 @@ class Interactor3DWorker {
 	}
 
 	explainIfUnadressedCheck(meshToMove) {
-		let pieceToMove = meshToMove.piece;
-		let notKing = pieceToMove.type !== 'king';
-		let legalMoves = this._getPossibleMoves(pieceToMove);
-		let theoreticalMoves = this._getPossibleMoves(pieceToMove, false);
+		let pieceToMoveId = meshToMove.pieceId;
+		let notKing = pieceToMoveId.type !== 'king';
+		let legalMoves = this._getPossibleMoves(pieceToMoveId);
+		let theoreticalMoves = this._getPossibleMoves(pieceToMoveId, false);
 		if (notKing && legalMoves.length === 0 && theoreticalMoves.length > 0) {
 			let attackers = this._inCheck();
 			this._explainAll(attackers);
@@ -290,38 +287,39 @@ class Interactor3DWorker {
 	
 	_showPossibleMoves(mesh, preview=false) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, config.animFrames.showMoves);
+			let pieceId = mesh.pieceId;
+			let moves = this._getPossibleMoves(pieceId);
+			this._boardGraphics().showPossibleMoves(pieceId, moves, preview, config.animFrames.showMoves);
 		}
 	}
 	
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, config.animFrames.hideMoves);
+			let pieceId = mesh.pieceId;
+			this._boardGraphics().hidePossibleMoves(pieceId, config.animFrames.hideMoves);
 		}
 	}
 	
 	_highlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			this._boardGraphics().highlight(piece, config.animFrames.highlight);
+			let pieceId = mesh.pieceId;
+			this._boardGraphics().highlight(pieceId, config.animFrames.highlight);
 		}
 	}
 	
 	_unhighlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			this._boardGraphics().unhighlight(piece, config.animFrames.unhighlight);
+			let pieceId = mesh.pieceId;
+			this._boardGraphics().unhighlight(pieceId, config.animFrames.unhighlight);
 		}
 	}
 
 	_isBlocked(originalMesh) {
 		// Returns the blocked move of originalMesh corresponding to
 		// the destination given by this.selected();
-		let pieceToMove = originalMesh.piece;
-		let moves = this._getPossibleMoves(pieceToMove, false);
+		let pieceToMoveId = originalMesh.pieceId;
+		let moves = this._getPossibleMoves(pieceToMoveId, false);
+		// TODO: move this logic to GameBoard
 		let destination = this.selected().piece;
 		for (let i = 0; i < moves.length; i++) {
 			let move = moves[i];

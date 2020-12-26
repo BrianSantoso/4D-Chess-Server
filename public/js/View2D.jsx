@@ -25,6 +25,10 @@ class View2D {
 		this._events = new EventHandler(document);
 		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY']);
 		this._events.defineKeyboardEvent('closeChat', ['Escape']);
+		this._events.defineKeyboardEvent('debugExport', ['KeyE']);
+		this._events.defineKeyboardEvent('debugLoad', ['KeyL']);
+		this._events.subscribe(gameManager, 'debugExport');
+		this._events.subscribe(gameManager, 'debugLoad');
 
 		this._room = null;
 		this._client = client;

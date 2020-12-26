@@ -2,7 +2,7 @@ import ChessGame from "./ChessGame.js";
 
 class GameManager {
 	constructor() {
-		
+		this._game;
 	}
 
 	createAndSetGame(options) {
@@ -15,6 +15,10 @@ class GameManager {
 		let template = this.createGame({});
 		let newGame = Object.assign(template, ChessGame.revive(jsonData));
 		this.setGame(newGame);
+	}
+
+	toJSON() {
+		return JSON.parse(JSON.stringify(this._game));
 	}
 	
 	setGame(game) {

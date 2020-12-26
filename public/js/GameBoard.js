@@ -1,5 +1,5 @@
 import ChessTeam from "./ChessTeam.js";
-import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
+import Piece, { Queen } from "./Piece.js";
 import { initTeam8181, initTeam4444 } from "./BoardConfigs.js";
 import Move from "./Move.js";
 
@@ -7,11 +7,12 @@ import { unique } from "./ArrayUtils.js";
 
 class GameBoard {
 	constructor() {
+		// TODO: Potential memory attack. Possible to make moves that add pieces 
+		// to allPieces, then undo moves, and make new move to rewrite history. 
+		// Then added pieces from overwritten history still remain in allPieces 
+		// and so also in serialized form.
 		this._allPieces = [];
 		this._pieces = null;
-		// if (dim) { // TODO: temporary. init board state with config in factory
-		// 	this._init4D(dim);
-		// }
 	}
 
 	initialized() {

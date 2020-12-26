@@ -151,7 +151,7 @@ class BoardGraphics3D extends BoardGrahpics {
 			this._black.add(mesh);
 		}
 		// bind associated piece to mesh
-		mesh.piece = pieceObj.id;
+		mesh.pieceId = pieceObj.id;
 		
 		this._idToMesh.set(pieceObj.id, mesh);
 		

@@ -33,7 +33,7 @@ class ChessRoom extends Room {
 				color: 'rgb(255, 251, 13)'
 			}
         });
-        
+        client.send('chessGame', this._gameManager.toJSON());
     }
 
     // When a client leaves the room
