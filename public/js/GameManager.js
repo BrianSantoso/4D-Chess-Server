@@ -1,5 +1,4 @@
 import ChessGame from "./ChessGame.js";
-import ChessTeam from "./ChessTeam.js";
 
 class GameManager {
 	constructor() {
@@ -10,6 +9,12 @@ class GameManager {
 		let chessGame = this.createGame(options);
 		this.setGame(chessGame);
 		return chessGame;
+	}
+
+	loadFrom(jsonData) {
+		let template = this.createGame({});
+		let newGame = Object.assign(template, ChessGame.revive(jsonData));
+		this.setGame(newGame);
 	}
 	
 	setGame(game) {

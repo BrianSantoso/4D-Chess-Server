@@ -99,13 +99,7 @@ class ClientGameManager extends GameManager {
 	cameraHome() {
 		this._view3D.configureCamera(this._game._boardGraphics, ChessTeam.WHITE, 0);
 
-		let str = JSON.stringify(games.basic);
-		let obj = JSON.parse(str);
-		let template = this.createGame({});
-		let newGame = Object.assign(template, ChessGame.revive(obj));
-		this.setGame(newGame);
-
-		console.log(newGame)
+		this.loadFrom(games.basic);
 	}
 
 	undo() {

@@ -4,6 +4,7 @@ import Animator, { Animation } from "./Animator.js";
 import { debugSphere, rotateObject, checkerboard4D } from "./Utils3D.js";
 import Models from "./Models.js";
 import ChessTeam from "./ChessTeam.js";
+import config from "./config.json";
 
 // TODO: update graphics hierarchy
 // BoardGrahpics
@@ -362,7 +363,7 @@ class BoardGraphics3D extends BoardGrahpics {
 					// TODO:
 					// this._remove(capturedMesh);
 					if (move.promotionNew) {
-						return this._shrink(mesh, 16);
+						return this._shrink(mesh, config.animFrames.shrinkGrow);
 					} else {
 						// End promise chain (Do nothing)
 						// TODO: how to end a promise chain properly?
@@ -372,7 +373,7 @@ class BoardGraphics3D extends BoardGrahpics {
 				.then(() => {
 					// TODO: 
 					// this._remove(mesh);
-					return this._spawnMeshFromPiece(move.promotionNew, 16);
+					return this._spawnMeshFromPiece(move.promotionNew, config.animFrames.shrinkGrow);
 				}, () => { /* Do nothing */ });
 			
 			let capturedPieceProm = Promise.resolve();
@@ -422,9 +423,9 @@ class BoardGraphics3D extends BoardGrahpics {
 				// If the original piece was promoted, then we need to get it back
 				// and remove the promoted mesh
 				let promotedMesh = this.idToMesh(move.promotionNew.id);
-				restoringMoverProm = this._shrink(promotedMesh, 16)
+				restoringMoverProm = this._shrink(promotedMesh, config.animFrames.shrinkGrow)
 					.then(() => {
-						return this._grow(mover, 16);
+						return this._grow(mover, config.animFrames.shrinkGrow);
 					});
 			}
 			
@@ -455,7 +456,7 @@ class BoardGraphics3D extends BoardGrahpics {
 	explainAll(attackers) {
 		attackers.forEach(attacker => {
 			let mesh = this.idToMesh(attacker.id);
-			this._blink(mesh, 64);
+			this._blink(mesh, config.animFrames.explain);
 		})
 	}
 	

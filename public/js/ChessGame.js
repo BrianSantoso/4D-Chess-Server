@@ -1,6 +1,7 @@
 import GameBoard from "./GameBoard.js";
 import MoveHistory from "./MoveHistory.js";
 import ChessTeam from "./ChessTeam.js";
+import config from "./config.json";
 
 class ChessGame {	
 	constructor() {
@@ -133,7 +134,7 @@ class ChessGame {
 		}
 		
 		this._board.makeMove(move); // update state
-		this._boardGraphics.makeMove(move, 24); // animate
+		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
 		
 		this._clearStatus(); // reset gameover status
 		let status = this.status(); // recalculate status
@@ -158,7 +159,7 @@ class ChessGame {
 			let statusToRestore = redoData.status;
 			let allPossibleMovesToRestore = redoData.allPossibleMoves;
 			this._board.redoMove(moveToRedo);
-			this._boardGraphics.makeMove(moveToRedo, 24);
+			this._boardGraphics.makeMove(moveToRedo, config.animFrames.move);
 			this._status = statusToRestore;
 			this._allPossibleMoves = allPossibleMovesToRestore;
 			this._switchTurns();
@@ -176,7 +177,7 @@ class ChessGame {
 			let statusToRestore = undoData.status;
 			let allPossibleMovesToRestore = undoData.allPossibleMoves;
 			this._board.undoMove(moveToUndo);
-			this._boardGraphics.undoMove(moveToUndo, 24);
+			this._boardGraphics.undoMove(moveToUndo, config.animFrames.move);
 			this._status = statusToRestore;
 			this._allPossibleMoves = allPossibleMovesToRestore;
 			// this._clearStatus(); // reset gameover status

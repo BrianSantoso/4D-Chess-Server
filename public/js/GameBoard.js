@@ -7,7 +7,7 @@ import { unique } from "./ArrayUtils.js";
 
 class GameBoard {
 	constructor() {
-		this._numPieces = 0;
+		this._allPieces = [];
 		this._pieces = null;
 		// if (dim) { // TODO: temporary. init board state with config in factory
 		// 	this._init4D(dim);
@@ -23,7 +23,8 @@ class GameBoard {
 	}
 
 	spawn(x, y, z, w, piece) {
-		piece.assignId(this._numPieces++);
+		piece.assignId(this._allPieces.length);
+		this._allPieces.push(piece);
 		this.set(x, y, z, w, piece);
 	}
 	
@@ -173,9 +174,7 @@ class GameBoard {
 	}
 
 	getById(id) {
-		let all = (piece) => true;
-		let grab = (piece) => piece.id === id;
-		return this._applyTo(grab, all);
+		return this._allPieces[id];
 	}
 	
 	_applyTo(f, predicate) {
