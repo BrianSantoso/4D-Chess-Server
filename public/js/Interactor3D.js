@@ -1,5 +1,5 @@
-import ChessGame from "./ChessGame.js";
-import { King } from "./Piece.js";
+import ChessTeam from "./ChessTeam.js";
+import config from "./config.json";
 
 class Interactor3D {
 	constructor(team, chessGame, commandQueue, rayCaster) {
@@ -8,10 +8,10 @@ class Interactor3D {
 		this._rayCaster = rayCaster;
 		this._commandQueue = commandQueue;
 		
-		this._movePreviewer = new MovePreviewer(this, ChessGame.OMNISCIENT);
+		this._movePreviewer = new MovePreviewer(this, ChessTeam.OMNISCIENT);
 		this._pieceSelector = new PieceSelector(this, team);
-		this._moveConfirmer = new MoveConfirmer(this, ChessGame.GHOST);
-		this._moveExplainer = new MoveExplainer(this, ChessGame.oppositeTeam(team));
+		this._moveConfirmer = new MoveConfirmer(this, ChessTeam.GHOST);
+		this._moveExplainer = new MoveExplainer(this, ChessTeam.oppositeTeam(team));
 		
 		
 		let trySelectPiece = () => {
@@ -26,10 +26,14 @@ class Interactor3D {
 				this._movePreviewer.showMovesFor(null);
 
 				let unadressedCheck = this._pieceSelector.explainIfUnadressedCheck(selected);
-				if (unadressedCheck) {
-					this._pieceSelector.setSelected(null);
-					return;
-				}
+
+				// Uncomment if you want to disable ability to select pieces which are pinned OR
+				// do not address a check
+				// if (unadressedCheck) {
+				// 	this._pieceSelector.setSelected(null);
+				// 	return;
+				// }
+
 				// Show the moves for what was selected
 				this._pieceSelector.showMovesFor(this._pieceSelector.selected());
 				this._pieceSelector.highlight(this._pieceSelector.selected());
@@ -139,8 +143,8 @@ class Interactor3D {
 		return this._game.boardGraphics();
 	}
 	
-	getPossibleMoves(piece, legalOnly=true) {
-		return this._game.getPossibleMoves(piece, legalOnly);
+	getPossibleMoves(id, legalOnly=true) {
+		return this._game.getPossibleMoves(id, legalOnly);
 	}
 	
 	rayCast(team) {
@@ -171,7 +175,7 @@ class Interactor3D {
 }
 
 Interactor3D.isPiece = function(mesh) {
-	return mesh && !!mesh.piece;
+	return mesh && typeof mesh.pieceId !== undefined;
 }
 	
 Interactor3D.isGhost = function(mesh) {
@@ -196,7 +200,6 @@ class Interactor3DWorker {
 	
 	showMovesFor(mesh, preview=false) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
 			if (this._showingMovesFor !== mesh) {
 				// If different than already showing, hide previous and show new
 				this._hidePossibleMoves(this._showingMovesFor);
@@ -210,7 +213,6 @@ class Interactor3DWorker {
 	
 	highlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
 			if (this._highlighting !== mesh) {
 				// If different than already showing, hide previous and show new
 				this._unhighlight(this._highlighting);
@@ -252,10 +254,10 @@ class Interactor3DWorker {
 	}
 
 	explainIfUnadressedCheck(meshToMove) {
-		let pieceToMove = meshToMove.piece;
-		let notKing = pieceToMove.type !== 'king';
-		let legalMoves = this._getPossibleMoves(pieceToMove);
-		let theoreticalMoves = this._getPossibleMoves(pieceToMove, false);
+		let pieceToMoveId = meshToMove.pieceId;
+		let notKing = pieceToMoveId.type !== 'king';
+		let legalMoves = this._getPossibleMoves(pieceToMoveId);
+		let theoreticalMoves = this._getPossibleMoves(pieceToMoveId, false);
 		if (notKing && legalMoves.length === 0 && theoreticalMoves.length > 0) {
 			let attackers = this._inCheck();
 			this._explainAll(attackers);
@@ -279,44 +281,45 @@ class Interactor3DWorker {
 		return this._parent.boardGraphics();
 	}
 	
-	_getPossibleMoves(piece, legalOnly=true) {
-		return this._parent.getPossibleMoves(piece, legalOnly);
+	_getPossibleMoves(pieceId, legalOnly=true) {
+		return this._parent.getPossibleMoves(pieceId, legalOnly);
 	}
 	
 	_showPossibleMoves(mesh, preview=false) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			let moves = this._getPossibleMoves(piece);
-			this._boardGraphics().showPossibleMoves(piece, moves, preview, 12);
+			let pieceId = mesh.pieceId;
+			let moves = this._getPossibleMoves(pieceId);
+			this._boardGraphics().showPossibleMoves(pieceId, moves, preview, config.animFrames.showMoves);
 		}
 	}
 	
 	_hidePossibleMoves(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			this._boardGraphics().hidePossibleMoves(piece, 12);
+			let pieceId = mesh.pieceId;
+			this._boardGraphics().hidePossibleMoves(pieceId, config.animFrames.hideMoves);
 		}
 	}
 	
 	_highlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			this._boardGraphics().highlight(piece, 3);
+			let pieceId = mesh.pieceId;
+			this._boardGraphics().highlight(pieceId, config.animFrames.highlight);
 		}
 	}
 	
 	_unhighlight(mesh) {
 		if (Interactor3D.isPiece(mesh)) {
-			let piece = mesh.piece;
-			this._boardGraphics().unhighlight(piece, 10);
+			let pieceId = mesh.pieceId;
+			this._boardGraphics().unhighlight(pieceId, config.animFrames.unhighlight);
 		}
 	}
 
 	_isBlocked(originalMesh) {
 		// Returns the blocked move of originalMesh corresponding to
 		// the destination given by this.selected();
-		let pieceToMove = originalMesh.piece;
-		let moves = this._getPossibleMoves(pieceToMove, false);
+		let pieceToMoveId = originalMesh.pieceId;
+		let moves = this._getPossibleMoves(pieceToMoveId, false);
+		// TODO: move this logic to GameBoard
 		let destination = this.selected().piece;
 		for (let i = 0; i < moves.length; i++) {
 			let move = moves[i];

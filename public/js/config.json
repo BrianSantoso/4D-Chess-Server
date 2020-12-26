@@ -1,0 +1,27 @@
+{
+    "dims": {
+        "standard": [8, 1, 8, 1]
+    },
+    "chat": {
+        "maxLength": 200
+    },
+    "animFrames": {
+        "highlight": 0,
+        "unhighlight": 6,
+        "showMoves": 6,
+        "hideMoves": 6,
+        "move": 24,
+        "explain": 64,
+        "shrinkGrow": 16
+    },
+    "banner": {
+        "msPerMsg": 500,
+        "whitesTurn": ["White to Move"],
+        "blacksTurn": ["Black to Move"],
+        "noOpponent": ["Waiting for opponent", "Waiting for opponent.", "Waiting for opponent..", "Waiting for opponent..."]
+    },
+    "schema": {
+        "white": "white",
+        "black": "black"
+    }
+}

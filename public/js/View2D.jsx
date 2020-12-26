@@ -2,17 +2,18 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
 import FocusLock from 'react-focus-lock';
-//import WhiteIcon from '../assets/player/king_white.svg';
-//import BlackIcon from '../assets/player/king_black.svg';
-import ChessGame from './ChessGame.js';
+import WhiteIcon from '../assets/player/king_white.svg';
+import BlackIcon from '../assets/player/king_black.svg';
+import ChessTeam from './ChessTeam.js';
 import EventHandler from './EventHandler.js';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
 import RedoIcon from '../assets/icons/redo-black-24dp.svg';
 import ChatIcon from '../assets/icons/chat-black-24dp.svg';
+import config from './config.json';
 
 class View2D {
-	constructor(gameManager) {
+	constructor(gameManager, client) {
 		this._gameManager = gameManager;
 		
 		this.cameraHome = this.cameraHome.bind(this);
@@ -24,7 +25,22 @@ class View2D {
 		this._events = new EventHandler(document);
 		this._events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY']);
 		this._events.defineKeyboardEvent('closeChat', ['Escape']);
+		this._events.defineKeyboardEvent('debugExport', ['KeyE']);
+		this._events.defineKeyboardEvent('debugLoad', ['KeyL']);
+		this._events.subscribe(gameManager, 'debugExport');
+		this._events.subscribe(gameManager, 'debugLoad');
 
+		this._room = null;
+		this._client = client;
+	}
+
+	addMsg(message) {
+		// TODO: don't use refs. Consider moving messages list to View2D instead of Overlay.
+		this.root.current.addMsg(message);
+	}
+
+	setRoom(room) {
+		this._room = room;
 	}
 	
 	cameraHome() {
@@ -41,7 +57,17 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
-		ReactDOM.render(<Overlay ref={this.root} cameraHome={this.cameraHome} undo={this.undo} redo={this.redo} events={this._events}/>, document.getElementById('react-root'));
+		ReactDOM.render(
+			(<Overlay 
+				ref={this.root} 
+				room={this._room}
+				client={this._client} 
+				cameraHome={this.cameraHome} 
+				undo={this.undo} 
+				redo={this.redo} 
+				events={this._events}
+			/>),
+		document.getElementById('react-root'));
 	}
 }
 
@@ -66,8 +92,9 @@ class Overlay extends Component {
 	render() {
 		return (
 			<div className='overlay'>
-				<PlayerInfo team={ChessGame.WHITE} playerName={'Guest8449947756'}></PlayerInfo>
-				<PlayerInfo team={ChessGame.BLACK} playerName={'AnonymousCow'}></PlayerInfo>
+				<PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>
+				<StatusBanner messages={config.banner.noOpponent}></StatusBanner>
+				<PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
@@ -75,7 +102,18 @@ class Overlay extends Component {
 					<CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
 					<CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
 				</div>
-				<Chat chatOpened={this.state.chatOpened} handleMsg={this.addMsg} handleOpenChat={this.openChat} handleCloseChat={this.closeChat} messages={this.state.messages} showing={this.state.showing} events={this.props.events}/>
+
+				<Chat 
+					room={this.props.room} 
+					client={this.props.client} 
+					chatOpened={this.state.chatOpened} 
+					handleMsg={this.addMsg} 
+					handleOpenChat={this.openChat} 
+					handleCloseChat={this.closeChat} 
+					messages={this.state.messages} 
+					showing={this.state.showing} 
+					events={this.props.events}
+				/>
 			</div>
 		);
 	}
@@ -84,7 +122,14 @@ class Overlay extends Component {
 		// TODO: generate uuid for key
 		let key = config.msg + Date.now();
 		let handleHide = this._getHideMsgHandler(key);
-		let chatMsg = <ChatMessage key={key} text={config.msg} style={config.style} sender={config.sender} handleHide={handleHide} />;
+		let chatMsg = (
+			<ChatMessage 
+				key={key} 
+				text={config.msg} 
+				style={config.style} 
+				sender={config.sender} 
+				handleHide={handleHide} 
+			/>);
 		// this.messages.push(chatMsg);
 		
 		// TODO: is callback needed in this setState?
@@ -98,6 +143,7 @@ class Overlay extends Component {
 		return () => {
 			// TODO: is callback needed in this setState?
 			this.setState(prevState => ({
+				// remove message from showing
 				showing: prevState.showing.filter(el => el.key !== key)
 			}));
 		}
@@ -111,18 +157,18 @@ class Overlay extends Component {
 	}
 
 	test() {
-		this.addMsg({
-			msg: '[Guest8449947756] good luck have fun!'
-		});
-		this.addMsg({
-			msg: '[AnonymousCow] Thanks, you too'
-		});
-		this.addMsg({
-			msg: 'AnonPig has joined the room',
-			style: {
-				color: 'rgb(255, 251, 13)'
-			}
-		});
+		// this.addMsg({
+		// 	msg: '[Guest8449947756] good luck have fun!'
+		// });
+		// this.addMsg({
+		// 	msg: '[AnonymousCow] Thanks, you too'
+		// });
+		// this.addMsg({
+		// 	msg: 'AnonPig has joined the room',
+		// 	style: {
+		// 		color: 'rgb(255, 251, 13)'
+		// 	}
+		// });
 	}
 
 	toggleChat() {
@@ -148,11 +194,6 @@ class PlayerInfo extends Component {
 	
 	constructor(props) {
 		super(props);
-		this.state = {
-			team: this.props.team,
-			time: -1,
-			playerName: this.props.playerName,
-		}
 	}
 	
 	msToHMS(duration) {
@@ -174,40 +215,68 @@ class PlayerInfo extends Component {
 	}
 	
 	render() {
-		let className;
-		let footer;
-		let playerTime = <div className='playerTime'>{this.msToHMS(this.state.time)}</div>;
+		let className = 'playerInfo ' + this.props.position;
+		let isWhite = this.props.team === ChessTeam.WHITE;
+		let playerTime = <div className='playerTime'>{this.msToHMS(this.props.time)}</div>;
 		let playerStatus = <img className='playerStatus' src='../assets/player/online.svg' />
-		
-		if (this.state.team === ChessGame.WHITE) {
-			className = 'playerInfo playerWhite';
-			footer = (
-				<div className='playerFooter'>
-					{playerTime}
-					{playerStatus}
-				</div>
-			)
-		} else {
-			className = 'playerInfo playerBlack';
-			footer = (
-				<div className='playerFooter'>
-					{playerStatus}
-					{playerTime}
-				</div>
-			)
-		}
+		let playerIcon = <img className='playerIcon' src={isWhite ? WhiteIcon : BlackIcon}/>;
+		let elo = `(${this.props.elo})`;
+		let footer = (
+			<div className='playerFooter'>
+				{elo}
+				{playerStatus}
+				{playerTime}
+			</div>
+		);
 			
 		return (
 			<div className={className}>
-				<img className='playerIcon' />
+				{playerIcon}
 				<div className='playerText'>
 					<div className='playerName'>
-						{this.state.playerName}
+						{this.props.playerName}
 					</div>
 					{footer}
 				</div>
 			</div>
 		)
+	}
+}
+
+class StatusBanner extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			frame: 0
+		}
+
+		this.tick = this.tick.bind(this);
+	}
+
+	tick() {
+		this.setState(prevState => ({
+			frame: (prevState.frame + 1) % this.props.messages.length
+		}));
+	}
+
+	currMessage() {
+		return this.props.messages[this.state.frame];
+	}
+
+	componentDidMount() {
+		this.timerID = setInterval(this.tick, config.banner.msPerMsg);
+	}
+
+	componentWillUnmount() {
+		clearInterval(this.timerID);
+	}
+
+	render() {
+		return (
+			<div className='statusBanner'>
+				{this.currMessage()}
+			</div>
+		);
 	}
 }
 
@@ -234,7 +303,10 @@ class Chat extends Component {
 		return (
 			<div className='chat'>
 				{ this.props.chatOpened ? 
-					<ChatOpened handleCloseChat={this.props.handleCloseChat}
+					<ChatOpened 
+					room={this.props.room}
+					client={this.props.client}
+					handleCloseChat={this.props.handleCloseChat}
 					handleMsg={this.props.handleMsg} 
 					messages={this.props.messages} 
 					events={this.props.events}></ChatOpened> 
@@ -244,26 +316,6 @@ class Chat extends Component {
 			</div>
 		);
 	}
-
-	// _opened() {
-	// 	return (
-	// 		<div className=''>
-	// 			<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-	// 				{ this.props.messages }
-	// 			</CSSTransitionGroup>
-	// 			<ChatInput handleMsg={this.props.handleMsg} handleCloseChat={this.props.handleCloseChat}></ChatInput>
-	// 		</div>
-	// 	);
-	// }
-
-	// _notOpened() {
-	// 	// console.log('showing', this.props.showing)
-	// 	return (
-	// 		<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-	// 			{ this.props.showing }
-	// 		</CSSTransitionGroup>
-	// 	);
-	// }
 }
 
 class ChatClosed extends Component {
@@ -305,7 +357,7 @@ class ChatOpened extends Component {
 				<CSSTransitionGroup transitionName='fade' transitionEnterTimeout={300} transitionLeaveTimeout={300}>
 					{ this.props.messages }
 				</CSSTransitionGroup>
-				<ChatInput handleCloseChat={this.props.handleCloseChat} handleMsg={this.props.handleMsg}></ChatInput>
+				<ChatInput room={this.props.room} client={this.props.client} handleCloseChat={this.props.handleCloseChat} handleMsg={this.props.handleMsg}></ChatInput>
 			</div>
 		);
 	}
@@ -360,7 +412,7 @@ class ChatInput extends Component {
 		return (
 			<FocusLock>
 				<form onSubmit={this._handleSubmit}>
-					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} autoFocus={true}></input>
+					<input className='chat-message' type="text" value={this.state.value} onChange={this._handleChange} maxLength={config.chat.maxLength} autoFocus={true}></input>
 				</form>
 			</FocusLock>
 		);
@@ -376,14 +428,23 @@ class ChatInput extends Component {
 		// TODO: sanitize input if not already handled natively by react
 		if (text) {
 			console.log('text:', text)
-			this.props.handleMsg({
+
+			let message = {
 				msg: text,
-				sender: 'AnonPig'
-			});
+				sender: this.props.client
+			}
+
+			if (this.props.room) {
+				this.props.room.send('chatMsg', message);
+			} else {
+				this.props.handleMsg(message);
+			}
+
 			this._clear();
 		} else {
-			this.props.handleCloseChat();
+			// this.props.handleCloseChat();
 		}
+		this.props.handleCloseChat();
 	}
 
 	_clear() {

@@ -15,23 +15,6 @@ class EventHandler {
 		});
 	}
 
-	// defineKeyboardEvent(eventName, triggerKeys) {
-	// 	this.defineCustomEvent(eventName, (event) => {
-	// 		this.triggerByKey(event);
-	// 	}, 'keydown');
-
-	// 	triggerKeys.forEach(key => {
-	// 		this._bindKey(key, eventName);
-	// 	});
-	// }
-
-	// defineCustomEvent(eventName, f, parentEventName) {
-	// 	this._customEvents[eventName] = f;
-	// 	this.addEventListener(parentEventName, (e) => {
-
-	// 	});
-	// }
-
 	_bindKey(key, eventName) {
 		let binds = this._keyBinds[key];
 		if (!binds) {

@@ -5,32 +5,32 @@ const Models = {
 	SCALE_FACTOR: 5,
 	directory: "../models/",
 	modelData: {
-		pawn: {
+		Pawn: {
 			fileName: 'Pawn.model.glb',
 			rotation: new THREE.Vector3(0, 0, 0),
 			geometry: null
 		},
-		rook: {
+		Rook: {
 			fileName: 'Rook.model.glb',
 			rotation: new THREE.Vector3(0, -90, 0),
 			geometry: null
 		},
-		bishop: {
+		Bishop: {
 			fileName: 'Bishop.model.glb',
 			rotation: new THREE.Vector3(0, -90, 0),
 			geometry: null
 		},
-		knight: {
+		Knight: {
 			fileName: 'Knight.model.glb',
 			rotation: new THREE.Vector3(0, 90, 0),
 			geometry: null
 		},
-		queen: {
+		Queen: {
 			fileName: 'Queen.model.glb',
 			rotation: new THREE.Vector3(0, 0, 0),
 			geometry: null	
 		},
-		king: {
+		King: {
 			fileName: 'King.model.glb',
 			rotation: new THREE.Vector3(0, 0, 0),
 			geometry: null
