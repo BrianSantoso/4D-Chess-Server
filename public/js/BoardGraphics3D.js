@@ -5,6 +5,7 @@ import { debugSphere, rotateObject, checkerboard4D } from "./Utils3D.js";
 import Models from "./Models.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
+import Piece from "./Piece.js";
 
 // TODO: update graphics hierarchy
 // BoardGrahpics
@@ -74,14 +75,18 @@ class BoardGraphics3D extends BoardGrahpics {
 
 	idToMesh(id) {
 		let mesh = this._idToMesh.get(id);
-		// if (!mesh) {
-		// 	this._spawnMeshFromPiece(piece, 0);
-		// 	mesh = this._pieceToMesh.get(piece);
-		// }
+		if (!mesh) {
+			let piece = this.idToPiece(id);
+			this._spawnMeshFromPiece(piece, 0);
+			mesh = this._idToMesh.get(id);
+		}
 		return mesh;
 	}
 
 	idToPiece(id) {
+		if (id === undefined) {
+			return new Piece();
+		}
 		return this._idToPiece.get(id);
 	}
 	
@@ -149,7 +154,6 @@ class BoardGraphics3D extends BoardGrahpics {
 		mesh.piece = pieceObj.id;
 		
 		this._idToMesh.set(pieceObj.id, mesh);
-		this._idToPiece.set(pieceObj.id, pieceObj);
 		
 		if (frames) {
 			return this._grow(mesh, frames);
@@ -161,20 +165,22 @@ class BoardGraphics3D extends BoardGrahpics {
 	}
 	
 	_spawnGhostMesh(id, move, preview) {
+		// TODO: id is not needed, just move?
 		let pieceObj = this.idToPiece(id);
+		let capturedPiece = this.idToPiece(move.capturedPieceId);
 		let pos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 		let team = pieceObj.team;
 		let type = pieceObj.type;
-		if (!move.capturedPiece.isEmpty()) {
-			team = move.capturedPiece.team;
-			type = move.capturedPiece.type;
+		if (!capturedPiece.isEmpty()) {
+			team = capturedPiece.team;
+			type = capturedPiece.type;
 		}
 		
 		let material; // TODO: implement some sort of materials scheme. this is kind of messy
 		if (preview) {
-			material = move.capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
+			material = capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
 		} else {
-			material = move.capturedPiece.isEmpty() ? 'green' : 'orange';
+			material = capturedPiece.isEmpty() ? 'green' : 'orange';
 		}
 		
 		let scale = move.isCapture() ? 1 : 1;
@@ -191,7 +197,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		return mesh;
 	}
 	
-	spawnPieces(pieces) {
+	spawnPieces(pieces, allPieces) {
 		this._container.remove(this._pieces);
 		this._pieces = new THREE.Group();
 		this._white = new THREE.Group();
@@ -206,7 +212,10 @@ class BoardGraphics3D extends BoardGrahpics {
 		pieces.flat(3).forEach(pieceObj => {
 			this._spawnMeshFromPiece(pieceObj);
 		});
-		
+
+		allPieces.forEach(pieceObj => {
+			this._idToPiece.set(pieceObj.id, pieceObj);
+		});
 		
 		this._container.add(this._pieces);
 	}
@@ -353,10 +362,10 @@ class BoardGraphics3D extends BoardGrahpics {
 		this._disableInteraction();
 		
 		if (frames) {
-			let mesh = this.idToMesh(move.piece.id);
+			let mesh = this.idToMesh(move.pieceId);
 			let startPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
 			let endPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
-			let capturedMesh = this.idToMesh(move.capturedPiece.id);
+			let capturedMesh = this.idToMesh(move.capturedPieceId);
 			
 			let movingPieceProm = this._translate(mesh, frames, startPos, endPos)
 				.then(() => {
@@ -383,8 +392,8 @@ class BoardGraphics3D extends BoardGrahpics {
 			moveAnimationProm = Promise.all([movingPieceProm, capturedPieceProm]);
 			
 		} else {
-			let mesh = this.idToMesh(move.piece.id);
-			let capturedMesh = this.idToMesh(move.capturedPiece.id);
+			let mesh = this.idToMesh(move.pieceId);
+			let capturedMesh = this.idToMesh(move.capturedPieceId);
 
 			let newPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 			mesh.position.set(newPos.x, newPos.y, newPos.z);
@@ -415,7 +424,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		let undoAnimationProm;
 		this._disableInteraction();
 		if (frames) {
-			let mover = this.idToMesh(move.piece.id);
+			let mover = this.idToMesh(move.pieceId);
 			let startPos = this.to3D(move.x1, move.y1, move.z1, move.w1);
 			let endPos = this.to3D(move.x0, move.y0, move.z0, move.w0);
 			let restoringMoverProm = Promise.resolve();
@@ -434,7 +443,7 @@ class BoardGraphics3D extends BoardGrahpics {
 				let translateProm = this._translate(mover, frames, startPos, endPos);
 				let capturedGrowProm = Promise.resolve();
 				if (move.isCapture()) {
-					let capturedMesh = this.idToMesh(move.capturedPiece.id);
+					let capturedMesh = this.idToMesh(move.capturedPieceId);
 					capturedGrowProm = this._grow(capturedMesh, frames);
 				}
 				return Promise.all([translateProm, capturedGrowProm]);

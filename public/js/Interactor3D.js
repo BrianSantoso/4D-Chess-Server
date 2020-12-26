@@ -176,7 +176,7 @@ class Interactor3D {
 }
 
 Interactor3D.isPiece = function(mesh) {
-	return mesh && typeof mesh.piece === 'number';
+	return mesh && typeof mesh.piece !== undefined;
 }
 	
 Interactor3D.isGhost = function(mesh) {
@@ -284,8 +284,8 @@ class Interactor3DWorker {
 		return this._parent.boardGraphics();
 	}
 	
-	_getPossibleMoves(piece, legalOnly=true) {
-		return this._parent.getPossibleMoves(piece, legalOnly);
+	_getPossibleMoves(pieceId, legalOnly=true) {
+		return this._parent.getPossibleMoves(pieceId, legalOnly);
 	}
 	
 	_showPossibleMoves(mesh, preview=false) {

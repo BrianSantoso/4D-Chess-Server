@@ -64,7 +64,7 @@ class ClientGameManager extends GameManager {
 		}
 		
 		// TODO: Is this structure okay to assume since this is a 3D game manager?
-		game._boardGraphics.spawnPieces(game._board.getPieces());
+		game._boardGraphics.spawnPieces(game._board.getPieces(), game._board.allPieces());
 		this._view3D.add(game._boardGraphics.view3D());
 		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
 		
@@ -110,6 +110,8 @@ class ClientGameManager extends GameManager {
 			player.unselect();
 		});
 		super.undo();
+
+		// console.log(JSON.stringify(this._game))
 	}
 
 	redo() {

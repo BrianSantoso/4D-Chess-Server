@@ -22,6 +22,10 @@ class GameBoard {
 		return this._pieces;
 	}
 
+	allPieces() {
+		return this._allPieces;
+	}
+
 	spawn(x, y, z, w, piece) {
 		piece.assignId(this._allPieces.length);
 		this._allPieces.push(piece);
@@ -34,8 +38,8 @@ class GameBoard {
 	}
 
 	undoMove(move) {
-		let piece = this.getById(move.piece.id);
-		let capturedPiece = this.getById(move.capturedPiece.id);
+		let piece = this.getById(move.pieceId);
+		let capturedPiece = this.getById(move.capturedPieceId);
 		this.set(move.x0, move.y0, move.z0, move.w0, piece);
 		this.set(move.x1, move.y1, move.z1, move.w1, capturedPiece);
 		if (move.isFirstMove) {
@@ -44,7 +48,7 @@ class GameBoard {
 	}
 
 	redoMove(move) {
-		let piece = this.getById(move.piece.id);
+		let piece = this.getById(move.pieceId);
 		// check for pawn promotion
 		if (move.promotionNew) {
 			let promotionNew = this.getById(move.promotionNew.id);
@@ -60,12 +64,12 @@ class GameBoard {
 	}
 	
 	makeMove(move) {
-		let piece = this.getById(move.piece.id);
+		let piece = this.getById(move.pieceId);
 		// check for pawn promotion
 		if (move.promotionNew) {
 			this.spawn(move.x1, move.y1, move.z1, move.w1, move.promotionNew);
 		} else {
-			let piece = this.getById(move.piece.id);
+			let piece = this.getById(move.pieceId);
 			this.set(move.x1, move.y1, move.z1, move.w1, piece);
 		}
 
@@ -135,7 +139,10 @@ class GameBoard {
 			// (getLegalMoves -> isLegal -> inCheck)
 			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, false, true);
 			let attacks = moves.filter(move => move.isCapture());
-			return attacks.some(move => move.capturedPiece === king);
+			return attacks.some(move => {
+				let capturedPiece = this.getById(move.capturedPieceId);
+				return capturedPiece === king
+			});
 		}
 		let predicate = (piece) => oppositeTeam(piece) && attacksKing(piece);
 		
@@ -160,20 +167,25 @@ class GameBoard {
 	
 	isLegal(move) {
 		// Simulate move
-		let temp = this.get(move.x1, move.y1, move.z1, move.w1, move.piece);
-		this.set(move.x1, move.y1, move.z1, move.w1, move.piece);
+		let piece = this.getById(move.pieceId);
+		
+		let temp = this.get(move.x1, move.y1, move.z1, move.w1, piece);
+		this.set(move.x1, move.y1, move.z1, move.w1, piece);
 		this.set(move.x0, move.y0, move.z0, move.w0, new Piece())
 		
-		let attackers = this.inCheck(move.piece.team);
+		let attackers = this.inCheck(piece.team);
 		
 		// Return board to its original state
 		this.set(move.x1, move.y1, move.z1, move.w1, temp);
-		this.set(move.x0, move.y0, move.z0, move.w0, move.piece);
+		this.set(move.x0, move.y0, move.z0, move.w0, piece);
 		
 		return attackers;
 	}
 
 	getById(id) {
+		if (id === undefined) {
+			return new Piece();
+		}
 		return this._allPieces[id];
 	}
 	
@@ -229,13 +241,13 @@ class GameBoard {
 
 			if (isCapture) {
 				let potentialMove = new Move(startX, startY, startZ, startW, 
-									x, y, z, w, originPiece, target, 
+									x, y, z, w, originPiece.id, target.id, 
 									promotionNew, isFirstMove);
 				moves.push(potentialMove);
 				break;
 			} else if(normalMove) {
 				let potentialMove = new Move(startX, startY, startZ, startW, 
-									x, y, z, w, originPiece, target, 
+									x, y, z, w, originPiece.id, target.id, 
 									promotionNew, isFirstMove);
 				moves.push(potentialMove);
 			} else if (obstructed) {
@@ -329,8 +341,11 @@ GameBoard.revive = (fields) => {
 		}
 	}
 
+	let _allPieces = fields._allPieces.map(Piece.revive);
+
 	return Object.assign(new GameBoard(), fields, {
-		_pieces: _pieces
+		_pieces: _pieces,
+		_allPieces: _allPieces
 	});
 };
 

@@ -2,7 +2,7 @@ import { isEqual } from 'lodash';
 import Piece from './Piece';
 
 class Move {
-	constructor(x0, y0, z0, w0, x1, y1, z1, w1, piece, capturedPiece, promotionNew, isFirstMove) {
+	constructor(x0, y0, z0, w0, x1, y1, z1, w1, pieceId, capturedPieceId, promotionNew, isFirstMove) {
 		this.x0 = x0;
 		this.y0 = y0;
 		this.z0 = z0;
@@ -11,10 +11,10 @@ class Move {
 		this.y1 = y1;
 		this.z1 = z1;
 		this.w1 = w1;
-		this.piece = piece;
-		this.capturedPiece = capturedPiece;
+		this.pieceId = pieceId;
+		this.capturedPieceId = capturedPieceId;
 		this.promotionNew = promotionNew;
-		this.promotionOld = piece;
+		this.promotionOldId = pieceId;
 		this.isFirstMove = isFirstMove; // Whether move is first move for a piece
 		// Should status be handled separately by movehistory?
 		// this.oldBoardStatus;
@@ -22,7 +22,7 @@ class Move {
 	}
 	
 	isCapture() {
-		return !this.capturedPiece.isEmpty();
+		return this.capturedPieceId !== undefined;
 	}
 
 	destinationIs(x1, y1, z1, w1) {
