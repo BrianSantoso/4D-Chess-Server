@@ -93,7 +93,11 @@ class BoardGraphics3D extends BoardGrahpics {
 	update() {
 		this._animator.update();
 	}
-	
+
+	canInteract() {
+		return this._canInteract;
+	}
+
 	_disableInteraction() {
 		this._canInteract = false;
 	}
@@ -326,7 +330,7 @@ class BoardGraphics3D extends BoardGrahpics {
 	
 	rayCast(rayCaster, targetTeam=ChessTeam.OMNISCIENT) {
 		
-		if (!this._canInteract) {
+		if (!this.canInteract()) {
 			return null;
 		}
 		
@@ -431,6 +435,11 @@ class BoardGraphics3D extends BoardGrahpics {
 			if (move.promotionNew) {
 				// If the original piece was promoted, then we need to get it back
 				// and remove the promoted mesh
+
+				// Fix to issue: https://github.com/BrianSantoso/4D-Chess-Server/issues/9
+				mover.position.set(startPos.x, startPos.y, startPos.z);
+				mover.scale.set(0, 0, 0);
+				
 				let promotedMesh = this.idToMesh(move.promotionNew.id);
 				restoringMoverProm = this._shrink(promotedMesh, config.animFrames.shrinkGrow)
 					.then(() => {

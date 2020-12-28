@@ -11,13 +11,17 @@ class MoveHistory {
         // Chop off future
         this._moves.splice(this._index + 1);
         // New future
+        this.addToEnd(move, status, allPossibleMoves);
+        this._index += 1;
+        console.log(this._moves);
+    }
+
+    addToEnd(move, status, allPossibleMoves) {
         this._moves.push({
             move: move,
             status: status,
             allPossibleMoves: allPossibleMoves
         });
-        this._index += 1;
-        console.log(this._moves);
     }
 
     undo() {
@@ -60,6 +64,10 @@ class MoveHistory {
     atLast() {
         // NOTE: Will return true if length is 0, index is -1
         return this._index === this.length() - 1;
+    }
+
+    browsing() {
+        return !this.atLast();
     }
 
     atOrigin() {

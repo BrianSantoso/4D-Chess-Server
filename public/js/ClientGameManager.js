@@ -1,8 +1,9 @@
 import GameManager from "./GameManager.js";
 import config from "./config.json";
 import BoardGraphics3D from "./BoardGraphics3D.js";
-import { Player3D } from "./ChessPlayer.js";
+import { LocalPlayer3D, OnlinePlayer3D, Spectator3D } from "./ChessPlayer.js";
 import ChessTeam from "./ChessTeam.js";
+import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 import View2D from "./View2D.jsx";
@@ -45,6 +46,7 @@ class ClientGameManager extends GameManager {
 			this.makeMove(move);
 		});
 
+		// TODO: change to gameAssignment
 		room.onMessage('chessGame', (jsonData) => {
 			console.log('received chessGame')
 			this.loadFrom(jsonData);
@@ -52,6 +54,10 @@ class ClientGameManager extends GameManager {
 
 		this._room = room;
 		this._view2D.setRoom(room);
+
+		if (this._game) {
+			this._game.setRoom(room);
+		}
 	}
 
 	setGame(game) {
@@ -88,11 +94,12 @@ class ClientGameManager extends GameManager {
         let defaultOptions = {
 			dim: config.dims.standard,
 			BoardGraphics: BoardGraphics3D,
-			WhitePlayer: Player3D,
-			BlackPlayer: Player3D
+			WhitePlayer: OnlinePlayer3D, // TODO: configure players dynamically
+			BlackPlayer: OnlinePlayer3D
 		}
         options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
+		game.setRoom(this._room);
 		game.getPlayers().forEach(player => {
 			if (player.needsRayCaster()) {
 				player.setRayCaster(this._view3D.getRayCaster());

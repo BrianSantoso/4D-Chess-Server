@@ -4,7 +4,8 @@ import http from 'http';
 
 import ChessRoom from './js/ChessRoom.js'
 import config from './public/js/config.json';
-import { MoveReceiverTransmitter } from './public/js/ChessPlayer.js';
+import { ChessMode } from './public/js/ChessGame.js';
+import { DummyPlayer } from './public/js/ChessPlayer.js';
 import BoardGraphics from './public/js/BoardGraphics.js';
 
 class ServerInstance {
@@ -25,10 +26,11 @@ class ServerInstance {
 
     defineRooms() {
         let standardOptions = {
+            mode: ChessMode.ONLINE_MULTIPLAYER,
             dim: config.dims.standard,
             BoardGraphics: BoardGraphics, // empty BoardGraphics
-            WhitePlayer: MoveReceiverTransmitter,
-            BlackPlayer: MoveReceiverTransmitter
+            WhitePlayer: DummyPlayer,
+            BlackPlayer: DummyPlayer
         }
         this.gameServer.define('standard', ChessRoom, standardOptions);
     }

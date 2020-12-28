@@ -38,6 +38,10 @@ class BoardGraphics {
 	explainAll(attackers) {
 
 	}
+
+	canInteract() {
+		return true;
+	}
 }
 
 export default BoardGraphics;
