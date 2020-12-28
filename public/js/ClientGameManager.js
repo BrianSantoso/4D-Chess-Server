@@ -1,7 +1,7 @@
 import GameManager from "./GameManager.js";
 import config from "./config.json";
 import BoardGraphics3D from "./BoardGraphics3D.js";
-import { Player3D, OnlinePlayer3D } from "./ChessPlayer.js";
+import { LocalPlayer3D, OnlinePlayer3D, Spectator3D } from "./ChessPlayer.js";
 import ChessTeam from "./ChessTeam.js";
 import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
@@ -94,7 +94,7 @@ class ClientGameManager extends GameManager {
         let defaultOptions = {
 			dim: config.dims.standard,
 			BoardGraphics: BoardGraphics3D,
-			WhitePlayer: OnlinePlayer3D,
+			WhitePlayer: OnlinePlayer3D, // TODO: configure players dynamically
 			BlackPlayer: OnlinePlayer3D
 		}
         options = Object.assign(defaultOptions, options);

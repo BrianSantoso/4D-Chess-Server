@@ -7,30 +7,25 @@ class ChessGame {
 	constructor() {
 		// We want to leave some fields undefined because if we create a ChessGame without
 		// assigning Players, GameBoard, BoardGraphics, those undefined fields will not
-		// override a templated (A game with those aforementioned fields specified) 
-		// game's config
+		// override a templated game's (A game with those aforementioned fields specified) 
+		// config when merging via Object.assign(template, gameWithSomeEmptyFields)
+		this._mode;
 		this._board;
 		this._white;
 		this._black;
 		this._boardGraphics;
 		this._turn = ChessTeam.WHITE;
-		// Why not just have subclasses of GameBoard override rules
-		// for custom gamemodes (freeplay, etc.)?
-		// A: May want to switch game modes once game ends.
-		// this._mode = null;
+
 		this._moveHistory = new MoveHistory();
 		this._allPossibleMoves;
 		this._status;
 
-
 		this._room;
-		// if (this._board.initialized()) {
-		// 	this.status(); // computes board status and allPossibleMoves
-		// }
 	}
 
 	toJSON() {
 		return {
+			_mode: this._mode,
 			_board: this._board,
 			_turn: this._turn,
 			_moveHistory: this._moveHistory,
@@ -131,27 +126,11 @@ class ChessGame {
 	}
 	
 	makeMove(move) {
-		if (this.isGameOver()) {
-			return;
-		}
-		
-		this._board.makeMove(move); // update state
-		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
-		
-		this._clearStatus(); // reset gameover status
-		let status = this.status(); // recalculate status
-		this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
-
-		// implicitly recalculates status if needed
-		if (this.isGameOver()) {
-
-		} else {
-			this._switchTurns();
-		}
+		this._mode.makeMove.call(this, move);
 	}
 
 	redo() {
-		if (!this._boardGraphics._canInteract) {
+		if (!this._boardGraphics.canInteract()) {
 			// Temporary fix. Make animator able to queue items
 			return;
 		}
@@ -162,14 +141,25 @@ class ChessGame {
 			let allPossibleMovesToRestore = redoData.allPossibleMoves;
 			this._board.redoMove(moveToRedo);
 			this._boardGraphics.makeMove(moveToRedo, config.animFrames.move);
-			this._status = statusToRestore;
-			this._allPossibleMoves = allPossibleMovesToRestore;
+
+			if (statusToRestore && allPossibleMovesToRestore) {
+				// if memoized info is availlable, used that, otherwise compute manually
+				// TODO: potential for bugs
+				this._status = statusToRestore;
+				this._allPossibleMoves = allPossibleMovesToRestore;
+			} else {
+				this._clearStatus();
+				this.status();
+				redoData.status = this._status;
+				redoData.allPossibleMoves = this._allPossibleMoves;
+			}
+			
 			this._switchTurns();
 		}
 	}
 
 	undo() {
-		if (!this._boardGraphics._canInteract) {
+		if (!this._boardGraphics.canInteract()) {
 			// Temporary fix. Make animator able to queue items
 			return;
 		}
@@ -180,16 +170,21 @@ class ChessGame {
 			let allPossibleMovesToRestore = undoData.allPossibleMoves;
 			this._board.undoMove(moveToUndo);
 			this._boardGraphics.undoMove(moveToUndo, config.animFrames.move);
-			this._status = statusToRestore;
-			this._allPossibleMoves = allPossibleMovesToRestore;
+
+			if (statusToRestore && allPossibleMovesToRestore) {
+				// if memoized info is availlable, used that, otherwise compute manually
+				// TODO: potential for bugs
+				this._status = statusToRestore;
+				this._allPossibleMoves = allPossibleMovesToRestore;
+			} else {
+				this._clearStatus();
+				this.status();
+				undoData.status = this._status;
+				undoData.allPossibleMoves = this._allPossibleMoves;
+			}
+
 			this._switchTurns();
-		} else {
-			
 		}
-	}
-	
-	assignRoles() {
-		
 	}
 	
 	getPossibleMoves(id, legalOnly=true) {
@@ -219,20 +214,12 @@ class ChessGame {
 	update() {
 		this._getCurrentPlayer().update(); // TODO: separate into keyInputs and update?
 		this._boardGraphics.update();
-//		this.getPlayers().forEach(player => {
-//			player.update(); // Query players for a move
-//		});
-//		this._getCurrentPlayer().update();
 	}
 	
 	currTurn() {
 		return this._turn;
 	}
 
-	// restoreFrom(fields) {
-	// 	Object.assign(this, ChessGame.revive(fields));
-	// 	this.allPossibleMoves();
-	// }
 	view3D() {
 		return this._boardGraphics.view3D();
 	}
@@ -243,6 +230,10 @@ class ChessGame {
 
 	sendMessage(type, message) {
 		this._room.send(type, message);
+	}
+
+	setMode(mode) {
+		this._mode = mode;
 	}
 }
 
@@ -260,11 +251,13 @@ ChessGame.create = (options) => {
 	game.setWhite(white);
 	game.setBlack(black);
 	
+	game.setMode(options.mode);
 	return game;
 };
 
 ChessGame.revive = (fields) => {
 	return Object.assign(new ChessGame(), fields, {
+		_mode: ChessMode.revive(fields._mode),
 		_board: GameBoard.revive(fields._board),
 		_turn: ChessTeam.revive(fields._turn),
 		_moveHistory: MoveHistory.revive(fields._moveHistory),
@@ -272,4 +265,63 @@ ChessGame.revive = (fields) => {
 	});
 };
 
+class ChessMode {
+	constructor(type, makeMove) {
+		this.type = type;
+		this.makeMove = makeMove;
+	}
+
+	toJSON() {
+		return this.type;
+	}
+}
+
+ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', function(move) {
+	if (this.isGameOver()) {
+		return;
+	}
+	
+	this._board.makeMove(move); // update state
+	this._boardGraphics.makeMove(move, config.animFrames.move); // animate
+	
+	this._clearStatus(); // reset gameover status
+	let status = this.status(); // recalculate status
+	this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
+
+	// implicitly recalculates status if needed
+	if (this.isGameOver()) {
+
+	} else {
+		this._switchTurns();
+	}
+});
+
+ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', function(move) {
+	if (this.isGameOver()) {
+		return;
+	}
+	
+	if (this._moveHistory.atLast()) {
+		this._board.makeMove(move); // update state
+		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
+		this._clearStatus(); // reset gameover status
+		let status = this.status(); // recalculate status
+		this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
+		// implicitly recalculates status if needed
+		if (this.isGameOver()) {
+
+		} else {
+			this._switchTurns();
+		}
+	} else {
+		// TODO: status and allPossibleMoves will not be memoized
+		this._moveHistory.addToEnd(move); // add to history
+	}
+});
+
+ChessMode.revive = (type) => {
+    return ChessMode[type];
+};
+
 export default ChessGame;
+export { ChessMode };

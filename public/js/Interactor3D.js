@@ -1,11 +1,10 @@
+import { AbstractReceiver3D } from "./Receiver.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
 
-class Interactor3D {
+class Interactor3D extends AbstractReceiver3D {
 	constructor(team, chessGame, player, rayCaster) {
-		this._team = team;
-		this._game = chessGame;
-		this._player = player;
+		super(team, chessGame, player);
 		this._rayCaster = rayCaster;
 		
 		this._movePreviewer = new MovePreviewer(this, ChessTeam.OMNISCIENT);
@@ -120,6 +119,14 @@ class Interactor3D {
 		this._pieceSelector.setSelected(null);
 		this._pieceSelector.showMovesFor(null);
 		this._pieceSelector.highlight(null);
+	}
+
+	needsRayCaster() {
+		return true;
+	}
+	
+	needsClickEvent() {
+		return true;
 	}
 	
 	setRayCaster(rayCaster) {

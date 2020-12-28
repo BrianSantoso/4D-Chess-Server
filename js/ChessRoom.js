@@ -8,6 +8,7 @@ class ChessRoom extends Room {
     onCreate (options) {
 
         this.onMessage('chatMsg', (client, message) => {
+            // TODO: rate limit messages and filter for spam/abuse
             this.broadcast("chatMsg", message);
         });
 
@@ -16,6 +17,8 @@ class ChessRoom extends Room {
             let move = Move.revive(message);
             // TODO: move validation
             this._gameManager.makeMove(move);
+
+            // TODO: move broadcast inside of Player?
             this.broadcast('move', move, { except: client });
         })
 

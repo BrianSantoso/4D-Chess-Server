@@ -1,4 +1,4 @@
-class Transmitter {
+class AbstractTransmitter {
     constructor(team, game, player) {
         this._team = team;
         this._game = game;
@@ -6,11 +6,17 @@ class Transmitter {
     }
 
     makeMove(move) {
+        
+    }
+}
+
+class LocalTransmitter extends AbstractTransmitter {
+    makeMove(move) {
         this._game.makeMove(move);
     }
 }
 
-class OnlineTransmitter extends Transmitter {
+class OnlineTransmitter extends LocalTransmitter {
     constructor(team, game, player) {
         super(team, game, player);
     }
@@ -21,5 +27,4 @@ class OnlineTransmitter extends Transmitter {
     }
 }
 
-export default Transmitter;
-export { OnlineTransmitter };
+export { AbstractTransmitter, LocalTransmitter, OnlineTransmitter };

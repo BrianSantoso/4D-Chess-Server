@@ -93,7 +93,11 @@ class BoardGraphics3D extends BoardGrahpics {
 	update() {
 		this._animator.update();
 	}
-	
+
+	canInteract() {
+		return this._canInteract;
+	}
+
 	_disableInteraction() {
 		this._canInteract = false;
 	}
@@ -326,7 +330,7 @@ class BoardGraphics3D extends BoardGrahpics {
 	
 	rayCast(rayCaster, targetTeam=ChessTeam.OMNISCIENT) {
 		
-		if (!this._canInteract) {
+		if (!this.canInteract()) {
 			return null;
 		}
 		
