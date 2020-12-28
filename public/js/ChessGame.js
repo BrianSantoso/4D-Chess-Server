@@ -3,7 +3,7 @@ import MoveHistory from "./MoveHistory.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
 
-class ChessGame {	
+class ChessGame {
 	constructor() {
 		// We want to leave some fields undefined because if we create a ChessGame without
 		// assigning Players, GameBoard, BoardGraphics, those undefined fields will not
@@ -22,6 +22,8 @@ class ChessGame {
 		this._allPossibleMoves;
 		this._status;
 
+
+		this._room;
 		// if (this._board.initialized()) {
 		// 	this.status(); // computes board status and allPossibleMoves
 		// }
@@ -180,8 +182,6 @@ class ChessGame {
 			this._boardGraphics.undoMove(moveToUndo, config.animFrames.move);
 			this._status = statusToRestore;
 			this._allPossibleMoves = allPossibleMovesToRestore;
-			// this._clearStatus(); // reset gameover status
-			// this.status();
 			this._switchTurns();
 		} else {
 			
@@ -235,6 +235,14 @@ class ChessGame {
 	// }
 	view3D() {
 		return this._boardGraphics.view3D();
+	}
+
+	setRoom(room) {
+		this._room = room;
+	}
+
+	sendMessage(type, message) {
+		this._room.send(type, message);
 	}
 }
 

@@ -1,4 +1,5 @@
 import Interactor3D from "./Interactor3D.js"
+import Transmitter, { OnlineTransmitter } from "./Transmitter.js"
 
 class ChessPlayer {
 	// A ChessGame controller. Defines what method is used to receive moves
@@ -12,21 +13,20 @@ class ChessPlayer {
 	constructor(team, chessGame) {
 		this._team = team;
 		this._game = chessGame;
-		this._commandQueue = [];
+
+		this._transmitter;
+		this._receiver;
 	}
 	
 	makeMove(move) {
-		this._game.makeMove(move);
+		// this._game.makeMove(move);
+		this._transmitter.makeMove(move);
 	}
 	
 	update() {
 		// query interactors for moves
-		this._interactor.update();
-		let move = this._commandQueue.shift();
-		// TODO: Command objects, send command to server for confirmation
-		if (move) {
-			this.makeMove(move);
-		}
+		this._receiver.update();
+		// TODO: Command objects, send command to server for validation
 	}
 	
 	setBoardGraphics(boardGraphics) {
@@ -49,15 +49,16 @@ class Player3D extends ChessPlayer {
 	// has a BoardGraphics3D is a compromise I am willing to make for simplicity.
 	constructor(team, chessGame) {
 		super(team, chessGame);
-		this._interactor = new Interactor3D(team, chessGame, this._commandQueue);
+		this._receiver = new Interactor3D(team, chessGame, this);
+		this._transmitter = new Transmitter(team, chessGame, this);
 	}
 
 	unselect() {
-		this._interactor.unselect();
+		this._receiver.unselect();
 	}
 	
 	setRayCaster(rayCaster) {
-		this._interactor.setRayCaster(rayCaster);
+		this._receiver.setRayCaster(rayCaster);
 	}
 	
 	needsRayCaster() {
@@ -69,19 +70,18 @@ class Player3D extends ChessPlayer {
 	}
 	
 	intentionalClick(event) {
-		this._interactor.intentionalClick(event);
+		this._receiver.intentionalClick(event);
 	}
 }
 
 class OnlinePlayer3D extends Player3D {
-	
+	constructor(team, chessGame) {
+		super(team, chessGame);
+		this._transmitter = new OnlineTransmitter(team, chessGame, this);
+	}
 }
 
-class MoveReceiver extends ChessPlayer /* implements Receiver */ {
-	
-}
-
-class MoveReceiverTransmitter extends MoveReceiver /* implements Transmitter */ {
+class MoveReceiverTransmitter extends Player3D {
 	
 }
 
@@ -89,4 +89,4 @@ class AIPlayer extends ChessPlayer {
 	
 }
 
-export { Player3D, MoveReceiverTransmitter }
+export { Player3D, OnlinePlayer3D, MoveReceiverTransmitter }

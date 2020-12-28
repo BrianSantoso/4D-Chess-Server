@@ -2,11 +2,11 @@ import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
 
 class Interactor3D {
-	constructor(team, chessGame, commandQueue, rayCaster) {
+	constructor(team, chessGame, player, rayCaster) {
 		this._team = team;
 		this._game = chessGame;
+		this._player = player;
 		this._rayCaster = rayCaster;
-		this._commandQueue = commandQueue;
 		
 		this._movePreviewer = new MovePreviewer(this, ChessTeam.OMNISCIENT);
 		this._pieceSelector = new PieceSelector(this, team);
@@ -165,8 +165,7 @@ class Interactor3D {
 	}
 	
 	offerMove(move) {
-//		this._commandQueue.push(move);
-		this._game.makeMove(move);
+		this._player.makeMove(move);
 	}
 	
 	_myTurn() {

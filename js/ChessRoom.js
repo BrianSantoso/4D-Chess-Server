@@ -1,17 +1,22 @@
 import colyseus, { Room } from 'colyseus';
 import config from '../public/js/config.json';
+import Move from "../public/js/Move.js";
 import ServerGameManager from './ServerGameManager';
 
 class ChessRoom extends Room {
     // When room is initialized
     onCreate (options) {
 
-        this.onMessage("chatMsg", (client, message) => {
+        this.onMessage('chatMsg', (client, message) => {
             this.broadcast("chatMsg", message);
         });
 
-        this.onMessage("move", (client, message) => {
+        this.onMessage('move', (client, message) => {
             console.log('Move received:', message)
+            let move = Move.revive(message);
+            // TODO: move validation
+            this._gameManager.makeMove(move);
+            this.broadcast('move', move, { except: client });
         })
 
         console.log('Created instance of ChessRoom:', options)

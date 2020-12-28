@@ -57,10 +57,7 @@ Move.hash = (a) => {
 
 Move.revive = (fields) => {
 	return Object.assign(new Move(), fields, {
-		piece: Piece.revive(fields.piece),
-		capturedPiece: Piece.revive(fields.capturedPiece),
-		promotionNew: Piece.revive(fields.promotionNew),
-		promotionOld: Piece.revive(fields.promotionOld),
+		promotionNew: Piece.revive(fields.promotionNew)
 	});
 };
 
