@@ -52,6 +52,9 @@ class ClientGameManager extends GameManager {
 			this.loadFrom(jsonData);
 		});
 
+		if (this._room) {
+			this._room.leave();
+		}
 		this._room = room;
 		this._view2D.setRoom(room);
 

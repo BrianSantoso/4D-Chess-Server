@@ -96,6 +96,12 @@ class ChessGame {
 		return this.board().isLegal(move);
 	}
 
+	isBlocked(pieceToMoveId, pieceToCaptureId) {
+		let pieceToMove = this._board.getById(pieceToMoveId);
+		let pieceToCapture = this._board.getById(pieceToCaptureId);
+		return this.board().isBlocked(pieceToMove, pieceToCapture);
+	}
+
 	_clearStatus() {
 		this._allPossibleMoves = null;
 		this._status = null;
@@ -276,18 +282,10 @@ class ChessMode {
 	}
 }
 
-// ChessMode.NONE = new ChessMode('NONE',
-// 	function update() {
-
-// 	},
-// 	function makeMove(move) {
-
-// 	}
-// );
-
 ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
 	function update() {
-		this._getCurrentPlayer().update(true);
+		let playerCanInteract = true;
+		this._getCurrentPlayer().update(playerCanInteract);
 		this._boardGraphics.update();
 	}, 
 	function makeMove(move) {

@@ -41,6 +41,7 @@ class View2D {
 
 	setRoom(room) {
 		this._room = room;
+		this.draw();
 	}
 	
 	cameraHome() {
@@ -431,7 +432,7 @@ class ChatInput extends Component {
 
 			let message = {
 				msg: text,
-				sender: this.props.client
+				sender: this.props.client // This field is only necessary for local games. Is overwritten by server if online
 			}
 
 			if (this.props.room) {

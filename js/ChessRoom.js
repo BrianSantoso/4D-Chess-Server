@@ -4,13 +4,21 @@ import Move from "../public/js/Move.js";
 import ServerGameManager from './ServerGameManager';
 
 class ChessRoom extends Room {
+    
+    // Wrapper for chatMsg broadcast
+    chatMsg(client, message, options) {
+        // TODO: rate limit messages and filter for spam/abuse
+        if (client) {
+            message.sender = client.id; // TODO: switch to session id
+        }
+        this.broadcast("chatMsg", message, options);
+    }
+
     // When room is initialized
     onCreate (options) {
+        this.chatMsg = this.chatMsg.bind(this);
 
-        this.onMessage('chatMsg', (client, message) => {
-            // TODO: rate limit messages and filter for spam/abuse
-            this.broadcast("chatMsg", message);
-        });
+        this.onMessage('chatMsg', this.chatMsg);
 
         this.onMessage('move', (client, message) => {
             console.log('Move received:', message)
@@ -35,18 +43,18 @@ class ChessRoom extends Room {
 
     // When client successfully join the room
     onJoin (client, options, auth) {
-        this.broadcast('chatMsg', {
+        this.chatMsg(null, {
 			msg: `${client} has joined the room`,
 			style: {
 				color: 'rgb(255, 251, 13)'
 			}
-        });
+        }, options);
         client.send('chessGame', this._gameManager.toJSON());
     }
 
     // When a client leaves the room
     onLeave (client, consented) {
-        this.broadcast('chatMsg', {
+        this.chatMsg(null, {
 			msg: `${client} has left the room`,
 			style: {
 				color: 'rgb(255, 251, 13)'
