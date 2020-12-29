@@ -62,7 +62,6 @@ class Interactor3D extends AbstractReceiver3D {
 				// is that clicking a ghost that is behind of a blockedDestination
 				// will favor the ghost.
 				// The silver lining is that selecting a capture move will always work.
-				console.log('piecetocapture', destination)
 				this._moveExplainer.explainIfBlocked(selectedPiece);
 			}
 			this.unselect();
