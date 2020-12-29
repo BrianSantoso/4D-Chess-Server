@@ -324,7 +324,6 @@ class BoardGraphics3D extends BoardGrahpics {
 		// Fixes issue with transparent board hiding transparent pieces
 		// https://discourse.threejs.org/t/material-transparency-problem/3822
 //		mesh.material.depthWrite = false;
-		console.log(mesh)
 		return mesh;		
 	}
 	

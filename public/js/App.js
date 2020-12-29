@@ -5,7 +5,7 @@ class App {
 	constructor() {
 		this._client = new Colyseus.Client("ws://localhost:3000");
 		this._gameManager = new ClientGameManager(this._client);
-		// TODO: should be gameManager.loadAssets().then()
+		
 		this._gameManager.loadAssets().then(() => {
 			try {
 				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];

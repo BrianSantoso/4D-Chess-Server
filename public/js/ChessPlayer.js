@@ -14,6 +14,7 @@ class AbstractPlayer {
 	constructor(team, game) {
 		this._team = team;
 		this._game = game;
+		this._canInteract = true;
 
 		this._receiver;
 		this._transmitter;
@@ -25,9 +26,12 @@ class AbstractPlayer {
 		this._transmitter.makeMove(move);
 	}
 	
-	update() {
+	update(canInteract) {
+		this._canInteract = canInteract;
 		// query interactors for moves
-		this._receiver.update();
+		if (this._canInteract) {
+			this._receiver.update();
+		}
 	}
 	
 	// setBoardGraphics(boardGraphics) {
@@ -74,7 +78,9 @@ class AbstractPlayer3D extends AbstractPlayer {
 	}
 	
 	intentionalClick(event) {
-		this._receiver.intentionalClick(event);
+		if (this._canInteract) {
+			this._receiver.intentionalClick(event);
+		}
 	}
 }
 

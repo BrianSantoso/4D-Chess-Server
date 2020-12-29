@@ -7,7 +7,7 @@ import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 import View2D from "./View2D.jsx";
-import ChessGame from "./ChessGame.js";
+import ChessGame, { ChessMode } from "./ChessGame.js";
 import games from "./Games.json";
 // import Piece, { Pawn } from "./Piece.js";
 
@@ -92,6 +92,7 @@ class ClientGameManager extends GameManager {
 	
 	createGame(options) {
         let defaultOptions = {
+			// mode: ChessMode.NONE,
 			dim: config.dims.standard,
 			BoardGraphics: BoardGraphics3D,
 			WhitePlayer: OnlinePlayer3D, // TODO: configure players dynamically
