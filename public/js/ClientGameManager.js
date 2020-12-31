@@ -143,9 +143,9 @@ class ClientGameManager extends GameManager {
 		this._view3D.keyInputs();
 	}
 	
-	_update() {
+	_update(step) {
 		if (this._game) {
-			this._game.update();
+			this._game.update(step);
 		}
 		this._view3D.update();
 	}
@@ -174,7 +174,7 @@ class ClientGameManager extends GameManager {
 			// update the simulation until it is caught up to real time
 			while(accumulation >= step){
 				// UPDATE
-				this._update();
+				this._update(step);
 				accumulation -= step;
 			}
 			

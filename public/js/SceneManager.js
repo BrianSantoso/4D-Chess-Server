@@ -107,7 +107,7 @@ class SceneManager {
 		}, false);
 		
 		const notAClick = 0.05;
-		let dragStart = new THREE.Vector2(0, 0); // TODO: Should be infinity vector
+		let dragStart = new THREE.Vector2(Infinity, Infinity); // TODO: Should be infinity vector
 		
 		this._addEventListener('mousemove', (e) => { 
 			this._updateRayCaster(this._mouseCoords(e));

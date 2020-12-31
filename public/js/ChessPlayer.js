@@ -12,8 +12,19 @@ class AbstractPlayer {
 	// on how to make moves
 	
 	constructor(team, game) {
-		this._team = team;
+		// <PlayerInfo 
+		// 	team={ChessTeam.WHITE} 
+		// 	playerName={'You'} 
+		// 	myTurn={true} 
+		// 	time={-1} 
+		// 	elo={2100} 
+		// 	position={'playerInfoLeft'}>
+		// </PlayerInfo>
 		this._game = game;
+		this._team = team;
+		this._name = '???';
+		this._elo = -1;
+		this._time = -1;
 		this._canInteract = true;
 
 		this._receiver;
@@ -26,12 +37,15 @@ class AbstractPlayer {
 		this._transmitter.makeMove(move);
 	}
 	
-	update(canInteract) {
+	update(step, canInteract) {
 		this._canInteract = canInteract;
+		this._time -= step;
 		// query interactors for moves
 		if (this._canInteract) {
 			this._receiver.update();
 		}
+
+		// console.log(this._team, this._time);
 	}
 	
 	// setBoardGraphics(boardGraphics) {

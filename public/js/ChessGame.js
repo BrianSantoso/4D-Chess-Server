@@ -217,8 +217,8 @@ class ChessGame {
 		}
 	}
 	
-	update() {
-		this._mode.update.call(this);
+	update(step) {
+		this._mode.update.call(this, step);
 	}
 	
 	currTurn() {
@@ -283,9 +283,9 @@ class ChessMode {
 }
 
 ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
-	function update() {
+	function update(step) {
 		let playerCanInteract = true;
-		this._getCurrentPlayer().update(playerCanInteract);
+		this._getCurrentPlayer().update(step, playerCanInteract);
 		this._boardGraphics.update();
 	}, 
 	function makeMove(move) {
@@ -310,9 +310,9 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 );
 
 ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', 
-	function update() {
+	function update(step) {
 		let playerCanInteract = this._moveHistory.atLast();
-		this._getCurrentPlayer().update(playerCanInteract); // TODO: determine better way to disable interaction
+		this._getCurrentPlayer().update(step, playerCanInteract); // TODO: determine better way to disable interaction
 		this._boardGraphics.update();
 	},
 	function makeMove(move) {

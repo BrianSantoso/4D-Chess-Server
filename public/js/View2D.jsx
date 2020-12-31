@@ -32,6 +32,16 @@ class View2D {
 
 		this._room = null;
 		this._client = client;
+
+		this._stateHelper = {
+			setStateHandler: (state) => {},
+			onStateChange: function(callback) {
+				this.setStateHandler = callback;
+			},
+			setState: function(state) {
+				this.setStateHandler(state);
+			}
+		};
 	}
 
 	addMsg(message) {
@@ -41,7 +51,13 @@ class View2D {
 
 	setRoom(room) {
 		this._room = room;
-		this.draw();
+		this.setState({
+			room: room
+		})
+	}
+
+	setState(state) {
+		this._stateHelper.setState(state);
 	}
 	
 	cameraHome() {
@@ -58,6 +74,7 @@ class View2D {
 	
 	draw() {
 		// TODO: just call draw method once on load
+
 		ReactDOM.render(
 			(<Overlay 
 				ref={this.root} 
@@ -67,6 +84,7 @@ class View2D {
 				undo={this.undo} 
 				redo={this.redo} 
 				events={this._events}
+				stateHelper={this._stateHelper}
 			/>),
 		document.getElementById('react-root'));
 	}
@@ -79,6 +97,10 @@ class Overlay extends Component {
 
 		// this.messages = [];
 		this.state = {
+			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>,
+			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>,
+			bannerMessages: config.banner.noOpponent,
+			room: this.props.room,
 			messages: [],
 			showing: [],
 			chatOpened: false // chat state is maintained up here so that toggle chat button can toggle chat
@@ -88,14 +110,16 @@ class Overlay extends Component {
 		this.toggleChat = this.toggleChat.bind(this);
 		this.openChat = this.openChat.bind(this);
 		this.closeChat = this.closeChat.bind(this);
+
+		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
 	}
 
 	render() {
 		return (
 			<div className='overlay'>
-				<PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>
-				<StatusBanner messages={config.banner.noOpponent}></StatusBanner>
-				<PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>
+				{this.state.playerLeft}
+				<StatusBanner messages={this.state.bannerMessages}></StatusBanner>
+				{this.state.playerRight}
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
@@ -105,7 +129,7 @@ class Overlay extends Component {
 				</div>
 
 				<Chat 
-					room={this.props.room} 
+					room={this.state.room} 
 					client={this.props.client} 
 					chatOpened={this.state.chatOpened} 
 					handleMsg={this.addMsg} 

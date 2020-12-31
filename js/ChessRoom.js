@@ -9,7 +9,7 @@ class ChessRoom extends Room {
     chatMsg(client, message, options) {
         // TODO: rate limit messages and filter for spam/abuse
         if (client) {
-            message.sender = client.id; // TODO: switch to session id
+            message.sender = client.sessionId;
         }
         this.broadcast("chatMsg", message, options);
     }
@@ -44,7 +44,7 @@ class ChessRoom extends Room {
     // When client successfully join the room
     onJoin (client, options, auth) {
         this.chatMsg(null, {
-			msg: `${client} has joined the room`,
+			msg: `${client.sessionId} has joined the room`,
 			style: {
 				color: 'rgb(255, 251, 13)'
 			}
@@ -55,7 +55,7 @@ class ChessRoom extends Room {
     // When a client leaves the room
     onLeave (client, consented) {
         this.chatMsg(null, {
-			msg: `${client} has left the room`,
+			msg: `${client.sessionId} has left the room`,
 			style: {
 				color: 'rgb(255, 251, 13)'
 			}
