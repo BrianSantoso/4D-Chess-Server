@@ -71,23 +71,6 @@ class View2D {
 	redo() {
 		this._gameManager.redo();
 	}
-	
-	draw() {
-		// TODO: just call draw method once on load
-
-		// ReactDOM.render(
-		// 	(<Overlay 
-		// 		ref={this.root} 
-		// 		room={this._room}
-		// 		client={this._client} 
-		// 		cameraHome={this.cameraHome} 
-		// 		undo={this.undo} 
-		// 		redo={this.redo} 
-		// 		events={this._events}
-		// 		stateHelper={this._stateHelper}
-		// 	/>),
-		// document.getElementById('react-root'));
-	}
 
 	overlay() {
 		return (

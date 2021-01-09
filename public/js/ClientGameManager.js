@@ -9,7 +9,9 @@ import Models from "./Models.js";
 import View2D from "./View2D.jsx";
 import ChessGame, { ChessMode } from "./ChessGame.js";
 import games from "./Games.json";
-// import Piece, { Pawn } from "./Piece.js";
+
+import React, { Component } from "react";
+import * as Colyseus from "colyseus.js";
 
 class ClientGameManager extends GameManager {
 	constructor(client) {
@@ -203,4 +205,37 @@ class ClientGameManager extends GameManager {
 	}
 }
 
-export { ClientGameManager }
+class Embed extends Component {
+	constructor(props) {
+		super(props)
+
+		this._client = new Colyseus.Client("ws://localhost:3000");
+		this._gameManager = new ClientGameManager(this._client);
+		
+		this._gameManager.loadAssets().then(() => {
+			try {
+				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
+				this._gameManager.join(roomId);
+			} catch {
+				console.log('[App] No roomId parameter found');
+				this._gameManager.join('standard');
+			}
+
+			this._gameManager._startLoop();
+		});
+	}
+
+	componentDidMount() {
+		// Mount three.js canvas
+		this._gameManager.mount(this._root);
+	}
+
+	render() {
+		return (
+			<div id="embed" ref={(ref) => (this._root = ref)}>
+				{this._gameManager.overlay()}
+			</div>
+		);
+	}
+}
+export { ClientGameManager, Embed }
