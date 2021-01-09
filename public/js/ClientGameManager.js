@@ -14,14 +14,21 @@ import games from "./Games.json";
 class ClientGameManager extends GameManager {
 	constructor(client) {
 		super();
-		this._domElement = document.getElementById("embed");
+		// this._domElement = document.getElementById("embed");
 		
-		this._view3D = new SceneManager(this._domElement);
+		this._view3D = new SceneManager();
         this._controller = null;
 		this._client = client;
 		this._room = null;
 		this._view2D = new View2D(this, this._client);
-		this._view2D.draw();
+	}
+
+	mount(root) {
+		this._view3D.mount(root);
+	}
+
+	overlay() {
+		return this._view2D.overlay();
 	}
 
 	async join(roomName) {

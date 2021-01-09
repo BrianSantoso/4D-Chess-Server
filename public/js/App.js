@@ -10,7 +10,7 @@ class App extends Component {
 		super(props);
 		this.state = {
 			popup: true
-		}
+		};
 		this._client = new Colyseus.Client("ws://localhost:3000");
 		this._gameManager = new ClientGameManager(this._client);
 		
@@ -27,10 +27,21 @@ class App extends Component {
 		});
 	}
 
+	componentDidMount() {
+		this._gameManager.mount(this.mount);
+	}
+
 	render() {
-		return this.state.popup ? (
-			<Register handleExit={()=>{this.setState({popup: false})}}></Register>
-		) : null;
+		return (
+			<div>
+				<div id="embed" ref={ref => (this.mount = ref)}>
+					{this._gameManager.overlay()}
+				</div>
+			</div>
+		);
+		// return this.state.popup ? (
+		// 	<Register handleExit={()=>{this.setState({popup: false})}}></Register>
+		// ) : null;
 	}
 }
 

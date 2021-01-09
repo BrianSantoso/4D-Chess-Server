@@ -8,8 +8,8 @@ import ChessTeam from "./ChessTeam.js";
 
 class SceneManager {
 	
-	constructor(rootElement) {
-		this._root = rootElement;
+	constructor() {
+		this._root;
 		
 		this._scene = null;
 		this._camera = null;
@@ -17,12 +17,8 @@ class SceneManager {
 		this._rayCaster = null;
 		this._controls = null;
 		this._animator = new Animator();
-		this._initScene();
-		this._initControls();
-		
+
 		this._subscribers = {}
-		
-		this._initEventListeners();
 	}
 	
 	getCamera() {
@@ -48,6 +44,17 @@ class SceneManager {
 			this._subscribers[key].delete(obj);
 		});
 	}
+
+	mount(root) {
+		this._root = root;
+
+		this._initScene();
+		this._initControls();
+		this._initEventListeners();
+
+		this._root.appendChild(this._renderer.domElement);
+		
+	}
 	
 	_initScene() {
 		this._scene = new THREE.Scene();
@@ -56,7 +63,6 @@ class SceneManager {
 		this._renderer = new THREE.WebGLRenderer({antialias: true});
 		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
 		this._renderer.domElement.id = "three-canvas";
-		this._root.appendChild(this._renderer.domElement);
 
 		this._renderer.setClearColor(0xf7f7f7);
 		// Somehow this fixes opacity issues
