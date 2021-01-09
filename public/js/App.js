@@ -1,8 +1,16 @@
+import React, { Component } from "react";
+import ReactDOM from 'react-dom';
 import { ClientGameManager } from "./ClientGameManager.js";
 import * as Colyseus from "colyseus.js";
 
-class App {
-	constructor() {
+import Register from './views/Register.jsx';
+
+class App extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			popup: true
+		}
 		this._client = new Colyseus.Client("ws://localhost:3000");
 		this._gameManager = new ClientGameManager(this._client);
 		
@@ -18,10 +26,17 @@ class App {
 			this._gameManager._startLoop();
 		});
 	}
+
+	render() {
+		return this.state.popup ? (
+			<Register handleExit={()=>{this.setState({popup: false})}}></Register>
+		) : null;
+	}
 }
 
 App.main = function() {
-	let app = new App();
+	// let app = new App();
+	ReactDOM.render(<App></App>, document.getElementById('site-root'));
 }
 
 export default App;

@@ -1,4 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+
+:root {
+    --primary: #f7f7f7;
+    --secondary: #3f3f3f;
+}
 body {
 	margin: 0;
 	font-family: 'Source Code Pro', monospace;

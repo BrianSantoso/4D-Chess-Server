@@ -4,6 +4,7 @@
   "description": "4D Chess",
   "private": true,
   "scripts": {
+    "dbhardreset": "mongo < db/scripts/hardreset.js",
     "dbrestart": "sudo systemctl restart mongod",
     "dbstop": "sudo systemctl stop mongod",
     "dbstatus": "sudo systemctl status mongod",
