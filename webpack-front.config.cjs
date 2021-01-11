@@ -7,6 +7,10 @@ module.exports = {
   output: {
     filename: 'bundle-front.js',
     path: path.resolve(__dirname, 'public', 'build'),
+    publicPath: '/'
+  },
+  devServer: {
+    historyApiFallback: true,
   },
   module: {
     rules: [
@@ -32,7 +36,7 @@ module.exports = {
             },
           },
         ],
-      },
+      }
     ]
   }
 };

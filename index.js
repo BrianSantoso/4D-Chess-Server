@@ -12,8 +12,14 @@ class ServerInstance {
     constructor() {
         this.PORT = process.env.PORT || 3000;
         this.app = express();
-        // app.use(express.json());
+        // this.app.use(express.json());
         this.app.use(express.static('public'));
+        // this.app.get('*', function(req, res) {
+        //     res.sendFile('index.html', {root: './public/'});
+        // });
+        // this.app.get('*', function(req, res) {
+        //     res.sendFile('./public/index.html');
+        // });
 
         this.gameServer = new Server({
             server: http.createServer(this.app)

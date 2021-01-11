@@ -23,6 +23,7 @@
   "license": "ISC",
   "dependencies": {
     "@datastructures-js/priority-queue": "^4.1.1",
+    "bootstrap": "^4.5.3",
     "colyseus": "^0.14.6",
     "colyseus.js": "^0.14.1",
     "express": "^4.17.1",
@@ -31,8 +32,10 @@
     "lodash-es": "^4.17.15",
     "path": "^0.12.7",
     "react": "^16.13.1",
+    "react-bootstrap": "^1.4.3",
     "react-dom": "^16.13.1",
     "react-focus-lock": "^2.5.0",
+    "react-router-dom": "^5.2.0",
     "react-transition-group": "^1.2.1",
     "socket.io": "^2.3.0",
     "three": "^0.118.3",

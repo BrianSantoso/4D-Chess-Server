@@ -1,36 +1,61 @@
 import React, { Component } from "react";
 import ReactDOM from 'react-dom';
+import { HashRouter as Router, Route } from "react-router-dom";
 import { Embed } from "./ClientGameManager.js";
-import Register from './views/Register.jsx';
-import Popup from './views/Popup.jsx';
+import Register from './components/Register.jsx';
+import Login from './components/Login.jsx';
+import Popup from './components/Popup.jsx';
+import ChessNavbar from './components/Navbar.jsx';
+
+import { createBrowserHistory } from "history";
+const history = createBrowserHistory();
 
 class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			popup: true
+			// popup: true
 		};
 
 		this.exitPopup = this.exitPopup.bind(this);
 	}
-	
+
 	exitPopup() {
-		this.setState({popup: false});
+		// this.setState({popup: false});
+		// this.props.history.goBack();
+		console.log(history);
+		history.goBack();
 	}
 
 	render() {
 		return (
-			<div className=''>
+			<Router history={history}>
+				<ChessNavbar />
 				<Embed></Embed>
-				{
-					this.state.popup ? 
+				<Route path="/login">
+					<Popup handleExit={this.exitPopup}>
+						<Login></Login>
+					</Popup>
+				</Route>
+				<Route path="/register">
 					<Popup handleExit={this.exitPopup}>
 						<Register></Register>
 					</Popup>
-					: null 
-				}
-			</div>
+				</Route>
+			</Router>
 		);
+		// return (
+		// 	<div className=''>
+		// 		<Embed></Embed>
+		// 		{
+		// 			this.state.popup ? 
+		// 			<Popup handleExit={this.exitPopup}>
+		// 				<Register></Register>
+		// 			</Popup>
+		// 			: null 
+		// 		}
+		// 	</div>
+		// );
 	}
 }
 

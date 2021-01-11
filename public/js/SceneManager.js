@@ -161,9 +161,12 @@ class SceneManager {
 	_mouseCoords(event) {
 		// calculate mouse position in normalized device coordinates
 		// (-1 to +1) for both components
+		let rect = event.target.getBoundingClientRect();
+		let x = event.clientX - rect.left; //x position within the element.
+		let y = event.clientY - rect.top;  //y position within the element.
 		let mouse = new THREE.Vector2();
-		mouse.x = ( event.clientX / this._root.clientWidth ) * 2 - 1;
-		mouse.y = - ( event.clientY / this._root.clientHeight ) * 2 + 1;
+		mouse.x = ( x / this._root.clientWidth ) * 2 - 1;
+		mouse.y = - ( y / this._root.clientHeight ) * 2 + 1;
 		return mouse;
 	}
 	
