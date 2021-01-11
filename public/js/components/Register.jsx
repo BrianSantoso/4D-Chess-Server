@@ -4,7 +4,7 @@ class Register extends Component {
     render() {
         return (
             <div className="form">
-                <div className='form-header'> Join 4D Chess! </div>
+                <div className='form-header'>Join 4D Chess! It's Free!</div>
                 <input className='form-input' type="text" placeholder="Username" name="uname" required />
                 <input className='form-input' type="text" placeholder="Email" name="email" required />
                 <input className='form-input' type="password" placeholder="Create Password" name="psw" required />

@@ -94,7 +94,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var colyseus__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! colyseus */ \"colyseus\");\n/* harmony import */ var colyseus__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(colyseus__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! express */ \"express\");\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! http */ \"http\");\n/* harmony import */ var http__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(http__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _js_ChessRoom_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./js/ChessRoom.js */ \"./js/ChessRoom.js\");\n/* harmony import */ var _public_js_config_json__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./public/js/config.json */ \"./public/js/config.json\");\nvar _public_js_config_json__WEBPACK_IMPORTED_MODULE_4___namespace = /*#__PURE__*/__webpack_require__.t(/*! ./public/js/config.json */ \"./public/js/config.json\", 1);\n/* harmony import */ var _public_js_ChessGame_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./public/js/ChessGame.js */ \"./public/js/ChessGame.js\");\n/* harmony import */ var _public_js_ChessPlayer_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./public/js/ChessPlayer.js */ \"./public/js/ChessPlayer.js\");\n/* harmony import */ var _public_js_BoardGraphics_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./public/js/BoardGraphics.js */ \"./public/js/BoardGraphics.js\");\n\n\n\n\n\n\n\n\n\n\nclass ServerInstance {\n    constructor() {\n        this.PORT = process.env.PORT || 3000;\n        this.app = express__WEBPACK_IMPORTED_MODULE_1___default()();\n        // this.app.use(express.json());\n        this.app.use(express__WEBPACK_IMPORTED_MODULE_1___default.a.static('public'));\n        // this.app.get('*', function(req, res) {\n        //     res.sendFile('index.html', {root: './public/'});\n        // });\n        // this.app.get('*', function(req, res) {\n        //     res.sendFile('./public/index.html');\n        // });\n\n        this.gameServer = new colyseus__WEBPACK_IMPORTED_MODULE_0__[\"Server\"]({\n            server: http__WEBPACK_IMPORTED_MODULE_2___default.a.createServer(this.app)\n        });\n\n        this.defineRooms();\n\n        this.gameServer.listen(this.PORT);\n    }\n\n    defineRooms() {\n        let standardOptions = {\n            mode: _public_js_ChessGame_js__WEBPACK_IMPORTED_MODULE_5__[\"ChessMode\"].ONLINE_MULTIPLAYER,\n            dim: _public_js_config_json__WEBPACK_IMPORTED_MODULE_4__.dims.standard,\n            BoardGraphics: _public_js_BoardGraphics_js__WEBPACK_IMPORTED_MODULE_7__[\"default\"], // empty BoardGraphics\n            WhitePlayer: _public_js_ChessPlayer_js__WEBPACK_IMPORTED_MODULE_6__[\"DummyPlayer\"],\n            BlackPlayer: _public_js_ChessPlayer_js__WEBPACK_IMPORTED_MODULE_6__[\"DummyPlayer\"]\n        }\n        this.gameServer.define('standard', _js_ChessRoom_js__WEBPACK_IMPORTED_MODULE_3__[\"default\"], standardOptions);\n    }\n}\n\nnew ServerInstance();\n\n//# sourceURL=webpack:///./index.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var colyseus__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! colyseus */ \"colyseus\");\n/* harmony import */ var colyseus__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(colyseus__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! express */ \"express\");\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! http */ \"http\");\n/* harmony import */ var http__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(http__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var mongoose__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mongoose */ \"mongoose\");\n/* harmony import */ var mongoose__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(mongoose__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var dotenv__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! dotenv */ \"dotenv\");\n/* harmony import */ var dotenv__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(dotenv__WEBPACK_IMPORTED_MODULE_4__);\n/* harmony import */ var _js_ChessRoom_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./js/ChessRoom.js */ \"./js/ChessRoom.js\");\n/* harmony import */ var _public_js_config_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./public/js/config.json */ \"./public/js/config.json\");\nvar _public_js_config_json__WEBPACK_IMPORTED_MODULE_6___namespace = /*#__PURE__*/__webpack_require__.t(/*! ./public/js/config.json */ \"./public/js/config.json\", 1);\n/* harmony import */ var _public_js_ChessGame_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./public/js/ChessGame.js */ \"./public/js/ChessGame.js\");\n/* harmony import */ var _public_js_ChessPlayer_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./public/js/ChessPlayer.js */ \"./public/js/ChessPlayer.js\");\n/* harmony import */ var _public_js_BoardGraphics_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./public/js/BoardGraphics.js */ \"./public/js/BoardGraphics.js\");\n\n\n\n\n\n\n\n\n\n\n\n\ndotenv__WEBPACK_IMPORTED_MODULE_4___default.a.config();\n\nclass ServerInstance {\n    constructor() {\n        this.PORT = process.env.PORT || 3000;\n        this.app = express__WEBPACK_IMPORTED_MODULE_1___default()();\n        // this.app.use(express.json());\n        this.app.use(express__WEBPACK_IMPORTED_MODULE_1___default.a.static('public'));\n        \n        this.gameServer = new colyseus__WEBPACK_IMPORTED_MODULE_0__[\"Server\"]({\n            server: http__WEBPACK_IMPORTED_MODULE_2___default.a.createServer(this.app)\n        });\n\n        this.defineRooms();\n\n        this.gameServer.listen(this.PORT, () => {\n            console.log(`Listening on port ${this.PORT}`);\n        });\n    }\n\n    connectToDb() {\n        const uri = process.env.DB_URI;\n        mongoose__WEBPACK_IMPORTED_MODULE_3___default.a.connect(uri, {\n            useNewUrlParser: true, \n            useUnifiedTopology: true, \n            useCreateIndex: true // is this needed?\n        })\n        .then(() => console.log('MongoDB database connection established successfully'))\n        .catch(err => console.error('MongoDB connection error: ', err))\n        this.db = mongoose__WEBPACK_IMPORTED_MODULE_3___default.a.connection;\n    }\n\n    defineRooms() {\n        let standardOptions = {\n            mode: _public_js_ChessGame_js__WEBPACK_IMPORTED_MODULE_7__[\"ChessMode\"].ONLINE_MULTIPLAYER,\n            dim: _public_js_config_json__WEBPACK_IMPORTED_MODULE_6__.dims.standard,\n            BoardGraphics: _public_js_BoardGraphics_js__WEBPACK_IMPORTED_MODULE_9__[\"default\"], // empty BoardGraphics\n            WhitePlayer: _public_js_ChessPlayer_js__WEBPACK_IMPORTED_MODULE_8__[\"DummyPlayer\"],\n            BlackPlayer: _public_js_ChessPlayer_js__WEBPACK_IMPORTED_MODULE_8__[\"DummyPlayer\"]\n        }\n        this.gameServer.define('standard', _js_ChessRoom_js__WEBPACK_IMPORTED_MODULE_5__[\"default\"], standardOptions);\n    }\n}\n\nnew ServerInstance();\n\n//# sourceURL=webpack:///./index.js?");
 
 /***/ }),
 
@@ -323,6 +323,17 @@ eval("module.exports = require(\"colyseus\");\n\n//# sourceURL=webpack:///extern
 
 /***/ }),
 
+/***/ "dotenv":
+/*!*************************!*\
+  !*** external "dotenv" ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("module.exports = require(\"dotenv\");\n\n//# sourceURL=webpack:///external_%22dotenv%22?");
+
+/***/ }),
+
 /***/ "express":
 /*!**************************!*\
   !*** external "express" ***!
@@ -353,6 +364,17 @@ eval("module.exports = require(\"http\");\n\n//# sourceURL=webpack:///external_%
 /***/ (function(module, exports) {
 
 eval("module.exports = require(\"lodash\");\n\n//# sourceURL=webpack:///external_%22lodash%22?");
+
+/***/ }),
+
+/***/ "mongoose":
+/*!***************************!*\
+  !*** external "mongoose" ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("module.exports = require(\"mongoose\");\n\n//# sourceURL=webpack:///external_%22mongoose%22?");
 
 /***/ })
 

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
 import FocusLock from 'react-focus-lock';
 import WhiteIcon from '../assets/player/king_white.svg';

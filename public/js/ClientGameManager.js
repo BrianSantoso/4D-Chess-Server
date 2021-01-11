@@ -23,6 +23,12 @@ class ClientGameManager extends GameManager {
 		this._client = client;
 		this._room = null;
 		this._view2D = new View2D(this, this._client);
+
+		this._focused = false;
+	}
+
+	setFocus(bool) {
+		this._focused = bool;
 	}
 
 	mount(root) {
@@ -231,6 +237,7 @@ class Embed extends Component {
 	}
 
 	render() {
+		this._gameManager.setFocus(this.props.focus);
 		return (
 			<div id="embed" ref={(ref) => (this._root = ref)}>
 				{this._gameManager.overlay()}

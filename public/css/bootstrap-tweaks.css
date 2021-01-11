@@ -1,0 +1,5 @@
+/* Add Spacing between navbar items */
+.navbar-nav > * {
+    margin-left: 0.3em;
+    margin-right: 0.3em;
+}
