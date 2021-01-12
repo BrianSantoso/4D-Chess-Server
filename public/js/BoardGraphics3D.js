@@ -184,11 +184,20 @@ class BoardGraphics3D extends BoardGrahpics {
 		if (preview) {
 			material = capturedPiece.isEmpty() ? 'lightGray' : 'darkGray';
 		} else {
-			material = capturedPiece.isEmpty() ? 'green' : 'orange';
+			if (capturedPiece.isEmpty()) {
+				if (team === ChessTeam.WHITE) {
+					material = 'lightGray';
+				} else {
+					material = 'darkGray';
+				}
+			} else {
+				material = 'orange';
+			}
+			// material = capturedPiece.isEmpty() ? 'lightGray' : 'orange';
 		}
 		
 		let scale = move.isCapture() ? 1 : 1;
-		let opacity = move.isCapture() ? 0.99 : 0.7;
+		let opacity = move.isCapture() ? 0.99 : 0.6;
 		let mesh = Models.createMesh(type, material, pos, scale, opacity);
 		let rotation = team === ChessTeam.WHITE ? 180 : 0;
 		rotateObject(mesh, 0, rotation, 0);
@@ -324,7 +333,6 @@ class BoardGraphics3D extends BoardGrahpics {
 		// Fixes issue with transparent board hiding transparent pieces
 		// https://discourse.threejs.org/t/material-transparency-problem/3822
 //		mesh.material.depthWrite = false;
-		console.log(mesh)
 		return mesh;		
 	}
 	

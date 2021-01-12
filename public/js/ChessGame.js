@@ -96,6 +96,12 @@ class ChessGame {
 		return this.board().isLegal(move);
 	}
 
+	isBlocked(pieceToMoveId, pieceToCaptureId) {
+		let pieceToMove = this._board.getById(pieceToMoveId);
+		let pieceToCapture = this._board.getById(pieceToCaptureId);
+		return this.board().isBlocked(pieceToMove, pieceToCapture);
+	}
+
 	_clearStatus() {
 		this._allPossibleMoves = null;
 		this._status = null;
@@ -211,9 +217,8 @@ class ChessGame {
 		}
 	}
 	
-	update() {
-		this._getCurrentPlayer().update(); // TODO: separate into keyInputs and update?
-		this._boardGraphics.update();
+	update(step) {
+		this._mode.update.call(this, step);
 	}
 	
 	currTurn() {
@@ -266,8 +271,9 @@ ChessGame.revive = (fields) => {
 };
 
 class ChessMode {
-	constructor(type, makeMove) {
+	constructor(type, update, makeMove) {
 		this.type = type;
+		this.update = update;
 		this.makeMove = makeMove;
 	}
 
@@ -276,48 +282,62 @@ class ChessMode {
 	}
 }
 
-ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', function(move) {
-	if (this.isGameOver()) {
-		return;
-	}
-	
-	this._board.makeMove(move); // update state
-	this._boardGraphics.makeMove(move, config.animFrames.move); // animate
-	
-	this._clearStatus(); // reset gameover status
-	let status = this.status(); // recalculate status
-	this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
-
-	// implicitly recalculates status if needed
-	if (this.isGameOver()) {
-
-	} else {
-		this._switchTurns();
-	}
-});
-
-ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', function(move) {
-	if (this.isGameOver()) {
-		return;
-	}
-	
-	if (this._moveHistory.atLast()) {
+ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
+	function update(step) {
+		let playerCanInteract = true;
+		this._getCurrentPlayer().update(step, playerCanInteract);
+		this._boardGraphics.update();
+	}, 
+	function makeMove(move) {
+		if (this.isGameOver()) {
+			return;
+		}
+		
 		this._board.makeMove(move); // update state
 		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
+		
 		this._clearStatus(); // reset gameover status
 		let status = this.status(); // recalculate status
 		this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
+
 		// implicitly recalculates status if needed
 		if (this.isGameOver()) {
 
 		} else {
 			this._switchTurns();
 		}
-	} else {
-		// TODO: status and allPossibleMoves will not be memoized
-		this._moveHistory.addToEnd(move); // add to history
 	}
-});
+);
+
+ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', 
+	function update(step) {
+		let playerCanInteract = this._moveHistory.atLast();
+		this._getCurrentPlayer().update(step, playerCanInteract); // TODO: determine better way to disable interaction
+		this._boardGraphics.update();
+	},
+	function makeMove(move) {
+		if (this.isGameOver()) {
+			return;
+		}
+		
+		if (this._moveHistory.atLast()) {
+			this._board.makeMove(move); // update state
+			this._boardGraphics.makeMove(move, config.animFrames.move); // animate
+			this._clearStatus(); // reset gameover status
+			let status = this.status(); // recalculate status
+			this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
+			// implicitly recalculates status if needed
+			if (this.isGameOver()) {
+
+			} else {
+				this._switchTurns();
+			}
+		} else {
+			// TODO: status and allPossibleMoves will not be memoized
+			this._moveHistory.addToEnd(move); // add to history
+		}
+	}
+);
 
 ChessMode.revive = (type) => {
     return ChessMode[type];

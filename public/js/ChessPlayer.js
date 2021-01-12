@@ -1,5 +1,5 @@
 import Interactor3D from "./Interactor3D.js"
-import Transmitter, { OnlineTransmitter } from "./Transmitter.js"
+import { OnlineTransmitter } from "./Transmitter.js"
 
 class AbstractPlayer {
 	// A ChessGame controller. Defines what method is used to receive moves
@@ -12,8 +12,20 @@ class AbstractPlayer {
 	// on how to make moves
 	
 	constructor(team, game) {
-		this._team = team;
+		// <PlayerInfo 
+		// 	team={ChessTeam.WHITE} 
+		// 	playerName={'You'} 
+		// 	myTurn={true} 
+		// 	time={-1} 
+		// 	elo={2100} 
+		// 	position={'playerInfoLeft'}>
+		// </PlayerInfo>
 		this._game = game;
+		this._team = team;
+		this._name = '???';
+		this._elo = -1;
+		this._time = -1;
+		this._canInteract = true;
 
 		this._receiver;
 		this._transmitter;
@@ -25,9 +37,15 @@ class AbstractPlayer {
 		this._transmitter.makeMove(move);
 	}
 	
-	update() {
+	update(step, canInteract) {
+		this._canInteract = canInteract;
+		this._time -= step;
 		// query interactors for moves
-		this._receiver.update();
+		if (this._canInteract) {
+			this._receiver.update();
+		}
+
+		// console.log(this._team, this._time);
 	}
 	
 	// setBoardGraphics(boardGraphics) {
@@ -74,7 +92,9 @@ class AbstractPlayer3D extends AbstractPlayer {
 	}
 	
 	intentionalClick(event) {
-		this._receiver.intentionalClick(event);
+		if (this._canInteract) {
+			this._receiver.intentionalClick(event);
+		}
 	}
 }
 

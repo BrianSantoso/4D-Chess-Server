@@ -15,6 +15,7 @@ class GameManager {
 		let template = this.createGame({});
 		let newGame = Object.assign(template, ChessGame.revive(jsonData));
 		this.setGame(newGame);
+		console.log('Loaded game:', newGame);
 	}
 
 	toJSON() {

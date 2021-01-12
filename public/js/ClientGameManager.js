@@ -7,21 +7,37 @@ import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
 import View2D from "./View2D.jsx";
-import ChessGame from "./ChessGame.js";
+import ChessGame, { ChessMode } from "./ChessGame.js";
 import games from "./Games.json";
-// import Piece, { Pawn } from "./Piece.js";
+
+import React, { Component } from "react";
+import * as Colyseus from "colyseus.js";
 
 class ClientGameManager extends GameManager {
 	constructor(client) {
 		super();
-		this._domElement = document.getElementById("embed");
+		// this._domElement = document.getElementById("embed");
 		
-		this._view3D = new SceneManager(this._domElement);
+		this._view3D = new SceneManager();
         this._controller = null;
 		this._client = client;
 		this._room = null;
 		this._view2D = new View2D(this, this._client);
-		this._view2D.draw();
+
+		this._focused = false;
+	}
+
+	setFocus(bool) {
+		this._focused = bool;
+		this._view2D.setFocus(bool);
+	}
+
+	mount(root) {
+		this._view3D.mount(root);
+	}
+
+	overlay() {
+		return this._view2D.overlay();
 	}
 
 	async join(roomName) {
@@ -52,6 +68,9 @@ class ClientGameManager extends GameManager {
 			this.loadFrom(jsonData);
 		});
 
+		if (this._room) {
+			this._room.leave();
+		}
 		this._room = room;
 		this._view2D.setRoom(room);
 
@@ -92,6 +111,7 @@ class ClientGameManager extends GameManager {
 	
 	createGame(options) {
         let defaultOptions = {
+			// mode: ChessMode.NONE,
 			dim: config.dims.standard,
 			BoardGraphics: BoardGraphics3D,
 			WhitePlayer: OnlinePlayer3D, // TODO: configure players dynamically
@@ -139,9 +159,9 @@ class ClientGameManager extends GameManager {
 		this._view3D.keyInputs();
 	}
 	
-	_update() {
+	_update(step) {
 		if (this._game) {
-			this._game.update();
+			this._game.update(step);
 		}
 		this._view3D.update();
 	}
@@ -170,7 +190,7 @@ class ClientGameManager extends GameManager {
 			// update the simulation until it is caught up to real time
 			while(accumulation >= step){
 				// UPDATE
-				this._update();
+				this._update(step);
 				accumulation -= step;
 			}
 			
@@ -192,4 +212,38 @@ class ClientGameManager extends GameManager {
 	}
 }
 
-export { ClientGameManager }
+class Embed extends Component {
+	constructor(props) {
+		super(props)
+
+		this._client = new Colyseus.Client("ws://localhost:3000");
+		this._gameManager = new ClientGameManager(this._client);
+		
+		this._gameManager.loadAssets().then(() => {
+			try {
+				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
+				this._gameManager.join(roomId);
+			} catch {
+				console.log('[App] No roomId parameter found');
+				this._gameManager.join('standard');
+			}
+
+			this._gameManager._startLoop();
+		});
+	}
+
+	componentDidMount() {
+		// Mount three.js canvas
+		this._gameManager.mount(this._root);
+	}
+
+	render() {
+		this._gameManager.setFocus(this.props.focused);
+		return (
+			<div id="embed" ref={(ref) => (this._root = ref)}>
+				{this._gameManager.overlay()}
+			</div>
+		);
+	}
+}
+export { ClientGameManager, Embed }

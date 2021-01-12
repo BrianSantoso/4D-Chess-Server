@@ -1,0 +1,329 @@
+<html>
+	
+	<head>
+		<style>		
+			@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+			body {
+				margin: 0;
+				background-color: #f7f7f7;
+				font-family: 'Source Code Pro', monospace;
+			}
+			
+			#embed {
+				margin: 0;
+				padding: 0;
+				position: fixed;
+				width: 100%;
+				height: 100%;
+			}
+
+			#embed > canvas {
+				margin: 0;
+			}
+
+			#embed img {
+				/* Prevent highlighting of images */
+				-khtml-user-select: none;
+				-o-user-select: none;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				user-select: none;
+			}
+			
+			:root {
+				/* Define global variables */
+				--primary: #f7f7f7;
+				--secondary: #3f3f3f;
+
+				--icon-size: 5em;
+				--chatMsg-font-size: 1em;
+				--chatMsg-paddingV: calc(var(--chatMsg-font-size) / 10);
+				--chatMsg-paddingH: var(--chatMsg-font-size);
+				/* The height of one line of chat message */
+				--chatMsg-unitHeight: calc(var(--chatMsg-font-size) + var(--chatMsg-paddingV));
+
+				--chat-maxHeight: calc(var(--chatMsg-unitHeight) * 12);
+				--chat-width: 28vw;
+			}
+
+			.overlay {
+				position: fixed;
+				width: 100%;
+				height: 100%;
+				pointer-events: none;
+			}
+
+			.playerInfo {
+				width: calc(var(--icon-size) * 5);
+				display: inline-block;
+				white-space: nowrap;
+				position: absolute;
+			}
+
+			.playerText {
+				vertical-align: middle;
+				padding-top: calc(var(--icon-size) / 4);
+			}
+
+			.playerWhite .playerIcon {
+				float: left; /* Justify-left icon */
+				content: url('../assets/player/king_white.svg');
+			}
+
+			.playerWhite {
+				left: 0; /* Make playerInfo appear on left side of screen */
+				text-align: left; /* Justify-left all text */
+			}
+
+			.playerBlack .playerIcon {
+				float: right;
+				content: url('../assets/player/king_black.svg');
+			}
+
+			.playerBlack {
+				right: 0;
+				text-align: right;
+			}
+
+			.playerIcon {
+				width: var(--icon-size);
+				margin: 0 calc(var(--icon-size) / 6);
+			}
+
+			.playerFooter {
+				display: inline-block;
+				font-size: calc(var(--icon-size) / 4);
+				margin: calc(var(--icon-size) / 12) 0;
+			}
+
+			.playerTime {
+				display: inline-block;
+			}
+
+			.playerStatus {
+				width: calc(var(--icon-size) / 7.5);
+				height: calc(var(--icon-size) / 7.5);
+				
+				margin: 0 calc(var(--icon-size) / 5);
+			}
+
+			.playerName {
+				font-size: calc(var(--icon-size) / 3);
+			}
+
+			.sidebar {
+				position: absolute;
+				right: calc(var(--icon-size) / 4);
+				top: 30%;
+			}
+
+			.game-button {
+				/*	position: fixed;*/
+				margin: calc(var(--icon-size) / 8) 0;
+				display: block;
+				position: relative;
+				pointer-events: auto;
+
+				padding: calc(var(--icon-size) / 4);  /* Circle Radius */
+				border-radius: 50%; /* Make circle */
+
+				background-color: #FFFFFF;
+				opacity: .6;
+				z-index: 999;
+
+				box-sizing: border-box; /* ? */
+				box-shadow: 0 0 4px rgba(0,0,0,.15);
+			/*				box-shadow: inset 0 -0.6em 0 -0.35em rgba(0,0,0,0.17);*/
+			}
+
+			.game-button:active {
+			/*				bottom: -0.2em;*/
+				box-shadow: none;
+			}
+
+			.game-button > img {
+				width: calc(var(--icon-size) / 2);
+			}
+
+			.chat {
+				position: absolute;
+				bottom: calc(var(--icon-size) / 1);
+				right: calc(var(--icon-size) / 4);
+				width: var(--chat-width);
+				pointer-events: auto;
+				/* height: var(--chat-maxHeight); */
+				/* overflow: hidden; */
+				/* clip-path: polygon(0% 0%, var(--chat-width) 0%, var(--chat-width) var(--chat-maxHeight), 0 var(--chat-maxHeight)); */
+			}
+
+			.chat-message {
+				font-size: var(--chatMsg-font-size);
+				font-weight: 600;
+				color: rgb(255, 255, 255);
+				background-color: rgba(58, 58, 58, 0.418);
+				width: 100%;
+				min-height: var(--chatMsg-unitHeight);
+				padding: var(--chatMsg-paddingV) var(--chatMsg-paddingH);
+				box-sizing: border-box;
+
+				transition: 300ms ease-in-out;
+			}
+
+			.fade-enter {
+				opacity: 0;
+			}
+
+			.fade-enter.fade-enter-active {
+				opacity: 1;
+				transition: opacity 300ms ease-in;
+			}
+
+			.fade-leave {
+				opacity: 1;
+			}
+
+			.fade-leave.fade-leave-active {
+				opacity: 0;
+				transition: opacity 300ms ease-in;
+			}
+		</style>
+	</head>
+	<body>
+		<div id='embed'>
+			<div class='overlay'>
+				<div class='playerInfo playerWhite'>
+					<img class='playerIcon' />
+					<div class='playerText'>
+						<div class='playerName'>
+							Guest8449947756
+						</div>
+						<div class='playerFooter'>
+							<div class='playerTime'>--:--:--</div>
+							<img class='playerStatus' src='../assets/player/online.svg' />
+						</div>
+					</div>
+				</div>
+
+				<div class='playerInfo playerBlack'>
+					<img class='playerIcon' />
+					<div class='playerText'>
+						<div class='playerName'>
+							AnonymousCow
+						</div>
+						<div class='playerFooter'>
+							<img class='playerStatus' src='../assets/player/online.svg' />
+							<div class='playerTime'>--:--:--</div>
+						</div>
+					</div>
+				</div>
+
+				<div class='chat'>
+					<div class='chat-message'>[Guest8449947756] good luck have fun!</div>
+					<div class='chat-message'>[AnonymousCow] Thanks, you too</div>
+					<div class='chat-message'>AnonPig has joined the room</div>
+					<!-- <input class='chat-message' value="This field uses a default caret." /> -->
+					<div contenteditable='true' class='chat-message'> This paragraph can be
+						edited, and its caret has a custom color as well!</div>
+					<!-- <ul class='chat-message'>
+						<li> [Guest8449947756] good luck have fun! </li>
+						<li> [AnonymousCow] Thanks, you too </li>
+					</ul> -->
+				</div>
+				
+				<div class='sidebar'>
+					<a class='game-button'>
+						<img draggable="false" src='../assets/icons/home-black-rounded-24dp.svg' />
+					</a>
+					<a class='game-button'>
+						<img draggable="false" src='../assets/icons/undo-black-24dp.svg' />
+					</a>
+					<a class='game-button'>
+						<img draggable="false" src='../assets/icons/redo-black-24dp.svg' />
+					</a>
+					<a class='game-button'>
+						<img draggable="false" src='../assets/icons/chat-black-24dp.svg' />
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<style>
+			/* https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_register_form */
+			.form input,button {
+				font-family: inherit;
+				font-size: inherit;
+			}
+			.popup-bg-overlay {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+
+				background-color: rgba(0, 0, 0, 0.2);
+			}
+
+			.popup {
+				position: fixed;
+				width: fit-content;
+				height: fit-content;
+				/* max-width: 50%; */
+				/* max-height: 61%; */
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
+				margin: auto;
+
+				background-color: white;
+				border-radius: 25px;
+				box-shadow: 0 0 10px rgba(0,0,0,.3);
+			}
+
+			.form {
+				margin: 4em;
+			}
+
+			.form-header {
+				text-align: center;
+				font-size: 2em;
+				margin: 1em;
+			}
+
+			.form-input {
+				display: block;
+				width: 30vw;
+				padding: 1em;
+				margin: 1em 0 1em 0;
+				border: none;
+				background: var(--primary);
+			}
+
+			.form-submit {
+				background-color: var(--secondary);
+				color: white;
+				cursor: pointer;
+				opacity: 0.9;
+			}
+		</style>
+		<div class='popup-bg-overlay'>
+			<div class='popup'>
+				<div class="form">
+					<div class='form-header'> Join 4D Chess! </div>
+					<!-- <label for="uname"><b>Username</b></label> -->
+					<input class='form-input' type="text" placeholder="Username" name="uname" required>
+					
+					<!-- <label for="email"><b>Email</b></label> -->
+    				<input class='form-input' type="text" placeholder="Email" name="email" id="email" required>
+				
+					<!-- <label for="psw"><b>Password</b></label> -->
+					<input class='form-input' type="password" placeholder="Create Password" name="psw" required>
+					
+					<button class='form-input form-submit' type="submit">Create Account</button>
+					<!-- <label></label> -->
+					<input type="checkbox" checked="checked" name="remember"> Remember me
+					<!-- </label> -->
+					<!-- <div class='form-header'> Or sign up using </div> -->
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

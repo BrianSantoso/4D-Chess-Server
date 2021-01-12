@@ -167,6 +167,10 @@ class Interactor3D extends AbstractReceiver3D {
 		return this._game.isLegal(move);
 	}
 
+	isBlocked(pieceToMoveId, pieceToCaptureId) {
+		return this._game.isBlocked(pieceToMoveId, pieceToCaptureId);
+	}
+
 	explainAll(attackers) {
 		this.boardGraphics().explainAll(attackers);
 	}
@@ -324,16 +328,8 @@ class Interactor3DWorker {
 		// Returns the blocked move of originalMesh corresponding to
 		// the destination given by this.selected();
 		let pieceToMoveId = originalMesh.pieceId;
-		let moves = this._getPossibleMoves(pieceToMoveId, false);
-		// TODO: move this logic to GameBoard
-		let destination = this.selected().piece;
-		for (let i = 0; i < moves.length; i++) {
-			let move = moves[i];
-			if (move.destinationIs(destination.x, destination.y, destination.z, destination.w)) {
-				return move;
-			}
-		}
-		return null;
+		let pieceToCaptureId = this.selected().pieceId;
+		return this._parent.isBlocked(pieceToMoveId, pieceToCaptureId);
 	}
 
 	_explainWhyBlocked(move) {

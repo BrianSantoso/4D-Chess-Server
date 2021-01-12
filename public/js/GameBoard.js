@@ -14,7 +14,7 @@ class GameBoard {
 		this._allPieces = [];
 		this._pieces = null;
 	}
-
+	
 	initialized() {
 		return !!this.getPieces();
 	}
@@ -181,6 +181,18 @@ class GameBoard {
 		this.set(move.x0, move.y0, move.z0, move.w0, piece);
 		
 		return attackers;
+	}
+
+	isBlocked(pieceToMove, pieceToCapture) {
+		// TODO: there has to be better parameters than this... not all moves are going to have a capture
+		let moves = this.getPossibleMoves(pieceToMove.x, pieceToMove.y, pieceToMove.z, pieceToMove.w, false);
+		for (let i = 0; i < moves.length; i++) {
+			let move = moves[i];
+			if (move.destinationIs(pieceToCapture.x, pieceToCapture.y, pieceToCapture.z, pieceToCapture.w)) {
+				return move;
+			}
+		}
+		return null;
 	}
 
 	getById(id) {

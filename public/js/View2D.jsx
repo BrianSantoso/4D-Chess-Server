@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { CSSTransitionGroup } from 'react-transition-group';
 import FocusLock from 'react-focus-lock';
 import WhiteIcon from '../assets/player/king_white.svg';
@@ -32,6 +31,21 @@ class View2D {
 
 		this._room = null;
 		this._client = client;
+
+		this._stateHelper = {
+			setStateHandler: (state) => {},
+			onStateChange: function(callback) {
+				this.setStateHandler = callback;
+			},
+			setState: function(state) {
+				this.setStateHandler(state);
+			}
+		};
+	}
+
+	setFocus(bool) {
+		this._focused = bool;
+		this._events.setFocus(bool);
 	}
 
 	addMsg(message) {
@@ -41,6 +55,13 @@ class View2D {
 
 	setRoom(room) {
 		this._room = room;
+		this.setState({
+			room: room
+		})
+	}
+
+	setState(state) {
+		this._stateHelper.setState(state);
 	}
 	
 	cameraHome() {
@@ -54,11 +75,10 @@ class View2D {
 	redo() {
 		this._gameManager.redo();
 	}
-	
-	draw() {
-		// TODO: just call draw method once on load
-		ReactDOM.render(
-			(<Overlay 
+
+	overlay() {
+		return (
+			<Overlay 
 				ref={this.root} 
 				room={this._room}
 				client={this._client} 
@@ -66,8 +86,9 @@ class View2D {
 				undo={this.undo} 
 				redo={this.redo} 
 				events={this._events}
-			/>),
-		document.getElementById('react-root'));
+				stateHelper={this._stateHelper}
+			/>
+		);
 	}
 }
 
@@ -78,6 +99,10 @@ class Overlay extends Component {
 
 		// this.messages = [];
 		this.state = {
+			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>,
+			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>,
+			bannerMessages: config.banner.noOpponent,
+			room: this.props.room,
 			messages: [],
 			showing: [],
 			chatOpened: false // chat state is maintained up here so that toggle chat button can toggle chat
@@ -87,14 +112,16 @@ class Overlay extends Component {
 		this.toggleChat = this.toggleChat.bind(this);
 		this.openChat = this.openChat.bind(this);
 		this.closeChat = this.closeChat.bind(this);
+
+		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
 	}
 
 	render() {
 		return (
 			<div className='overlay'>
-				<PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>
-				<StatusBanner messages={config.banner.noOpponent}></StatusBanner>
-				<PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>
+				{this.state.playerLeft}
+				<StatusBanner messages={this.state.bannerMessages}></StatusBanner>
+				{this.state.playerRight}
 				
 				<div className='sidebar'>
 					<CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
@@ -104,7 +131,7 @@ class Overlay extends Component {
 				</div>
 
 				<Chat 
-					room={this.props.room} 
+					room={this.state.room} 
 					client={this.props.client} 
 					chatOpened={this.state.chatOpened} 
 					handleMsg={this.addMsg} 
@@ -431,7 +458,7 @@ class ChatInput extends Component {
 
 			let message = {
 				msg: text,
-				sender: this.props.client
+				sender: this.props.client // This field is only necessary for local games. Is overwritten by server if online
 			}
 
 			if (this.props.room) {
