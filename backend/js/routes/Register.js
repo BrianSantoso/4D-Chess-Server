@@ -1,28 +1,43 @@
 import { Router } from 'express';
 import User from '../models/User.model.js';
 import FormValidator from '../../../public/js/FormValidator.js';
+import bcrypt from 'bcrypt';
+import { simpleErrors } from '../MongooseUtils.js';
 
 const router = Router();
-const registrationValidator = new FormValidator(['password2']);
+const registrationValidator = new FormValidator(['usernameOrEmail', 'password2']);
 
 router.route('/').post((req, res) => {
-    console.log('request body:', req.body);
+    // Run through manual format validation first
     let response = registrationValidator.validate(req.body);
+
+    // response.isValid
     if (response.isValid) {
-        // TODO: don't let user send elo, join date, etc!!!
         let fields = req.body;
+
+        // Assign user default properties / Overwrite an attack
         Object.assign(fields, {
             elo: 1000,
+            joinDate: new Date(),
             lastLogin: new Date()
         });
-        const newUser = new User(fields);
-        newUser.save()
-            .then(() => res.json('User added!'))
-            .catch(err => res.status(400).json('Error: ' + err));
+
+        // Hash password
+        const saltRounds = 10;
+        bcrypt.hash(fields.password, saltRounds, (err, hash) => {
+            if (err) {
+                res.json(error);
+            } else {
+                fields.password = hash;
+                const newUser = new User(fields);
+                newUser.save()
+                    .then(() => res.json('User added!'))
+                    .catch(err => res.status(400).json(simpleErrors(err)));
+            }
+        });
     } else {
-        res.status(400).json('Error: ' + response.errors);
+        res.status(400).json(response.errors);
     }
-    console.log(response)
 });
 
 export default router;

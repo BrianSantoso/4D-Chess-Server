@@ -5,18 +5,20 @@ import bodyParser from 'body-parser'
 import Mongoose from 'mongoose';
 import { config as dotconfig } from 'dotenv';
 
+import usersRouter from './js/routes/Users.js';
+import registerRouter from './js/routes/Register.js';
+import loginRouter from './js/routes/Login.js';
+
 import ChessRoom from './js/ChessRoom.js'
 import config from '../public/js/config.json';
 import { ChessMode } from '../public/js/ChessGame.js';
 import { DummyPlayer } from '../public/js/ChessPlayer.js';
 import BoardGraphics from '../public/js/BoardGraphics.js';
 
-import usersRouter from './js/routes/Users.js';
-import registerRouter from './js/routes/Register.js';
-
 dotconfig();
 
 class ServerInstance {
+    // Contains game server and colyseus-websocket server
     constructor() {
         this.PORT = process.env.PORT || 3000;
         this.app = express();
@@ -38,8 +40,7 @@ class ServerInstance {
     }
 
     connectToDb() {
-        // const uri = process.env.DB_URI;
-        const uri = 'mongodb://localhost:27017/chess4d';
+        const uri = process.env.DB_URI;
         Mongoose.connect(uri, {
             useNewUrlParser: true, 
             useUnifiedTopology: true, 
@@ -53,6 +54,7 @@ class ServerInstance {
     configureAPI() {
         this.app.use('/users', usersRouter);
         this.app.use('/register', registerRouter);
+        this.app.use('/login', loginRouter);
     }
 
     defineRooms() {

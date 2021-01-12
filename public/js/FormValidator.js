@@ -3,8 +3,8 @@ import Validator from 'validator';
 import isEmpty from 'is-empty';
 
 class FormValidator {
-    constructor (excludeList=[]) {
-        this.excludeList = excludeList;
+    constructor (dontUse=[]) {
+        this.dontUse = dontUse;
         this.checks = {};
     }
 
@@ -13,6 +13,7 @@ class FormValidator {
         // Convert empty fields to an empty string so we can use validator functions
         data.username = !isEmpty(data.username) ? data.username : "";
         data.email = !isEmpty(data.email) ? data.email : "";
+        data.usernameOrEmail = !isEmpty(data.usernameOrEmail) ? data.usernameOrEmail : "";
         data.password = !isEmpty(data.password) ? data.password : "";
         data.password2 = !isEmpty(data.password2) ? data.password2 : "";
 
@@ -26,6 +27,11 @@ class FormValidator {
         } else if (!Validator.isEmail(data.email)) {
             errors.email = "Email is invalid";
         }
+
+        if (Validator.isEmpty(data.usernameOrEmail)) {
+            errors.usernameOrEmail = "Username or email field is required";
+        }
+
         // Password checks
         if (Validator.isEmpty(data.password)) {
             errors.password = "Password field is required";
@@ -46,7 +52,7 @@ class FormValidator {
                 errors[field] = fieldError;
             }
         });
-        this.excludeList.forEach(key => {
+        this.dontUse.forEach(key => {
             delete errors[key];
         });
         return {
