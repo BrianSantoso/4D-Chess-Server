@@ -31,7 +31,7 @@ router.route('/').post((req, res) => {
                 fields.password = hash;
                 const newUser = new User(fields);
                 newUser.save()
-                    .then(() => res.json('User added!'))
+                    .then(() => res.json('Account created!'))
                     .catch(err => res.status(400).json(simpleErrors(err)));
             }
         });

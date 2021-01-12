@@ -13,39 +13,36 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			
+			focused: false
 		};
 		this.history = createBrowserHistory();
 		
-		this.exitPopup = this.exitPopup.bind(this);
+		this.loseGameFocus = this.loseGameFocus.bind(this);
+		this.gainGameFocus = this.gainGameFocus.bind(this);
 		console.log(this.history)
+		// history.goBack
 	}
 
-	focusedOnGame() {
-		// TODO: how to determine if focused on game? Using path may not work because one could be typing in navbar...
-		return this.history.location.pathname === '/';
+	loseGameFocus() {
+		this.setState({focused: false});
 	}
 
-	exitPopup() {
-		// this.setState({popup: false});
-		// this.props.history.goBack();
-		// console.log(history);
-		// history.goBack();
-		// history.push('/');
+	gainGameFocus() {
+		this.setState({focused: true});
 	}
 
 	render() {
 		return (
 			<Router history={history}>
 				<ChessNavbar />
-				<Embed focused={this.focusedOnGame()}></Embed>
+				<Embed focused={this.state.focused}></Embed>
 				<Route path="/login">
-					<Popup redirect='/'>
+					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
 						<Login></Login>
 					</Popup>
 				</Route>
 				<Route path="/register">
-					<Popup redirect='/'>
+					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
 						<Register></Register>
 					</Popup>
 				</Route>

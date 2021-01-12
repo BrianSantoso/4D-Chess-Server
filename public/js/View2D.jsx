@@ -43,6 +43,11 @@ class View2D {
 		};
 	}
 
+	setFocus(bool) {
+		this._focused = bool;
+		this._events.setFocus(bool);
+	}
+
 	addMsg(message) {
 		// TODO: don't use refs. Consider moving messages list to View2D instead of Overlay.
 		this.root.current.addMsg(message);

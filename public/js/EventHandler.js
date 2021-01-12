@@ -3,7 +3,12 @@ class EventHandler {
         this._domElement = domElement;
 		this._subscribers = {};
 		this._keyBinds = {};
-    }
+		this._focused = false;
+	}
+	
+	setFocus(bool) {
+		this._focused = bool;
+	}
 
     subscribe(obj, event) {
 		this._subscribers[event].add(obj);
@@ -38,9 +43,11 @@ class EventHandler {
 	}
 
 	triggerCustomEvent(eventName, parentEvent) {
-		this._subscribers[eventName].forEach(subscriber => {
-			subscriber[eventName](parentEvent);
-		});
+		if (this._focused) {
+			this._subscribers[eventName].forEach(subscriber => {
+				subscriber[eventName](parentEvent);
+			});
+		}
 	}
 
 	defineKeyboardEvent(eventName, triggerKeys) {
