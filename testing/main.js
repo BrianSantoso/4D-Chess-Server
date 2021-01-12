@@ -1,5 +1,5 @@
 import Mongo, { MongoClient } from 'mongodb';
-
+import FormValidator from '../public/js/FormValidator.js';
 // Optional: poolSize
 //  this allows you to control how many tcp connections are opened in parallel.
 MongoClient.connect('mongodb://localhost:27017/chess4d', (err, client) => {
@@ -20,3 +20,16 @@ MongoClient.connect('mongodb://localhost:27017/chess4d', (err, client) => {
     });
     // console.log(JSON.stringify(users, null, 2));
 });
+
+let fv = new FormValidator();
+fv.addCheck('username', (username) => {
+    if (username !== 'hi') {
+        return 'Username must be hi'
+    }
+})
+console.log(fv.validate({
+    username: 'hia',
+    email: 'a@a.com',
+    password: 'mean123',
+    password2: 'mean123'
+}))

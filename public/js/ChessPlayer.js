@@ -1,5 +1,5 @@
 import Interactor3D from "./Interactor3D.js"
-import Transmitter, { OnlineTransmitter } from "./Transmitter.js"
+import { OnlineTransmitter } from "./Transmitter.js"
 
 class AbstractPlayer {
 	// A ChessGame controller. Defines what method is used to receive moves
