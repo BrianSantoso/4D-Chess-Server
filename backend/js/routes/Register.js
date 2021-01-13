@@ -3,6 +3,7 @@ import User from '../models/User.model.js';
 import FormValidator from '../../../public/js/FormValidator.js';
 import bcrypt from 'bcrypt';
 import { simpleErrors } from '../MongooseUtils.js';
+import { sendAuthToken } from '../JWTPassportUtils.js';
 
 const router = Router();
 const registrationValidator = new FormValidator(['usernameOrEmail', 'password2']);
@@ -19,7 +20,11 @@ router.route('/').post((req, res) => {
         Object.assign(fields, {
             elo: 1000,
             joinDate: new Date(),
-            lastLogin: new Date()
+            lastLogin: new Date(),
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            totalOpponentRatings: 0
         });
 
         // Hash password
@@ -31,7 +36,9 @@ router.route('/').post((req, res) => {
                 fields.password = hash;
                 const newUser = new User(fields);
                 newUser.save()
-                    .then(() => res.json('Account created!'))
+                    .then(user => {
+                        sendAuthToken(res, user, 'Account created!');
+                    })
                     .catch(err => res.status(400).json(simpleErrors(err)));
             }
         });

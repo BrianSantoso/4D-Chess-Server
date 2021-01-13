@@ -2,22 +2,22 @@ import React, { Component } from 'react';
 import { Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { firstError } from './ResponseUtils.js';
 
 class Login extends Component {
     constructor(props) {
         super(props);
-
+        firstError
         this.state = {
             userValue: '',
-            passwordValue: '',
-            alert: ''
+            passwordValue: ''
         };
 
         this._handleUserChange = this._handleUserChange.bind(this);
         this._handlePasswordChange = this._handlePasswordChange.bind(this);
         this._handleSubmit = this._handleSubmit.bind(this);
     }
-    
+
     render() {
         return (
             <form className="form" onSubmit={this._handleSubmit}>
@@ -26,7 +26,6 @@ class Login extends Component {
                 <input value={this.state.passwordValue} onChange={this._handlePasswordChange} className='form-input' type="password" placeholder="Password" name="psw" required />
                 <button className='form-input form-submit' type="submit">Log In</button>
                 Don't have an account? <Link to="/register">Create one here!</Link>
-                {this.state.alert}
             </form>
         );
     }
@@ -45,44 +44,37 @@ class Login extends Component {
             usernameOrEmail: this.state.userValue,
             password: this.state.passwordValue
         }).then(response => {
-            console.log(response);
-            this.setState({
-                alert: <Alert className="alert" variant="success"> {response.data} </Alert>
+            console.log(response)
+            this.props.alerter({
+                variant: 'success',
+                content: response.data.message
             });
+            this.props.onSuccess(response);
+            this.props.triggerExit();
         }).catch(err => {
             if (err.response) {
                 // client received an error response (5xx, 4xx)
                 console.log('response:', err.response)
                 let errors = err.response.data;
-                let firstError;
-                for (let errField in errors) {
-                    firstError = errors[errField];
-                    break;
-                }
-                this.setState({
-                    alert: <Alert className="alert" variant="danger"> {firstError} </Alert>
+                let first = firstError(errors);
+                this.props.alerter({
+                    variant: 'danger',
+                    content: first
                 });
             } else if (err.request) {
                 // client never received a response, or request never left
                 console.log('request:', err.request)
-                this.setState({
-                    alert: <Alert className="alert" variant="warning"> Network Error, please try again </Alert>
+                this.props.alerter({
+                    variant: 'warning',
+                    content: 'Network Error, please try again'
                 });
             } else {
-                this.setState({
-                    alert: <Alert className="alert" variant="danger"> Unknown error {err} </Alert>
+                this.props.alerter({
+                    variant: 'danger',
+                    content: `Unknown error ${err}`
                 });
             }
         });
-        // fetch('/login', {
-        //     method: 'POST',
-        //     body: {
-        //         usernameOrEmail: this.state.userValue,
-        //         password: this.state.passwordValue
-        //     }
-        // }).then(response => {
-        //     console.log(response)
-        // }).catch(err => console.log(err));
     }
 }
 

@@ -17,7 +17,7 @@ class ClientGameManager extends GameManager {
 	constructor(client) {
 		super();
 		// this._domElement = document.getElementById("embed");
-		
+		this._authToken = '';
 		this._view3D = new SceneManager();
         this._controller = null;
 		this._client = client;
@@ -25,6 +25,12 @@ class ClientGameManager extends GameManager {
 		this._view2D = new View2D(this, this._client);
 
 		this._focused = false;
+
+		this.setAuthToken = this.setAuthToken.bind(this);
+	}
+
+	setAuthToken(token) {
+		this._authToken = token;
 	}
 
 	setFocus(bool) {
@@ -42,7 +48,9 @@ class ClientGameManager extends GameManager {
 
 	async join(roomName) {
 		try {
-			let room = await this._client.joinOrCreate(roomName, {/* options */});
+			let room = await this._client.joinOrCreate(roomName, {
+				authToken: this._authToken
+			});
 			this.setRoom(room);
 			console.log("[ClientGameManager] Joined room succesfully", room);
 

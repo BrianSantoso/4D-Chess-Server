@@ -3,12 +3,27 @@ import { Redirect } from 'react-router-dom';
 import FocusLock from 'react-focus-lock';
 
 class Popup extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            redirect: null
+        }
+        this.triggerExit = this.triggerExit.bind(this);
+    }
+    triggerExit() {
+        this.setState({
+            redirect: this.props.redirect
+        });
+    }
     render() {
+        if (this.state.redirect) {
+            return <Redirect to={this.state.redirect} />
+        }
         return (
             <FocusLock>
-                <PopupBg redirect={this.props.redirect}>
+                <PopupBg onClickHandler={this.triggerExit}>
                     <div className='popup' onClick={(e) => e.stopPropagation()}>
-                        {this.props.children}
+                        {React.Children.map(this.props.children, comp => React.cloneElement(comp, { triggerExit: this.triggerExit }))}
                     </div>
                 </PopupBg>
             </FocusLock>
@@ -29,24 +44,9 @@ class Popup extends Component {
 }
 
 class PopupBg extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            redirect: null
-        }
-        this.onExit = this.onExit.bind(this);
-    }
-    onExit() {
-        this.setState({
-            redirect: this.props.redirect
-        });
-    }
     render() {
-        if (this.state.redirect) {
-            return <Redirect to={this.state.redirect} />
-        }
         return (
-            <div className='popup-bg-overlay' onClick={this.onExit}>
+            <div className='popup-bg-overlay' onClick={this.props.onClickHandler}>
                 {this.props.children}
             </div>
         );

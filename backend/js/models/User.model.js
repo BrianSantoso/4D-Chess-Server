@@ -9,8 +9,12 @@ const userSchema = new Schema({
             unique: true, // both unique, uniqueCaseInsensitive are required
             uniqueCaseInsensitive: true,
             trim: true,
-            minlength: 3,
-            maxLength: 15
+            minlength: [3, 'Username must be at least 3 characters!'],
+            maxLength: [15, 'Username cannot be longer than 15 characters!'],
+            validate: {
+                validator: Validator.isAlphanumeric,
+                message: props => 'Username can only have Alphanumeric characters!'
+            }
         },
         email: {
             type: String,
@@ -38,6 +42,26 @@ const userSchema = new Schema({
         lastLogin: {
             type: Date,
             requiredPaths: true
+        },
+        wins: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+        losses: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+        draws: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+        totalOpponentRatings: {
+            type: Number,
+            required: true,
+            min: 0
         }
     }, {
         timestamps: true,

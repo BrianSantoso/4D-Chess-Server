@@ -5,6 +5,9 @@ import bodyParser from 'body-parser'
 import Mongoose from 'mongoose';
 import { config as dotconfig } from 'dotenv';
 
+import Passport from 'passport';
+import { configurePassport } from './js/JWTPassportUtils.js';
+
 import usersRouter from './js/routes/Users.js';
 import registerRouter from './js/routes/Register.js';
 import loginRouter from './js/routes/Login.js';
@@ -16,6 +19,7 @@ import { DummyPlayer } from '../public/js/ChessPlayer.js';
 import BoardGraphics from '../public/js/BoardGraphics.js';
 
 dotconfig();
+configurePassport(Passport);
 
 class ServerInstance {
     // Contains game server and colyseus-websocket server
@@ -52,6 +56,7 @@ class ServerInstance {
     }
 
     configureAPI() {
+        this.app.use(Passport.initialize());
         this.app.use('/users', usersRouter);
         this.app.use('/register', registerRouter);
         this.app.use('/login', loginRouter);

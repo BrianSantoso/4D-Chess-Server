@@ -53,3 +53,15 @@
     cursor: pointer;
     opacity: 0.9;
 }
+
+.alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: fit-content;
+    z-index: 999;
+    margin: 0.1em auto;
+    text-align: center;
+    box-shadow: 0 0 5px rgba(0,0,0,.3);
+}

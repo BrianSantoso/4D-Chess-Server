@@ -21,8 +21,8 @@ class ChessNavbar extends Component {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="mr-auto">
-                    <Button href="#/login" variant="outline-dark">Log In</Button>
-                    <Button href="#/register" variant="outline-dark">Sign Up</Button>
+                    {this.props.loggedIn ? '' : <Button href="#/login" variant="outline-dark">Log In</Button>}
+                    {this.props.loggedIn ? '' : <Button href="#/register" variant="outline-dark">Sign Up</Button>}
                     <Nav.Link href="#/play">Play</Nav.Link>
                     <Nav.Link href="#/leaderboards">Leaderboards</Nav.Link>
                     <NavDropdown title="Other Stuff" id="basic-nav-dropdown">
