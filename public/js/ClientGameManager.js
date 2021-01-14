@@ -223,33 +223,30 @@ class ClientGameManager extends GameManager {
 class Embed extends Component {
 	constructor(props) {
 		super(props)
-
-		this._client = new Colyseus.Client("ws://localhost:3000");
-		this._gameManager = new ClientGameManager(this._client);
 		
-		this._gameManager.loadAssets().then(() => {
+		this.props.gameManager.loadAssets().then(() => {
 			try {
 				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
-				this._gameManager.join(roomId);
+				this.props.gameManager.join(roomId);
 			} catch {
 				console.log('[App] No roomId parameter found');
-				this._gameManager.join('standard');
+				this.props.gameManager.join('standard');
 			}
 
-			this._gameManager._startLoop();
+			this.props.gameManager._startLoop();
 		});
 	}
 
 	componentDidMount() {
 		// Mount three.js canvas
-		this._gameManager.mount(this._root);
+		this.props.gameManager.mount(this._root);
 	}
 
 	render() {
-		this._gameManager.setFocus(this.props.focused);
+		this.props.gameManager.setFocus(this.props.focused);
 		return (
 			<div id="embed" ref={(ref) => (this._root = ref)}>
-				{this._gameManager.overlay()}
+				{this.props.gameManager.overlay()}
 			</div>
 		);
 	}

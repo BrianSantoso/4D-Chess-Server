@@ -11,9 +11,12 @@ class ChessRoom extends Room {
     
     // Wrapper for chatMsg broadcast
     chatMsg(client, message, options) {
+        // client is null if called from server
+
         // TODO: rate limit messages and filter for spam/abuse
+        // TODO: authenticate user (make sure they are said user) before sending message?
         if (client) {
-            message.sender = client.sessionId;
+            message.sender = this.getUsername(client.sessionId);
         }
         this.broadcast("chatMsg", message, options);
     }
@@ -47,29 +50,29 @@ class ChessRoom extends Room {
         // if valid, retrieve player id and add to players
         // otherwise, add ??? guest to plyers (how to identify a guest?)
         let token = options.authToken;
-        let playerFindProm;
+        let playerAuthProm;
         try {
             let decoded = jwt.verify(token, process.env.JWT_SECRET);
             let _id = decoded.payload._id;
-            playerFindProm = User.findById(_id);
-        } catch {
-            // Player is guest/sent invalid token
-            playerFindProm = Promise.reject();
-        }
-        return {
-            playerFindProm: playerFindProm
-        };
-    }
-
-    // When client successfully join the room
-    onJoin (client, options, auth) {
-        auth.playerFindProm
+            playerAuthProm = User.findById(_id)
             .then(user => {
                 this.sessionIdToUser.set(client.sessionId, user);
             })
             .catch(err => {
                 // Player is guest/sent invalid token
-            })
+            });
+        } catch {
+            // Player is guest/sent invalid token
+            playerAuthProm = Promise.reject();
+        }
+        return {
+            playerAuthProm: playerAuthProm
+        };
+    }
+
+    // When client successfully join the room
+    onJoin (client, options, auth) {
+        auth.playerAuthProm
             .finally(() => {
                 let username = this.getUsername(client.sessionId);
                 this.chatMsg(null, {
@@ -84,8 +87,9 @@ class ChessRoom extends Room {
 
     // When a client leaves the room
     onLeave (client, consented) {
+        let username = this.getUsername(client.sessionId);
         this.chatMsg(null, {
-			msg: `${client.sessionId} has left the room`,
+			msg: `${username} has left the room`,
 			style: {
 				color: 'rgb(255, 251, 13)'
 			}
@@ -113,6 +117,7 @@ class ChessRoom extends Room {
 
     // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
     onDispose () {
+
     }
 }
 

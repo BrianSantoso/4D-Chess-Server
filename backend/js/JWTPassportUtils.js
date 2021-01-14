@@ -58,7 +58,7 @@ const sendPayload = (res, payload, successMessage) => {
 const sendAuthToken = (res, user, successMessage) => {
     const payload = {
         _id: user.get('_id'),
-        // username: user.get('username'),
+        username: user.get('username'),
         // elo: user.get('elo')
     };
     // Sign token and send

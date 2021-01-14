@@ -7,7 +7,7 @@ import { firstError } from './ResponseUtils.js';
 class Login extends Component {
     constructor(props) {
         super(props);
-        firstError
+        
         this.state = {
             userValue: '',
             passwordValue: ''

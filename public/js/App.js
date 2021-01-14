@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from 'react-dom';
 import { HashRouter as Router, Route } from "react-router-dom";
-import { Embed } from "./ClientGameManager.js";
+import { ClientGameManager, Embed } from "./ClientGameManager.js";
 import Register from './components/Register.jsx';
 import Login from './components/Login.jsx';
 import Popup from './components/Popup.jsx';
@@ -9,7 +9,8 @@ import ChessNavbar from './components/Navbar.jsx';
 import { Alert } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { createBrowserHistory } from "history";
-
+import * as Colyseus from "colyseus.js";
+import axios from "axios";
 import jwt from 'jsonwebtoken';
 
 class App extends Component {
@@ -20,6 +21,11 @@ class App extends Component {
 			loggedIn: false,
 			alert: ''
 		};
+
+		this.client = new Colyseus.Client("ws://localhost:3000");
+		this.gameManager = new ClientGameManager(this.client);
+		this.initAuthToken();
+
 		this.embed = React.createRef();
 		this.history = createBrowserHistory();
 		
@@ -48,10 +54,32 @@ class App extends Component {
 		this.setState({
 			loggedIn: true
 		});
-		let token = jwt.decode(response.data.token, {complete: true});
-		console.log('Token:', response.data.token, token)
-		console.log(this.embed, this.embed.current)
-		this.embed.current.setAuthToken(token);
+		this.setAuthToken(response.data.token);
+	}
+
+	setAuthToken(jwtString) {
+		let token = jwtString;
+		this.gameManager.setAuthToken(token);
+		localStorage.setItem('authToken', token);
+		let decoded = jwt.decode(token, {complete: true});
+		console.log('authToken set: (decoded ver=)', decoded)
+	}
+
+	initAuthToken() {
+		let token = localStorage.getItem('authToken');
+		if (token) {
+			console.log('Retrieved Cached authToken:', token);
+			this.setAuthToken(token);
+		} else {
+			axios.get('/register/guest').then(response => {
+				token = response.data.token;
+				console.log('Received guest authToken:', token);
+				this.setAuthToken(token);
+			}).catch(err => {
+				console.log('Failed to retrieve guest authToken', err);
+			});
+		}
+		
 	}
 
 	alert(props) {
@@ -70,7 +98,7 @@ class App extends Component {
 			<Router history={history}>
 				<ChessNavbar loggedIn={this.state.loggedIn}/>
 				{this.state.alert}
-				<Embed ref={this.embed} focused={this.state.focused}></Embed>
+				<Embed ref={this.embed} gameManager={this.gameManager} focused={this.state.focused}></Embed>
 				<Route path="/login">
 					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
 						<Login onSuccess={this.onAuthSuccess} alerter={this.alert}></Login>
