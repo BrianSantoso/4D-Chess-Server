@@ -17,7 +17,7 @@ class ClientGameManager extends GameManager {
 	constructor(client) {
 		super();
 		// this._domElement = document.getElementById("embed");
-		
+		this._authToken = '';
 		this._view3D = new SceneManager();
         this._controller = null;
 		this._client = client;
@@ -25,6 +25,12 @@ class ClientGameManager extends GameManager {
 		this._view2D = new View2D(this, this._client);
 
 		this._focused = false;
+
+		this.setAuthToken = this.setAuthToken.bind(this);
+	}
+
+	setAuthToken(token) {
+		this._authToken = token;
 	}
 
 	setFocus(bool) {
@@ -42,7 +48,9 @@ class ClientGameManager extends GameManager {
 
 	async join(roomName) {
 		try {
-			let room = await this._client.joinOrCreate(roomName, {/* options */});
+			let room = await this._client.joinOrCreate(roomName, {
+				authToken: this._authToken
+			});
 			this.setRoom(room);
 			console.log("[ClientGameManager] Joined room succesfully", room);
 
@@ -215,33 +223,30 @@ class ClientGameManager extends GameManager {
 class Embed extends Component {
 	constructor(props) {
 		super(props)
-
-		this._client = new Colyseus.Client("ws://localhost:3000");
-		this._gameManager = new ClientGameManager(this._client);
 		
-		this._gameManager.loadAssets().then(() => {
+		this.props.gameManager.loadAssets().then(() => {
 			try {
 				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
-				this._gameManager.join(roomId);
+				this.props.gameManager.join(roomId);
 			} catch {
 				console.log('[App] No roomId parameter found');
-				this._gameManager.join('standard');
+				this.props.gameManager.join('standard');
 			}
 
-			this._gameManager._startLoop();
+			this.props.gameManager._startLoop();
 		});
 	}
 
 	componentDidMount() {
 		// Mount three.js canvas
-		this._gameManager.mount(this._root);
+		this.props.gameManager.mount(this._root);
 	}
 
 	render() {
-		this._gameManager.setFocus(this.props.focused);
+		this.props.gameManager.setFocus(this.props.focused);
 		return (
 			<div id="embed" ref={(ref) => (this._root = ref)}>
-				{this._gameManager.overlay()}
+				{this.props.gameManager.overlay()}
 			</div>
 		);
 	}
