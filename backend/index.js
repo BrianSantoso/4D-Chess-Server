@@ -68,7 +68,8 @@ class ServerInstance {
             dim: config.dims.standard,
             BoardGraphics: BoardGraphics, // empty BoardGraphics
             WhitePlayer: DummyPlayer,
-            BlackPlayer: DummyPlayer
+            BlackPlayer: DummyPlayer,
+            timeControl: 600000
         }
         this.gameServer.define('standard', ChessRoom, standardOptions);
     }

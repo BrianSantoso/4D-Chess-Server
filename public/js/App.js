@@ -5,6 +5,7 @@ import { ClientGameManager, Embed } from "./ClientGameManager.js";
 import Register from './components/Register.jsx';
 import Login from './components/Login.jsx';
 import Popup from './components/Popup.jsx';
+import Logout from './components/Logout.jsx';
 import ChessNavbar from './components/Navbar.jsx';
 import { Alert } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
@@ -24,7 +25,6 @@ class App extends Component {
 
 		this.client = new Colyseus.Client("ws://localhost:3000");
 		this.gameManager = new ClientGameManager(this.client);
-		this.initAuthToken();
 
 		this.embed = React.createRef();
 		this.history = createBrowserHistory();
@@ -33,9 +33,16 @@ class App extends Component {
 		this.gainGameFocus = this.gainGameFocus.bind(this);
 		this.onAuthSuccess = this.onAuthSuccess.bind(this);
 		this.handleCloseAlert = this.handleCloseAlert.bind(this);
+		this.logout = this.logout.bind(this);
 		this.alert = this.alert.bind(this);
 		console.log(this.history)
 		// history.goBack
+	}
+
+	componentDidMount() {
+		// Must only be run once component is mounted
+		// since we need to update state {loggedIn: }
+		this.initAuthToken();
 	}
 
 	loseGameFocus() {
@@ -51,18 +58,23 @@ class App extends Component {
 	}
 
 	onAuthSuccess(response) {
-		this.setState({
-			loggedIn: true
-		});
 		this.setAuthToken(response.data.token);
 	}
 
 	setAuthToken(jwtString) {
 		let token = jwtString;
-		this.gameManager.setAuthToken(token);
-		localStorage.setItem('authToken', token);
-		let decoded = jwt.decode(token, {complete: true});
-		console.log('authToken set: (decoded ver=)', decoded)
+		try {
+			let decoded = jwt.decode(token, {complete: true});
+			this.gameManager.setAuthToken(token);
+			localStorage.setItem('authToken', token);
+			console.log('authToken set: (decoded ver=)', decoded)
+			this.setState({
+				loggedIn: decoded.payload.registered
+			});
+		} catch {
+			console.error('Malformed authToken, logging out');
+			this.logout();
+		}	
 	}
 
 	initAuthToken() {
@@ -70,6 +82,7 @@ class App extends Component {
 		if (token) {
 			console.log('Retrieved Cached authToken:', token);
 			this.setAuthToken(token);
+			// TODO: tell server to update last login
 		} else {
 			axios.get('/register/guest').then(response => {
 				token = response.data.token;
@@ -79,7 +92,11 @@ class App extends Component {
 				console.log('Failed to retrieve guest authToken', err);
 			});
 		}
-		
+	}
+
+	logout() {
+		localStorage.removeItem('authToken');
+		this.initAuthToken();
 	}
 
 	alert(props) {
@@ -98,7 +115,7 @@ class App extends Component {
 			<Router history={history}>
 				<ChessNavbar loggedIn={this.state.loggedIn}/>
 				{this.state.alert}
-				<Embed ref={this.embed} gameManager={this.gameManager} focused={this.state.focused}></Embed>
+				<Embed ref={this.embed} gameManager={this.gameManager} focused={this.state.focused} onMount={() => this.setState({focused: true})}></Embed>
 				<Route path="/login">
 					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
 						<Login onSuccess={this.onAuthSuccess} alerter={this.alert}></Login>
@@ -107,6 +124,11 @@ class App extends Component {
 				<Route path="/register">
 					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
 						<Register onSuccess={this.onAuthSuccess} alerter={this.alert}></Register>
+					</Popup>
+				</Route>
+				<Route path="/logout">
+					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
+						<Logout onSuccess={this.logout} alerter={this.alert}></Logout>
 					</Popup>
 				</Route>
 			</Router>

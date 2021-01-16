@@ -21,9 +21,90 @@ class ChessRoom extends Room {
         this.broadcast("chatMsg", message, options);
     }
 
+    getPlayerData() {
+        // let allUsers = this.allUsers();
+        // let white = this.users.get(this.whiteId);
+        // let black = this.users.get(this.blackId);
+        // return {
+        //     // another way to find all connected users is to user this.clients + sessionIdToUser
+        //     connectedUsers: allUsers, 
+        //     white: Object.assign(white, {
+        //         time: 600000
+        //     }),
+        //     black: Object.assign(black, {
+        //         time: 600000
+        //     }),
+        // };
+        let playerData = this._gameManager.getPlayerData();
+        return playerData;
+        // Object.assign(, {
+        //     connectedUsers: this.allUsers()
+        // });
+    }
+
+    broadcastPlayerData(options) {
+        let playerData = this.getPlayerData();
+        this.broadcast("playerData", playerData, options);
+        return playerData;
+    }
+
+    strip(user) {
+        return {
+            _id: user._id,
+            _username: user.username,
+            _elo: user.elo
+        }
+    }
+
+    connectedUsers() {
+        return Array.from(this.users.values());
+    }
+
+    addUser(sessionId, user) {
+        let _id = user.get('_id');
+        let stripped = this.strip(user);
+        this.sessionIdToUser.set(sessionId, stripped);
+        if (!this.users.has(_id)) {
+            // If user has not joined the room yet
+            if (!this.whiteId) {
+                this.whiteId = _id;
+            } else if (!this.blackId) {
+                this.blackId = _id;
+            }
+
+            this.users.set(_id, stripped);
+
+            // TODO: this will add a weird _time field to the user in this.users map
+            // but is necessary in order to properly attach _time to an empty player.
+            // To fix, reverse the order of Object.assign, and create a deep copy of
+            // this.users.get(----)
+            this._gameManager.setPlayerData({
+                _white: Object.assign(this.users.get(this.whiteId) || this._gameManager.getPlayerData()._white, {
+                    _time: this.timeControl
+                }),
+                _black: Object.assign(this.users.get(this.blackId) || this._gameManager.getPlayerData()._black, {
+                    _time: this.timeControl
+                })
+            });
+        }
+
+        this.broadcastPlayerData();
+    }
+
+    removeUser(user) {
+        // find user by id
+        this.users.delete(user._id);
+
+        let playerData = this.broadcastPlayerData();
+        this._gameManager.setPlayerData(playerData);
+    }
     // When room is initialized
     onCreate (options) {
-        this.sessionIdToUser = new Map();
+        this.whiteId = null;
+        this.blackId = null;
+        this.timeControl = options.timeControl;
+        this.users = new Map();
+        this.sessionIdToUser = new Map(); // TODO: susceptible to memory attack if user closes and reopens repeatedly
         this.chatMsg = this.chatMsg.bind(this);
 
         this.onMessage('chatMsg', this.chatMsg);
@@ -46,34 +127,32 @@ class ChessRoom extends Room {
 
     // Authorize client based on provided options before WebSocket handshake is complete
     onAuth (client, options, request) {
-        // validate json web token
-        // if valid, retrieve player id and add to players
-        // otherwise, add ??? guest to plyers (how to identify a guest?)
-        let token = options.authToken;
-        let playerAuthProm;
-        try {
-            let decoded = jwt.verify(token, process.env.JWT_SECRET);
-            let _id = decoded.payload._id;
-            playerAuthProm = User.findById(_id)
-            .then(user => {
-                this.sessionIdToUser.set(client.sessionId, user);
-            })
-            .catch(err => {
-                // Player is guest/sent invalid token
-            });
-        } catch {
-            // Player is guest/sent invalid token
-            playerAuthProm = Promise.reject();
+        let authToken = options.authToken;
+        if (authToken) {
+            let decoded = jwt.verify(options.authToken, process.env.JWT_SECRET);
+            if (decoded) {
+                let playerAuthProm = User.findById(decoded._id)
+                .catch(err => {
+                    // TODO: User with that id does not exist
+                    throw new ServerError(400, "Bad authToken: User with that id does not exist");
+                });
+                return {
+                    playerAuthProm: playerAuthProm
+                };
+            } else {
+                throw new ServerError(400, "Bad authToken");
+            }
+        } else {
+            throw new ServerError(400, "Bad authToken");
         }
-        return {
-            playerAuthProm: playerAuthProm
-        };
     }
 
     // When client successfully join the room
     onJoin (client, options, auth) {
         auth.playerAuthProm
-            .finally(() => {
+            .then(user => {
+                this.addUser(client.sessionId, user);
+                console.log('User joined room:', user)
                 let username = this.getUsername(client.sessionId);
                 this.chatMsg(null, {
                     msg: `${username} has joined the room`,
@@ -87,6 +166,9 @@ class ChessRoom extends Room {
 
     // When a client leaves the room
     onLeave (client, consented) {
+        let user = this.getUser(client.sessionId);
+        this.removeUser(user);
+
         let username = this.getUsername(client.sessionId);
         this.chatMsg(null, {
 			msg: `${username} has left the room`,
@@ -96,23 +178,17 @@ class ChessRoom extends Room {
 		});
     }
 
-    getUsername(sessionId) {
-        // let user = this.sessionIdToUserId.get(sessionId);
-        // if (user) {
-        //     user.get('username');  
-        // } else {
-        //     return 'Guest-'+sessionId;
-        // } 
-        return this.getUserProperty(sessionId, 'username', (sessionId) => `Guest-${sessionId}`);
+    getUser(sessionId) {
+        return this.sessionIdToUser.get(sessionId);
     }
 
-    getUserProperty(sessionId, property, ifGuestResulter) {
-        let user = this.sessionIdToUser.get(sessionId);
-        if (user) {
-            return user.get(property);  
-        } else {
-            return ifGuestResulter(sessionId);
-        }
+    getUsername(sessionId) {
+        return this.getUserProperty(sessionId, '_username');
+    }
+
+    getUserProperty(sessionId, property) {
+        let user = this.getUser(sessionId);
+        return user[property];
     }
 
     // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)

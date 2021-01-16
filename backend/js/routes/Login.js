@@ -22,7 +22,7 @@ router.route('/').post((req, res) => {
                 let hash = user.get('password');
                 bcrypt.compare(plainTxtPwd, hash).then(isMatch => {
                     if (isMatch) {
-                        sendAuthToken(res, user, 'Logged in!');
+                        sendAuthToken(res, user, `Logged in! You will be ${user.get('username')} with the next game you join.`);
                     } else {
                         res.status(400).json({
                             password: 'Incorrect password'

@@ -43,6 +43,26 @@ class View2D {
 		};
 	}
 
+	setPlayerData(playerData) {
+		console.log('[View2D] playerData:', playerData)
+		let white = playerData._white;
+		let black = playerData._black;
+		let left = <PlayerInfo team={ChessTeam.WHITE} 
+						playerName={white._username} 
+						myTurn={true} time={white._time} 
+						elo={white._elo} 
+						position={'playerInfoLeft'}></PlayerInfo>
+		let right = <PlayerInfo team={ChessTeam.BLACK} 
+						playerName={black._username} 
+						myTurn={true} time={black._time} 
+						elo={black._elo} 
+						position={'playerInfoRight'}></PlayerInfo>
+		this.setState({
+			playerLeft: left,
+			playerRight: right
+		});
+	}
+
 	setFocus(bool) {
 		this._focused = bool;
 		this._events.setFocus(bool);

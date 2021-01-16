@@ -42,6 +42,14 @@ class GameManager {
 	redo() {
 		this._game.redo();
 	}
+
+	setPlayerData(playerData) {
+		this._game.setPlayerData(playerData);
+	}
+
+	getPlayerData() {
+		return this._game.getPlayerData();
+	}
 }
 
 export default GameManager;

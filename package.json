@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "db": "npm run dbstart && mongo",
-    "dbhardreset": "mongo < db/scripts/hardreset.js",
+    "dbreset": "mongo < backend/db/scripts/hardreset.js",
     "dbrestart": "sudo systemctl restart mongod",
     "dbstart": "npm run dbrestart",
     "dbstop": "sudo systemctl stop mongod",

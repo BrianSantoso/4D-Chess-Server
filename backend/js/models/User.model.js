@@ -16,6 +16,10 @@ const userSchema = new Schema({
                 message: props => 'Username can only have Alphanumeric characters!'
             }
         },
+        registered: {
+            type: Boolean,
+            required: true
+        },
         email: {
             type: String,
             required: true,

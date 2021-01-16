@@ -22,13 +22,27 @@ class AbstractPlayer {
 		// </PlayerInfo>
 		this._game = game;
 		this._team = team;
-		this._name = '???';
-		this._elo = -1;
+		this._username = '--------';
+		this._elo = '--';
 		this._time = -1;
 		this._canInteract = true;
 
 		this._receiver;
 		this._transmitter;
+	}
+
+	setData(data) {
+		this._username = data._username;
+		this._elo = data._elo;
+		this._time = data._time;
+	}
+
+	toJSON() {
+		return {
+			_username: this._username,
+			_elo: this._elo,
+			_time: this._time
+		}
 	}
 	
 	makeMove(move) {

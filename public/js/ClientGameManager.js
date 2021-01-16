@@ -27,10 +27,28 @@ class ClientGameManager extends GameManager {
 		this._focused = false;
 
 		this.setAuthToken = this.setAuthToken.bind(this);
+
+		const proms = [this.loadAssets(), new Promise((resolve, reject) => {
+			this._authTokenSet = resolve;
+		})]
+		Promise.all(proms).then(() => {
+			try {
+				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
+				this.join(roomId);
+			} catch {
+				console.log('[App] No roomId parameter found');
+				this.join('standard');
+			}
+			this._startLoop();
+		});
 	}
 
 	setAuthToken(token) {
+		// TODO: may error if authToken is unloaded (via logout!)
+		//  and user tries to join room before a new guest 
+		// token can be retrieved from the server
 		this._authToken = token;
+		this._authTokenSet();
 	}
 
 	setFocus(bool) {
@@ -72,9 +90,14 @@ class ClientGameManager extends GameManager {
 
 		// TODO: change to gameAssignment
 		room.onMessage('chessGame', (jsonData) => {
-			console.log('received chessGame')
+			console.log('received chessGame');
 			this.loadFrom(jsonData);
 		});
+
+		room.onMessage('playerData', (jsonData) => {
+			console.log('received playerData');
+			this.setPlayerData(jsonData);
+		})
 
 		if (this._room) {
 			this._room.leave();
@@ -85,6 +108,13 @@ class ClientGameManager extends GameManager {
 		if (this._game) {
 			this._game.setRoom(room);
 		}
+	}
+
+	setPlayerData(playerData) {
+		super.setPlayerData(playerData);
+		// TODO: which team are you bruh
+		// TODO: whose turn is it bruh
+		this._view2D.setPlayerData(playerData);
 	}
 
 	setGame(game) {
@@ -224,22 +254,23 @@ class Embed extends Component {
 	constructor(props) {
 		super(props)
 		
-		this.props.gameManager.loadAssets().then(() => {
-			try {
-				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
-				this.props.gameManager.join(roomId);
-			} catch {
-				console.log('[App] No roomId parameter found');
-				this.props.gameManager.join('standard');
-			}
+		// this.props.gameManager.loadAssets().then(() => {
+		// 	try {
+		// 		let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
+		// 		this.props.gameManager.join(roomId);
+		// 	} catch {
+		// 		console.log('[App] No roomId parameter found');
+		// 		this.props.gameManager.join('standard');
+		// 	}
 
-			this.props.gameManager._startLoop();
-		});
+		// 	this.props.gameManager._startLoop();
+		// });
 	}
 
 	componentDidMount() {
 		// Mount three.js canvas
 		this.props.gameManager.mount(this._root);
+		this.props.onMount();
 	}
 
 	render() {

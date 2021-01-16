@@ -4,6 +4,7 @@ import FormValidator from '../../../public/js/FormValidator.js';
 import bcrypt from 'bcrypt';
 import { simpleErrors } from '../MongooseUtils.js';
 import { sendAuthToken } from '../JWTPassportUtils.js';
+import Validator from 'validator';
 
 // https://www.npmjs.com/package/unique-names-generator
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
@@ -21,6 +22,7 @@ router.route('/').post((req, res) => {
 
         // Assign user default properties / Overwrite an attack
         Object.assign(fields, {
+            registered: true,
             elo: 1000,
             joinDate: new Date(),
             lastLogin: new Date(),
@@ -40,7 +42,7 @@ router.route('/').post((req, res) => {
                 const newUser = new User(fields);
                 newUser.save()
                     .then(user => {
-                        sendAuthToken(res, user, 'Account created!');
+                        sendAuthToken(res, user, `Account created! You will be ${user.get('username')} with the next game you join.`);
                     })
                     .catch(err => res.status(400).json(simpleErrors(err)));
             }
@@ -56,53 +58,35 @@ const randomNameConfig = {
     length: 2 // num words
 }
 
-const genGuestUsername = () => {
-    let proposedName = uniqueNamesGenerator(randomNameConfig);
-    return generateUniqueAccountName(proposedName);
-}
-
-// https://stackoverflow.com/a/46326576
-const generateUniqueAccountName = (proposedName) => {
-    return User
-        .findOne({username: proposedName})
+const createGuestUser = (res) => {
+    let username = uniqueNamesGenerator(randomNameConfig);
+    let fields = {
+        username: username, 
+        registered: false,
+        email: `${username}@${process.env.GUEST_EMAIL}`,
+        password: process.env.GUEST_PWD,
+        elo: 1000,
+        joinDate: new Date(),
+        lastLogin: new Date(),
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        totalOpponentRatings: 0
+    }
+    let newUser = new User(fields);
+    return newUser.save()
         .then(user => {
-            if (user) {
-                proposedName = genGuestUsername();
-                return generateUniqueAccountName(proposedName);
-            } else {
-                return proposedName; // proposedName is unique
-            }
+            sendAuthToken(res, user, 'Guest Account created!');
         })
         .catch(err => {
-            console.error('Attempted to generate unique guest username but failed unexpectedly', err);
+            // Generated username is invalid / already exists, so retry
+            console.log(username, 'invalid, retrying random name generation')
+            createGuestUser(res);
         });
 }
 
 router.route('/guest').get((req, res) => {
-    genGuestUsername().then(username => {
-        console.log('Generated guest username:', username)
-        let fields = {
-            username: username, 
-            email: `${username}@dummyusername.com`,
-            password: process.env.GUEST_PWD,
-            elo: 1000,
-            joinDate: new Date(),
-            lastLogin: new Date(),
-            wins: 0,
-            losses: 0,
-            draws: 0,
-            totalOpponentRatings: 0
-        }
-        const newUser = new User(fields);
-        newUser.save()
-            .then(user => {
-                sendAuthToken(res, user, 'Guest Account created!');
-            })
-            .catch(err => {
-                res.status(400).json(err)
-                console.log(err)
-            });
-    });
+    createGuestUser(res);
 });
 
 export default router;

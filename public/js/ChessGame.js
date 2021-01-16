@@ -240,6 +240,20 @@ class ChessGame {
 	setMode(mode) {
 		this._mode = mode;
 	}
+
+	setPlayerData(playerData) {
+		let whiteData = playerData._white;
+		let blackData = playerData._black;
+		this._white.setData(whiteData);
+		this._black.setData(blackData);
+	}
+
+	getPlayerData() {
+		return {
+			_white: this._white.toJSON(),
+			_black: this._black.toJSON()
+		}
+	}
 }
 
 ChessGame.create = (options) => {
