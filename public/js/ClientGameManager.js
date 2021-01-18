@@ -19,10 +19,10 @@ class ClientGameManager extends GameManager {
 		super();
 		// this._domElement = document.getElementById("embed");
 		this._authToken = '';
-		this._clientTeam = ChessTeam.NONE;
 		this._view3D = new SceneManager();
         this._controller = null;
 		this._client = client;
+		this._clientTeam = ChessTeam.SPECTATOR;
 		this._room = null;
 		this._view2D = new View2D(this, this._client);
 
@@ -43,10 +43,6 @@ class ClientGameManager extends GameManager {
 			}
 			this._startLoop();
 		});
-	}
-
-	setTeam(team) {
-		this._clientTeam = team;
 	}
 
 	setAuthToken(token) {
@@ -128,11 +124,16 @@ class ClientGameManager extends GameManager {
 		} else {
 			this._clientTeam = ChessTeam.SPECTATOR;
 		}
-
-		// TODO: whose turn is it bruh
-		this._view2D.setPlayerData(playerData, this._clientTeam);
-
+		this._game.setPlayerControls(this.getClientTeam());
+		this.subscribePlayers();
 		
+		
+		// TODO: whose turn is it bruh
+		this._view2D.setPlayerData(playerData, this.getClientTeam());
+	}
+
+	getClientTeam() {
+		return this._clientTeam;
 	}
 
 	setGame(game) {
@@ -157,10 +158,19 @@ class ClientGameManager extends GameManager {
 		super.setGame(game);
 		
 		// manage subscriptions
-		game.getPlayers().forEach(player => {
+		this.subscribePlayers();
+	}
+
+	subscribePlayers() {
+		this._game.getPlayers().forEach(player => {
 			if (player.needsClickEvent()) {
 				// TODO: is there a prettier way to do this?
 				this._view3D.subscribe(player, 'intentionalClick');
+			}
+		});
+		this._game.getPlayers().forEach(player => {
+			if (player.needsRayCaster()) {
+				player.setRayCaster(this._view3D.getRayCaster());
 			}
 		});
 	}
@@ -170,17 +180,12 @@ class ClientGameManager extends GameManager {
 			// mode: ChessMode.NONE,
 			dim: config.dims.standard,
 			BoardGraphics: BoardGraphics3D,
-			whitePlayerType: 'OnlinePlayer3D', // TODO: configure players dynamically
-			blackPlayerType: 'OnlinePlayer3D'
+			whitePlayerType: 'AbstractPlayer', // TODO: configure players dynamically
+			blackPlayerType: 'AbstractPlayer'
 		}
         options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
 		game.setRoom(this._room);
-		game.getPlayers().forEach(player => {
-			if (player.needsRayCaster()) {
-				player.setRayCaster(this._view3D.getRayCaster());
-			}
-		});
 		return game;
 	}
 	
@@ -219,7 +224,8 @@ class ClientGameManager extends GameManager {
 		if (this._game) {
 			this._game.update(step);
 			let playerData = this.getPlayerData();
-			this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
+			this._view2D.setPlayerData(playerData, this.getClientTeam());
+			// this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
 		this._view3D.update();
 	}

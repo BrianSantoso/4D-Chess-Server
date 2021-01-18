@@ -2,7 +2,7 @@ import GameBoard from "./GameBoard.js";
 import MoveHistory from "./MoveHistory.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
-import { Player } from "./ChessPlayer.js";
+import Player from "./ChessPlayer.js";
 
 class ChessGame {
 	constructor() {
@@ -264,6 +264,10 @@ class ChessGame {
 		this._black.setData(blackData);
 	}
 
+	setPlayerControls(clientTeam) {
+		this._mode.setPlayerControls.call(this, clientTeam);
+	}
+
 	getPlayerData() {
 		return {
 			_white: this._white.toJSON(),
@@ -307,10 +311,11 @@ ChessGame.revive = (fields) => {
 };
 
 class ChessMode {
-	constructor(type, update, makeMove) {
+	constructor(type, update, makeMove, setPlayerControls) {
 		this.type = type;
 		this.update = update;
 		this.makeMove = makeMove;
+		this.setPlayerControls = setPlayerControls;
 	}
 
 	toJSON() {
@@ -318,7 +323,7 @@ class ChessMode {
 	}
 }
 
-ChessMode.TEMPLATE = new ChessMode('TEMPLATE', () => {}, () => {});
+ChessMode.TEMPLATE = new ChessMode('TEMPLATE', () => {}, () => {}, () => {});
 
 ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
 	function update(step, hasBegun) {
@@ -344,6 +349,10 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 		} else {
 			// this._switchTurns();
 		}
+	},
+	function setPlayerControls(clientTeam) {
+		this._white.to('LocalPlayer3D');
+		this._black.to('LocalPlayer3D');
 	}
 );
 
@@ -373,6 +382,18 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		} else {
 			// TODO: status and allPossibleMoves will not be memoized
 			this._moveHistory.addToEnd(move); // add to history
+		}
+	},
+	function setPlayerControls(clientTeam) {
+		if (clientTeam === ChessTeam.WHITE) {
+			this._white.to('OnlinePlayer3D');
+			this._black.to('AbstractPlayer3D');
+		} else if (clientTeam === ChessTeam.BLACK) {
+			this._white.to('AbstractPlayer3D');
+			this._black.to('OnlinePlayer3D');
+		} else {
+			this._white.to('AbstractPlayer3D');
+			this._black.to('AbstractPlayer3D');
 		}
 	}
 );

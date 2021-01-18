@@ -1,6 +1,5 @@
 import Move from './Move.js';
 import ChessTeam from './ChessTeam.js';
-import ChessGame from './ChessGame.js';
 
 class MoveHistory {
     constructor() {
