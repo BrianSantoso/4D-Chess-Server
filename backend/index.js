@@ -67,8 +67,8 @@ class ServerInstance {
             mode: ChessMode.ONLINE_MULTIPLAYER,
             dim: config.dims.standard,
             BoardGraphics: BoardGraphics, // empty BoardGraphics
-            WhitePlayer: DummyPlayer,
-            BlackPlayer: DummyPlayer,
+            whitePlayerType: 'AbstractPlayer',
+            blackPlayerType: 'AbstractPlayer',
             timeControl: 600000
         }
         this.gameServer.define('standard', ChessRoom, standardOptions);

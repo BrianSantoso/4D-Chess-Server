@@ -2,19 +2,20 @@ import GameBoard from "./GameBoard.js";
 import MoveHistory from "./MoveHistory.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
+import { Player } from "./ChessPlayer.js";
 
 class ChessGame {
 	constructor() {
 		// We want to leave some fields undefined because if we create a ChessGame without
 		// assigning Players, GameBoard, BoardGraphics, those undefined fields will not
-		// override a templated game's (A game with those aforementioned fields specified) 
+		// override a templated gam,e's (A game with those aforementioned fields specified) 
 		// config when merging via Object.assign(template, gameWithSomeEmptyFields)
 		this._mode;
 		this._board;
-		this._white;
-		this._black;
+		this._white = Player.create(ChessGame.WHITE);
+		this._black = Player.create(ChessGame.BLACK);
 		this._boardGraphics;
-		this._turn = ChessTeam.WHITE;
+		// this._turn = ChessTeam.WHITE;
 
 		this._moveHistory = new MoveHistory();
 		this._allPossibleMoves;
@@ -27,12 +28,18 @@ class ChessGame {
 		return {
 			_mode: this._mode,
 			_board: this._board,
-			_turn: this._turn,
+			// _turn: this._turn,
 			_moveHistory: this._moveHistory,
-			_status: this._status
+			_status: this._status,
+			_white: this._white,
+			_black: this._black
 		};
 	}
 	
+	hasBegun() {
+		return this._moveHistory.length() >= 2;
+	}
+
 	getPlayers() {
 		return [this._white, this._black];
 	}
@@ -48,6 +55,14 @@ class ChessGame {
 	
 	setBlack(player) {
 		this._black = player;
+	}
+
+	getWhite() {
+		return this._white;
+	}
+
+	getBlack() {
+		return this._black;
 	}
 
 	status() {
@@ -160,7 +175,7 @@ class ChessGame {
 				redoData.allPossibleMoves = this._allPossibleMoves;
 			}
 			
-			this._switchTurns();
+			// this._switchTurns();
 		}
 	}
 
@@ -189,7 +204,7 @@ class ChessGame {
 				undoData.allPossibleMoves = this._allPossibleMoves;
 			}
 
-			this._switchTurns();
+			// this._switchTurns();
 		}
 	}
 	
@@ -200,29 +215,30 @@ class ChessGame {
 	}
 	
 	_getCurrentPlayer() {
-		if (this._turn === ChessTeam.WHITE) {
+		let currTurn = this.currTurn();
+		if (currTurn === ChessTeam.WHITE) {
 			return this._white;
-		} else if (this._turn === ChessTeam.BLACK) {
+		} else if (currTurn === ChessTeam.BLACK) {
 			return this._black;
 		} else {
 			return null; // TODO: not sure what to return (ghost, none?)
 		}
 	}
 	
-	_switchTurns() {
-		if (this._turn === ChessTeam.WHITE) {
-			this._turn = ChessTeam.BLACK;
-		} else if (this._turn === ChessTeam.BLACK) {
-			this._turn = ChessTeam.WHITE;
-		}
-	}
+	// _switchTurns() {
+	// 	if (this._turn === ChessTeam.WHITE) {
+	// 		this._turn = ChessTeam.BLACK;
+	// 	} else if (this._turn === ChessTeam.BLACK) {
+	// 		this._turn = ChessTeam.WHITE;
+	// 	}
+	// }
 	
 	update(step) {
-		this._mode.update.call(this, step);
+		this._mode.update.call(this, step, this.hasBegun());
 	}
 	
 	currTurn() {
-		return this._turn;
+		return this._moveHistory.currTurn();
 	}
 
 	view3D() {
@@ -265,8 +281,10 @@ ChessGame.create = (options) => {
 	let boardGraphics = new options.BoardGraphics(options.dim);
 	game.setBoardGraphics(boardGraphics);
 	
-	let white = new options.WhitePlayer(ChessTeam.WHITE, game);
-	let black = new options.BlackPlayer(ChessTeam.BLACK, game);
+	// let white = new options.WhitePlayer(ChessTeam.WHITE, game);
+	// let black = new options.BlackPlayer(ChessTeam.BLACK, game);
+	let white = Player.create(ChessTeam.WHITE, game, options.whitePlayerType, {});
+	let black = Player.create(ChessTeam.BLACK, game, options.blackPlayerType, {});
 	game.setWhite(white);
 	game.setBlack(black);
 	
@@ -275,12 +293,16 @@ ChessGame.create = (options) => {
 };
 
 ChessGame.revive = (fields) => {
-	return Object.assign(new ChessGame(), fields, {
+	console.log('Reviving game from:', fields)
+	let game = new ChessGame();
+	return Object.assign(game, fields, {
 		_mode: ChessMode.revive(fields._mode),
 		_board: GameBoard.revive(fields._board),
-		_turn: ChessTeam.revive(fields._turn),
+		// _turn: ChessTeam.revive(fields._turn),
 		_moveHistory: MoveHistory.revive(fields._moveHistory),
-		_status: ChessTeam.revive(fields._status)
+		_status: ChessTeam.revive(fields._status),
+		_white: fields._white, // this is just an Object.assign call
+		_black: fields._black
 	});
 };
 
@@ -296,10 +318,12 @@ class ChessMode {
 	}
 }
 
+ChessMode.TEMPLATE = new ChessMode('TEMPLATE', () => {}, () => {});
+
 ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
-	function update(step) {
+	function update(step, hasBegun) {
 		let playerCanInteract = true;
-		this._getCurrentPlayer().update(step, playerCanInteract);
+		this._getCurrentPlayer().update(step, playerCanInteract, hasBegun);
 		this._boardGraphics.update();
 	}, 
 	function makeMove(move) {
@@ -318,15 +342,15 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 		if (this.isGameOver()) {
 
 		} else {
-			this._switchTurns();
+			// this._switchTurns();
 		}
 	}
 );
 
 ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', 
-	function update(step) {
+	function update(step, hasBegun) {
 		let playerCanInteract = this._moveHistory.atLast();
-		this._getCurrentPlayer().update(step, playerCanInteract); // TODO: determine better way to disable interaction
+		this._getCurrentPlayer().update(step, hasBegun, playerCanInteract); // TODO: determine better way to disable interaction
 		this._boardGraphics.update();
 	},
 	function makeMove(move) {
@@ -344,7 +368,7 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 			if (this.isGameOver()) {
 
 			} else {
-				this._switchTurns();
+				// this._switchTurns();
 			}
 		} else {
 			// TODO: status and allPossibleMoves will not be memoized

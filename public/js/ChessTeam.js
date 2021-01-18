@@ -20,7 +20,7 @@ class ChessTeam {
 }
 
 ChessTeam.GHOST = new ChessTeam('GHOST');
-ChessTeam.NONE = new ChessTeam('NONE'); // TODO: may be problematic since spectator team is NONE and empty piece team is NONE
+ChessTeam.NONE = ChessTeam.SPECTATOR = new ChessTeam('NONE'); // TODO: may be problematic since spectator team is NONE and empty piece team is NONE
 ChessTeam.WHITE = new ChessTeam('WHITE');
 ChessTeam.BLACK = new ChessTeam('BLACK');
 ChessTeam.OMNISCIENT = new ChessTeam('OMNISCIENT');

@@ -6,20 +6,18 @@ class AbstractReceiver {
     }
     update() {
 
-    }
-}
-
-class AbstractReceiver3D extends AbstractReceiver {
-    unselect() {
-
 	}
 	
-	setRayCaster(rayCaster) {
+	unselect() {
 
 	}
 	
 	needsRayCaster() {
 		return false;
+	}
+
+	setRayCaster(rayCaster) {
+
 	}
 	
 	needsClickEvent() {
@@ -31,4 +29,4 @@ class AbstractReceiver3D extends AbstractReceiver {
 	}
 }
 
-export { AbstractReceiver3D };
+export { AbstractReceiver };

@@ -43,20 +43,29 @@ class View2D {
 		};
 	}
 
-	setPlayerData(playerData) {
-		console.log('[View2D] playerData:', playerData)
+	setPlayerData(playerData, clientTeam) {
+		// console.log('[View2D] playerData:', playerData, clientTeam)
+		let whiteSide, blackSide;
+		if (clientTeam === ChessTeam.BLACK) {
+			whiteSide = 'playerInfoRight';
+			blackSide = 'playerInfoLeft';
+		} else {
+			// spectators will have white on left
+			whiteSide = 'playerInfoLeft';
+			blackSide = 'playerInfoRight';
+		}
 		let white = playerData._white;
 		let black = playerData._black;
 		let left = <PlayerInfo team={ChessTeam.WHITE} 
 						playerName={white._username} 
 						myTurn={true} time={white._time} 
 						elo={white._elo} 
-						position={'playerInfoLeft'}></PlayerInfo>
+						position={whiteSide}></PlayerInfo>
 		let right = <PlayerInfo team={ChessTeam.BLACK} 
 						playerName={black._username} 
 						myTurn={true} time={black._time} 
 						elo={black._elo} 
-						position={'playerInfoRight'}></PlayerInfo>
+						position={blackSide}></PlayerInfo>
 		this.setState({
 			playerLeft: left,
 			playerRight: right
@@ -119,8 +128,8 @@ class Overlay extends Component {
 
 		// this.messages = [];
 		this.state = {
-			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'You'} myTurn={true} time={-1} elo={2100} position={'playerInfoLeft'}></PlayerInfo>,
-			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'Guest8449947756'} myTurn={false} time={-1} elo={2450} position={'playerInfoRight'}></PlayerInfo>,
+			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'-------'} myTurn={true} time={-1} elo={'--'} position={'playerInfoLeft'}></PlayerInfo>,
+			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'-------'} myTurn={false} time={-1} elo={'--'} position={'playerInfoRight'}></PlayerInfo>,
 			bannerMessages: config.banner.noOpponent,
 			room: this.props.room,
 			messages: [],

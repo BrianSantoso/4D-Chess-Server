@@ -22,23 +22,10 @@ class ChessRoom extends Room {
     }
 
     getPlayerData() {
-        // let allUsers = this.allUsers();
-        // let white = this.users.get(this.whiteId);
-        // let black = this.users.get(this.blackId);
-        // return {
-        //     // another way to find all connected users is to user this.clients + sessionIdToUser
-        //     connectedUsers: allUsers, 
-        //     white: Object.assign(white, {
-        //         time: 600000
-        //     }),
-        //     black: Object.assign(black, {
-        //         time: 600000
-        //     }),
-        // };
         let playerData = this._gameManager.getPlayerData();
         return playerData;
         // Object.assign(, {
-        //     connectedUsers: this.allUsers()
+        //     connectedUsers: this.connectedUsers()
         // });
     }
 
@@ -50,7 +37,7 @@ class ChessRoom extends Room {
 
     strip(user) {
         return {
-            _id: user._id,
+            _id: user.get('_id'),
             _username: user.username,
             _elo: user.elo
         }
@@ -60,10 +47,11 @@ class ChessRoom extends Room {
         return Array.from(this.users.values());
     }
 
-    addUser(sessionId, user) {
-        let _id = user.get('_id');
+    addUser(client, user) {
         let stripped = this.strip(user);
-        this.sessionIdToUser.set(sessionId, stripped);
+        let _id = stripped._id;
+        this.sessionIdToUser.set(client.sessionId, stripped);
+
         if (!this.users.has(_id)) {
             // If user has not joined the room yet
             if (!this.whiteId) {
@@ -73,8 +61,7 @@ class ChessRoom extends Room {
             }
 
             this.users.set(_id, stripped);
-
-            // TODO: this will add a weird _time field to the user in this.users map
+            // TODO: this will mutate and add a weird _time field to the user in this.users map
             // but is necessary in order to properly attach _time to an empty player.
             // To fix, reverse the order of Object.assign, and create a deep copy of
             // this.users.get(----)
@@ -91,8 +78,8 @@ class ChessRoom extends Room {
         this.broadcastPlayerData();
     }
 
-    removeUser(user) {
-        // find user by id
+    removeUser(sessionId, user) {
+        this.sessionIdToUser.delete(sessionId);
         this.users.delete(user._id);
 
         let playerData = this.broadcastPlayerData();
@@ -104,7 +91,7 @@ class ChessRoom extends Room {
         this.blackId = null;
         this.timeControl = options.timeControl;
         this.users = new Map();
-        this.sessionIdToUser = new Map(); // TODO: susceptible to memory attack if user closes and reopens repeatedly
+        this.sessionIdToUser = new Map();
         this.chatMsg = this.chatMsg.bind(this);
 
         this.onMessage('chatMsg', this.chatMsg);
@@ -131,13 +118,12 @@ class ChessRoom extends Room {
         if (authToken) {
             let decoded = jwt.verify(options.authToken, process.env.JWT_SECRET);
             if (decoded) {
-                let playerAuthProm = User.findById(decoded._id)
-                .catch(err => {
-                    // TODO: User with that id does not exist
-                    throw new ServerError(400, "Bad authToken: User with that id does not exist");
-                });
                 return {
-                    playerAuthProm: playerAuthProm
+                    playerAuthProm: User.findById(decoded._id)
+                    .catch(err => {
+                        // TODO: User with that id does not exist
+                        throw new ServerError(400, "Bad authToken: User with that id does not exist");
+                    })
                 };
             } else {
                 throw new ServerError(400, "Bad authToken");
@@ -151,7 +137,7 @@ class ChessRoom extends Room {
     onJoin (client, options, auth) {
         auth.playerAuthProm
             .then(user => {
-                this.addUser(client.sessionId, user);
+                this.addUser(client, user);
                 console.log('User joined room:', user)
                 let username = this.getUsername(client.sessionId);
                 this.chatMsg(null, {
@@ -167,9 +153,9 @@ class ChessRoom extends Room {
     // When a client leaves the room
     onLeave (client, consented) {
         let user = this.getUser(client.sessionId);
-        this.removeUser(user);
-
         let username = this.getUsername(client.sessionId);
+        this.removeUser(client.sessionId, user);
+
         this.chatMsg(null, {
 			msg: `${username} has left the room`,
 			style: {

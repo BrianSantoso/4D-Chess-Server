@@ -1,10 +1,15 @@
 import Move from './Move.js';
 import ChessTeam from './ChessTeam.js';
+import ChessGame from './ChessGame.js';
 
 class MoveHistory {
     constructor() {
         this._index = -1;
         this._moves = [];
+    }
+
+    currTurn() {
+        return this.length() % 2 === 0 ? ChessTeam.WHITE : ChessTeam.BLACK;
     }
     
     add(move, status, allPossibleMoves) {

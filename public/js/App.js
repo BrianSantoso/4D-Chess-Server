@@ -97,6 +97,7 @@ class App extends Component {
 	logout() {
 		localStorage.removeItem('authToken');
 		this.initAuthToken();
+		// TODO: tell gamemanager to rejoin room.
 	}
 
 	alert(props) {

@@ -12,12 +12,14 @@ import games from "./Games.json";
 
 import React, { Component } from "react";
 import * as Colyseus from "colyseus.js";
+import jwt from 'jsonwebtoken';
 
 class ClientGameManager extends GameManager {
 	constructor(client) {
 		super();
 		// this._domElement = document.getElementById("embed");
 		this._authToken = '';
+		this._clientTeam = ChessTeam.NONE;
 		this._view3D = new SceneManager();
         this._controller = null;
 		this._client = client;
@@ -41,6 +43,10 @@ class ClientGameManager extends GameManager {
 			}
 			this._startLoop();
 		});
+	}
+
+	setTeam(team) {
+		this._clientTeam = team;
 	}
 
 	setAuthToken(token) {
@@ -112,9 +118,21 @@ class ClientGameManager extends GameManager {
 
 	setPlayerData(playerData) {
 		super.setPlayerData(playerData);
-		// TODO: which team are you bruh
+
+		let decoded = jwt.decode(this._authToken, {complete: true});
+		let clientId = decoded.payload._id;
+		if (clientId === playerData._white._id) {
+			this._clientTeam = ChessTeam.WHITE;
+		} else if (clientId === playerData._black._id) {
+			this._clientTeam = ChessTeam.BLACK;
+		} else {
+			this._clientTeam = ChessTeam.SPECTATOR;
+		}
+
 		// TODO: whose turn is it bruh
-		this._view2D.setPlayerData(playerData);
+		this._view2D.setPlayerData(playerData, this._clientTeam);
+
+		
 	}
 
 	setGame(game) {
@@ -152,8 +170,8 @@ class ClientGameManager extends GameManager {
 			// mode: ChessMode.NONE,
 			dim: config.dims.standard,
 			BoardGraphics: BoardGraphics3D,
-			WhitePlayer: OnlinePlayer3D, // TODO: configure players dynamically
-			BlackPlayer: OnlinePlayer3D
+			whitePlayerType: 'OnlinePlayer3D', // TODO: configure players dynamically
+			blackPlayerType: 'OnlinePlayer3D'
 		}
         options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
@@ -200,13 +218,14 @@ class ClientGameManager extends GameManager {
 	_update(step) {
 		if (this._game) {
 			this._game.update(step);
+			let playerData = this.getPlayerData();
+			this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
 		this._view3D.update();
 	}
 	
 	_draw() {
 		this._view3D.draw();
-		// this._view2D.draw();
 	}
 	
 	_startLoop() {
