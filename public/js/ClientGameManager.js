@@ -85,9 +85,11 @@ class ClientGameManager extends GameManager {
 			this._view2D.addMsg(message);
 		});
 
-		room.onMessage('move', (moveJSON) => {
-			let move = Move.revive(moveJSON);
+		room.onMessage('move', (data) => {
+			let move = Move.revive(data.move);
 			this.makeMove(move);
+
+			this.setPlayerData(data.playerData);
 		});
 
 		// TODO: change to gameAssignment

@@ -31,6 +31,7 @@ class ChessRoom extends Room {
 
     broadcastPlayerData(options) {
         let playerData = this.getPlayerData();
+        console.log('playerData', playerData)
         this.broadcast("playerData", playerData, options);
         return playerData;
     }
@@ -52,7 +53,7 @@ class ChessRoom extends Room {
         let _id = stripped._id;
         this.sessionIdToUser.set(client.sessionId, stripped);
 
-        if (!this.users.has(_id)) {
+        if (!this.whiteId || !this.blackId) {
             // If user has not joined the room yet
             if (!this.whiteId) {
                 this.whiteId = _id;
@@ -97,13 +98,18 @@ class ChessRoom extends Room {
         this.onMessage('chatMsg', this.chatMsg);
 
         this.onMessage('move', (client, message) => {
-            console.log('Move received:', message)
+            
             let move = Move.revive(message);
             // TODO: move validation
             this._gameManager.makeMove(move);
 
             // TODO: move broadcast inside of Player?
-            this.broadcast('move', move, { except: client });
+            this.broadcast('move', {
+                move: move,
+                playerData: this.getPlayerData()
+            }, { except: client });
+
+            console.log('Move received:', this._gameManager._game._moveHistory._moves)
         })
 
         console.log('Created instance of ChessRoom:', options)

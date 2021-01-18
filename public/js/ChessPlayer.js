@@ -18,6 +18,10 @@ class Player {
 		this._transmitter = new AbstractTransmitter();
 	}
 
+	getTime() {
+		return this._time;
+	}
+
 	to(type) {
 		let delta = Player[type]();
 		delta._receiver = new delta._receiver(this._team, this._game, this);
@@ -32,10 +36,13 @@ class Player {
 		this._transmitter.makeMove(move);
 	}
 	
-	update(step, hasBegun, canInteract=true) {
+	update(timeOfLastMove, timestampOfLastMove, hasBegun, canInteract=true) {
 		this._canInteract = canInteract;
 		if (hasBegun) {
-			this._time -= step * 1000; // convert secs to ms
+			let msSince = new Date() - timestampOfLastMove;
+			this._time = timeOfLastMove - msSince;
+			// console.log(timestampOfLastMove, timeOfLastMove, msSince)
+			// this._time -= step * 1000; // convert secs to ms
 		}
 		// query interactors for moves
 		if (this._canInteract) {

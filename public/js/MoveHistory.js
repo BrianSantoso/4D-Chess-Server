@@ -11,20 +11,22 @@ class MoveHistory {
         return this.length() % 2 === 0 ? ChessTeam.WHITE : ChessTeam.BLACK;
     }
     
-    add(move, status, allPossibleMoves) {
+    add(move, time, status, allPossibleMoves) {
         // Chop off future
         this._moves.splice(this._index + 1);
         // New future
-        this.addToEnd(move, status, allPossibleMoves);
+        this.addToEnd(move, time, status, allPossibleMoves);
         this._index += 1;
         console.log(this._moves);
     }
 
-    addToEnd(move, status, allPossibleMoves) {
+    addToEnd(move, time, status, allPossibleMoves) {
         this._moves.push({
             move: move,
             status: status,
-            allPossibleMoves: allPossibleMoves
+            allPossibleMoves: allPossibleMoves,
+            time: time,
+            timestamp: new Date()
         });
     }
 
@@ -51,6 +53,10 @@ class MoveHistory {
         } else {
             return this._moves[index];
         }
+    }
+
+    getLast() {
+        return this.get(this.length() - 1);
     }
 
     curr() {
@@ -91,7 +97,9 @@ MoveHistory.revive = (fields) => {
         _moves: fields._moves.map((moveData) => ({
             move: Move.revive(moveData.move),
             status: ChessTeam.revive(moveData.status),
-            allPossibleMoves: moveData.allPossibleMoves || null
+            allPossibleMoves: moveData.allPossibleMoves || null,
+            timestamp: new Date(moveData.timestamp),
+            time: moveData.time
         }))
     });
 };

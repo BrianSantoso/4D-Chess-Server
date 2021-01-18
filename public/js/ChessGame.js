@@ -147,6 +147,7 @@ class ChessGame {
 	}
 	
 	makeMove(move) {
+		this.update();
 		this._mode.makeMove.call(this, move);
 	}
 
@@ -234,7 +235,24 @@ class ChessGame {
 	// }
 	
 	update(step) {
-		this._mode.update.call(this, step, this.hasBegun());
+		let timeOfLastMove = this._getCurrentPlayer().getTime();
+		let timestampOfLastMove = new Date();
+		let previousMove = this._moveHistory.get(this._moveHistory.length() - 2);
+		if (previousMove) {
+			timeOfLastMove = previousMove.time;
+		}
+
+		if (this._moveHistory.length() >= 4) {
+			// First 2 moves don't contribute to calculation.
+			timestampOfLastMove = previousMove.timestamp;
+		} else {
+			let opponentsMove = this._moveHistory.getLast();
+			if (opponentsMove) {
+				timestampOfLastMove = opponentsMove.timestamp;
+			}
+		}
+		
+		this._mode.update.call(this, timeOfLastMove, timestampOfLastMove, this.hasBegun());
 	}
 	
 	currTurn() {
@@ -326,9 +344,9 @@ class ChessMode {
 ChessMode.TEMPLATE = new ChessMode('TEMPLATE', () => {}, () => {}, () => {});
 
 ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
-	function update(step, hasBegun) {
+	function update(timeOfLastMove, timestampOfLastMove, hasBegun) {
 		let playerCanInteract = true;
-		this._getCurrentPlayer().update(step, playerCanInteract, hasBegun);
+		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, playerCanInteract, hasBegun);
 		this._boardGraphics.update();
 	}, 
 	function makeMove(move) {
@@ -341,7 +359,8 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 		
 		this._clearStatus(); // reset gameover status
 		let status = this.status(); // recalculate status
-		this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
+		let time = this._getCurrentPlayer().getTime();
+		this._moveHistory.add(move, time, status, this._allPossibleMoves); // add to history
 
 		// implicitly recalculates status if needed
 		if (this.isGameOver()) {
@@ -357,22 +376,22 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 );
 
 ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', 
-	function update(step, hasBegun) {
+	function update(timeOfLastMove, timestampOfLastMove, hasBegun) {
 		let playerCanInteract = this._moveHistory.atLast();
-		this._getCurrentPlayer().update(step, hasBegun, playerCanInteract); // TODO: determine better way to disable interaction
+		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, hasBegun, playerCanInteract); // TODO: determine better way to disable interaction
 		this._boardGraphics.update();
 	},
 	function makeMove(move) {
 		if (this.isGameOver()) {
 			return;
 		}
-		
+		let time = this._getCurrentPlayer().getTime();
 		if (this._moveHistory.atLast()) {
 			this._board.makeMove(move); // update state
 			this._boardGraphics.makeMove(move, config.animFrames.move); // animate
 			this._clearStatus(); // reset gameover status
 			let status = this.status(); // recalculate status
-			this._moveHistory.add(move, status, this._allPossibleMoves); // add to history
+			this._moveHistory.add(move, time, status, this._allPossibleMoves); // add to history
 			// implicitly recalculates status if needed
 			if (this.isGameOver()) {
 
@@ -381,7 +400,7 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 			}
 		} else {
 			// TODO: status and allPossibleMoves will not be memoized
-			this._moveHistory.addToEnd(move); // add to history
+			this._moveHistory.addToEnd(move, time); // add to history
 		}
 	},
 	function setPlayerControls(clientTeam) {
