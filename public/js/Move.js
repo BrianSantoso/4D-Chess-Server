@@ -37,11 +37,11 @@ class Move {
 	}
 }
 
-Move.isEqual = (a, b) => {
-	return a.hash() === b.hash();
+Move.isCongruent = (a, b) => {
+	return a.weakHash() === b.weakHash();
 };
 
-Move.hash = (a) => {
+Move.weakHash = (a) => {
 	return JSON.stringify([
 		a.x0,
 		a.y0,
@@ -53,6 +53,28 @@ Move.hash = (a) => {
 		a.w1,
 		a.isCapture()
 	]);
+}
+
+Move.hash = (a) => {
+	return JSON.stringify([
+		a.x0,
+		a.y0,
+		a.z0,
+		a.w0,
+		a.x1,
+		a.y1,
+		a.z1,
+		a.w1,
+		a.isCapture(),
+		a.pieceId,
+		a.capturedPieceId,
+		a.promotionOldId,
+		a.isFirstMove
+	]);
+};
+
+Move.isEqual = (a, b) => {
+	return a.hash() === b.hash();
 };
 
 Move.revive = (fields) => {

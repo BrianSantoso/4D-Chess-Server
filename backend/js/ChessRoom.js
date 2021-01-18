@@ -101,13 +101,16 @@ class ChessRoom extends Room {
             
             let move = Move.revive(message);
             // TODO: move validation
-            this._gameManager.makeMove(move);
-
-            // TODO: move broadcast inside of Player?
-            this.broadcast('move', {
-                move: move,
-                playerData: this.getPlayerData()
-            }, { except: client });
+            try {
+                this._gameManager.makeMove(move);
+                // TODO: move broadcast inside of Player?
+                this.broadcast('move', {
+                    move: move,
+                    playerData: this.getPlayerData()
+                }, { except: client });
+            } catch {
+                console.log('Invalid move.')
+            }
 
             console.log('Move received:', this._gameManager._game._moveHistory._moves)
         })

@@ -3,6 +3,7 @@ import MoveHistory from "./MoveHistory.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
 import Player from "./ChessPlayer.js";
+import Move from "./Move.js";
 
 class ChessGame {
 	constructor() {
@@ -71,18 +72,19 @@ class ChessGame {
 			return this._status;
 		}
 
-		let turnEndTeam = this.currTurn();
-		let oppositeTeam = ChessTeam.oppositeTeam(turnEndTeam);
+		let currTeam = this.currTurn();
+		let oppositeTeam = ChessTeam.oppositeTeam(currTeam);
 		let board = this.board();
 
-		let allMoves = board.getAllPossibleMoves(oppositeTeam);
+		// let allMoves = board.getAllPossibleMoves(oppositeTeam);
+		let allMoves = board.getAllPossibleMoves(currTeam)
 		let hasMoves = allMoves.length > 0;
 		if (hasMoves) {
 			this._status = ChessTeam.ONGOING;
 		} else {
 			let attacking = board.inCheck(oppositeTeam).length > 0;
 			if (attacking) {
-				this._status = turnEndTeam;
+				this._status = oppositeTeam;
 			} else {
 				this._status = ChessTeam.TIE;
 			}
@@ -101,6 +103,21 @@ class ChessGame {
 		this.status();
 
 		return this._allPossibleMoves;
+	}
+
+	validate(move) {
+		// TODO: need to check if move.promotionNew is also equal
+		let allPossibleMoves = this.allPossibleMoves();
+		let eq = (item) => Move.isEqual(item, move)
+		let valid = allPossibleMoves.some(eq);
+
+		console.log('validating:', allPossibleMoves, move)
+
+		if (valid) {
+			return true;
+		} else {
+			throw new Error('Invalid move', move);
+		}
 	}
 
 	inCheck(team) {
@@ -356,11 +373,11 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 		
 		this._board.makeMove(move); // update state
 		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
-		
+		let allPossibleMoves = this.allPossibleMoves();
 		this._clearStatus(); // reset gameover status
 		let status = this.status(); // recalculate status
 		let time = this._getCurrentPlayer().getTime();
-		this._moveHistory.add(move, time, status, this._allPossibleMoves); // add to history
+		this._moveHistory.add(move, time, status, allPossibleMoves); // add to history
 
 		// implicitly recalculates status if needed
 		if (this.isGameOver()) {
@@ -382,16 +399,23 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		this._boardGraphics.update();
 	},
 	function makeMove(move) {
+		this._clearStatus();
+		this.validate(move);
+		// Calculate status and allpossiblemoves
 		if (this.isGameOver()) {
 			return;
 		}
+		
 		let time = this._getCurrentPlayer().getTime();
 		if (this._moveHistory.atLast()) {
 			this._board.makeMove(move); // update state
 			this._boardGraphics.makeMove(move, config.animFrames.move); // animate
+			let allPossibleMoves = this.allPossibleMoves();
 			this._clearStatus(); // reset gameover status
 			let status = this.status(); // recalculate status
-			this._moveHistory.add(move, time, status, this._allPossibleMoves); // add to history
+			this._moveHistory.add(move, time, status, allPossibleMoves); // add to history
+			// this._moveHistory.add(move, time, status, this._allPossibleMoves); // add to history
+			
 			// implicitly recalculates status if needed
 			if (this.isGameOver()) {
 

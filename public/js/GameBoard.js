@@ -160,7 +160,8 @@ class GameBoard {
 		let moves = [];
 		let sameTeam = (piece) => piece.team === team;
 		let grabMoves = (piece) => {
-			moves = moves.concat(this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, legalOnly));
+			let piecesMoves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, legalOnly);
+			moves = moves.concat(piecesMoves);
 		}
 		this._applyTo(grabMoves, sameTeam);
 		return moves;
