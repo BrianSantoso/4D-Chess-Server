@@ -5,10 +5,10 @@ import { AbstractTransmitter, OnlineTransmitter, LocalTransmitter } from "./Tran
 class Player {
 
 	constructor(team, game) {
-		this.type = '';
+		this.type = 'AbstractPlayer';
 		this._game = game;
 		this._team = team;
-		this._id = 'AbstractPlayer';
+		this._id = '';
 		this._username = '--------'; // TODO: put default playernames in config.json, then also replace in ChessRoom
 		this._elo = '--';
 		this._time = -1;
