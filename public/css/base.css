@@ -3,6 +3,7 @@
 :root {
     --primary: #f7f7f7;
     --secondary: #3f3f3f;
+    --nav-height: 3.5em;
 }
 body {
 	margin: 0;

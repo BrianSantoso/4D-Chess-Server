@@ -63,6 +63,7 @@ class SceneManager {
 		this._renderer = new THREE.WebGLRenderer({antialias: true});
 		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
 		this._renderer.domElement.id = "three-canvas";
+		// this._renderer.domElement.classList += " ";
 
 		this._renderer.setClearColor(0xf7f7f7);
 		// Somehow this fixes opacity issues
@@ -98,19 +99,26 @@ class SceneManager {
 		console.log('camera', this._camera)
 	}
 	
-	onWindowResize() {
+	onContainerResize() {
 		this._camera.aspect = this._root.clientWidth / this._root.clientHeight;
 		this._camera.updateProjectionMatrix();
+		this._controls2.handleResize();
 		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
-		this._controls.handleResize();
+		this.draw(); // Need to draw immediately after resize to prevent flickering
 	}
 	
 	_initEventListeners() {
-		window.addEventListener('resize', () => {
-			// TODO: should not be window's resize event, but instead this._root's resize event
-			this.onWindowResize();
-			// TODO: detach event listener
-		}, false);
+		// this._root.addEventListener('resize', () => {
+		// 	// TODO: should not be window's resize event, but instead this._root's resize event
+		// 	this.onWindowResize();
+		// 	// TODO: detach event listener
+		// }, false);
+
+		const resizeObserver = new ResizeObserver(entries => {
+			console.log('Resizing')
+			this.onContainerResize();
+		});
+		resizeObserver.observe(this._root);
 		
 		const notAClick = 0.05;
 		let dragStart = new THREE.Vector2(Infinity, Infinity); // TODO: Should be infinity vector

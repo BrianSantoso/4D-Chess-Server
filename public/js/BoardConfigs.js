@@ -1,6 +1,7 @@
 import Piece, { Pawn, Rook, Knight, Bishop, King, Queen } from "./Piece.js";
 
-function initTeam8181(team, z0, z1) {
+let BoardConfigs = {};
+BoardConfigs.initTeam8181 = function(team, z0, z1) {
     this.spawn(0, 0, z0, 0, new Rook(team));
     this.spawn(1, 0, z0, 0, new Knight(team));
     this.spawn(2, 0, z0, 0, new Bishop(team));
@@ -20,7 +21,7 @@ function initTeam8181(team, z0, z1) {
     this.spawn(7, 0, z1, 0, new Pawn(team));
 }
 
-function initTeam4444(team, z0, z1, w0, w1) {
+BoardConfigs.initTeam4444 = function(team, z0, z1, w0, w1) {
     this.spawn(0, 0, z0, w0, new Rook(team));
     this.spawn(1, 0, z0, w0, new Knight(team));
     this.spawn(2, 0, z0, w0, new Knight(team));
@@ -111,4 +112,4 @@ function initTeam4444(team, z0, z1, w0, w1) {
     this.spawn(3, 3, z1, w1, new Pawn(team));
 }
 
-export { initTeam8181, initTeam4444 };
+export default BoardConfigs;

@@ -65,11 +65,11 @@ class ServerInstance {
     defineRooms() {
         let standardOptions = {
             mode: ChessMode.ONLINE_MULTIPLAYER,
-            dim: config.dims.standard,
+            boardConfig: config.boards.classic4d,
             BoardGraphics: BoardGraphics, // empty BoardGraphics
-            WhitePlayer: DummyPlayer,
-            BlackPlayer: DummyPlayer,
-            timeControl: 600000
+            whitePlayerType: 'AbstractPlayer',
+            blackPlayerType: 'AbstractPlayer',
+            timeControl: 30000
         }
         this.gameServer.define('standard', ChessRoom, standardOptions);
     }

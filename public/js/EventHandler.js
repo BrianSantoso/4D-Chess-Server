@@ -3,11 +3,15 @@ class EventHandler {
         this._domElement = domElement;
 		this._subscribers = {};
 		this._keyBinds = {};
-		this._focused = false;
+		this._focus = '';
+	}
+
+	focused() {
+		return this._focus === 'focused';
 	}
 	
-	setFocus(bool) {
-		this._focused = bool;
+	setFocus(focus) {
+		this._focus = focus;
 	}
 
     subscribe(obj, event) {
@@ -43,7 +47,7 @@ class EventHandler {
 	}
 
 	triggerCustomEvent(eventName, parentEvent) {
-		if (this._focused) {
+		if (this.focused()) {
 			this._subscribers[eventName].forEach(subscriber => {
 				subscriber[eventName](parentEvent);
 			});

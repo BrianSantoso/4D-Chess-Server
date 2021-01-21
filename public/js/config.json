@@ -1,6 +1,13 @@
 {
-    "dims": {
-        "standard": [8, 1, 8, 1]
+    "boards": {
+        "classic": {
+            "dims": [8, 1, 8, 1],
+            "initializer": "initTeam8181"
+        },
+        "classic4d": {
+            "dims": [4, 4, 4, 4],
+            "initializer": "initTeam4444"
+        }
     },
     "chat": {
         "maxLength": 200

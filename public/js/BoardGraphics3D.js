@@ -13,9 +13,9 @@ import Piece from "./Piece.js";
 //    -> NullGrahpics
 
 class BoardGraphics3D extends BoardGrahpics {
-	constructor(dim) {
+	constructor() {
         super();
-		this.dim = dim;
+		this.dim;
 		this._container = new THREE.Group();
 		this._pieces = new THREE.Group();
 		this._white = new THREE.Group();
@@ -44,8 +44,6 @@ class BoardGraphics3D extends BoardGrahpics {
 		this._squareSize = 25;
 		this._deltaY = this._squareSize * 3;
 		this._deltaW = this._squareSize * 1.5;
-		
-		this._init();
 	}
 
 	_x() {
@@ -132,7 +130,8 @@ class BoardGraphics3D extends BoardGrahpics {
 		return min.add(max).divideScalar(2);
 	}
 	
-	_init() {
+	init(dims) {
+		this.dim = dims;
 		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
 		let square = 25;
 		this._checkerboards.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));

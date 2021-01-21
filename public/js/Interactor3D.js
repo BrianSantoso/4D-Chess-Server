@@ -1,8 +1,8 @@
-import { AbstractReceiver3D } from "./Receiver.js";
+import { AbstractReceiver } from "./Receiver.js";
 import ChessTeam from "./ChessTeam.js";
 import config from "./config.json";
 
-class Interactor3D extends AbstractReceiver3D {
+class Interactor3D extends AbstractReceiver {
 	constructor(team, chessGame, player, rayCaster) {
 		super(team, chessGame, player);
 		this._rayCaster = rayCaster;

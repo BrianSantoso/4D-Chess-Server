@@ -1,4 +1,6 @@
 import ChessGame from "./ChessGame.js";
+import ChessTeam from "./ChessTeam.js";
+import { merge } from "lodash";
 
 class GameManager {
 	constructor() {
@@ -12,8 +14,15 @@ class GameManager {
 	}
 
 	loadFrom(jsonData) {
-		let template = this.createGame({});
-		let newGame = Object.assign(template, ChessGame.revive(jsonData));
+		console.log("Loading from:", jsonData);
+		let template = this.createGame({
+			boardConfig: null
+		});
+		let delta = ChessGame.revive(jsonData);
+		// let newGame = Object.assign(template, ChessGame.revive(jsonData));
+		// WARNING: If the source has a key whose value is strictly equal to undefined, merge() will not overwrite that key in the destination.
+		let newGame = merge(template, delta); // need deep merge so that templated Players receive their fields.
+		console.log(template);
 		this.setGame(newGame);
 		console.log('Loaded game:', newGame);
 	}
@@ -24,6 +33,7 @@ class GameManager {
 	
 	setGame(game) {
 		this._game = game;
+		this._game.initBoardGraphics();
 	}
 	
 	createGame(options) {

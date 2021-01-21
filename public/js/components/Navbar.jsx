@@ -14,9 +14,9 @@ class ChessNavbar extends Component {
                         alt="4D Chess logo"
                     />
         return (
-            <Navbar expand="lg">
+            <Navbar className="navbar-custom" sticky="top" expand="lg">
                 <Navbar.Brand href="#home">
-                    4D Chess
+                    <strong>4D Chess</strong> <span className='beta'>Beta</span>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
