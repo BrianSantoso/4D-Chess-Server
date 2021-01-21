@@ -102,7 +102,7 @@ class ChessRoom extends Room {
             let move = Move.revive(message);
             // TODO: move validation
             try {
-                this._gameManager.makeMove(move);
+                let moveData = this._gameManager.makeMove(move);
                 // TODO: move broadcast inside of Player?
                 this.broadcast('move', {
                     move: move,

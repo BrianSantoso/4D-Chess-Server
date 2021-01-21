@@ -14,9 +14,11 @@ class GameManager {
 	}
 
 	loadFrom(jsonData) {
-		let template = this.createGame({});
+		console.log("Loading from:", jsonData);
+		let template = this.createGame({
+			boardConfig: null
+		});
 		let delta = ChessGame.revive(jsonData);
-		console.log('debug', template, delta);
 		// let newGame = Object.assign(template, ChessGame.revive(jsonData));
 		// WARNING: If the source has a key whose value is strictly equal to undefined, merge() will not overwrite that key in the destination.
 		let newGame = merge(template, delta); // need deep merge so that templated Players receive their fields.
@@ -31,6 +33,7 @@ class GameManager {
 	
 	setGame(game) {
 		this._game = game;
+		this._game.initBoardGraphics();
 	}
 	
 	createGame(options) {

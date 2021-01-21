@@ -7,7 +7,7 @@ class BoardGraphics {
 
 	}
 
-	spawnPieces(pieces) {
+	spawnPieces(pieces, allPieces) {
 
 	}
 	
@@ -41,6 +41,10 @@ class BoardGraphics {
 
 	canInteract() {
 		return true;
+	}
+
+	init() {
+
 	}
 }
 

@@ -26,7 +26,7 @@ class ClientGameManager extends GameManager {
 		this._room = null;
 		this._view2D = new View2D(this, this._client);
 
-		this._focused = false;
+		this._focus = '';
 
 		this.setAuthToken = this.setAuthToken.bind(this);
 
@@ -53,9 +53,9 @@ class ClientGameManager extends GameManager {
 		this._authTokenSet();
 	}
 
-	setFocus(bool) {
-		this._focused = bool;
-		this._view2D.setFocus(bool);
+	setFocus(focus) {
+		this._focus = focus;
+		this._view2D.setFocus(focus);
 	}
 
 	mount(root) {
@@ -87,6 +87,10 @@ class ClientGameManager extends GameManager {
 
 		room.onMessage('move', (data) => {
 			let move = Move.revive(data.move);
+			// TODO: Can optimize by instead, receiving precomputed
+			// moveData from server. This would remove the need
+			// to calculate possibleMovesBefore/After + status
+			// on the client side.
 			this.makeMove(move);
 
 			this.setPlayerData(data.playerData);
@@ -142,7 +146,7 @@ class ClientGameManager extends GameManager {
 		
 		if (this._game) {
 			// Decouple current game from Scene Manager
-			this._view3D.remove(this._game.view3D());
+			this._view3D.remove(this.view3D());
 			// TODO: unsubscribe current game from mouse event handlers
 			this._game.getPlayers().forEach(player => {
 				if (player.needsClickEvent()) {
@@ -152,12 +156,10 @@ class ClientGameManager extends GameManager {
 			});
 		}
 		
-		// TODO: Is this structure okay to assume since this is a 3D game manager?
-		game._boardGraphics.spawnPieces(game._board.getPieces(), game._board.allPieces());
-		this._view3D.add(game._boardGraphics.view3D());
-		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
-		
 		super.setGame(game);
+
+		this._view3D.add(game.view3D());
+		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
 		
 		// manage subscriptions
 		this.subscribePlayers();
@@ -180,14 +182,15 @@ class ClientGameManager extends GameManager {
 	createGame(options) {
         let defaultOptions = {
 			// mode: ChessMode.NONE,
-			dim: config.dims.standard,
+			boardConfig: null,
 			BoardGraphics: BoardGraphics3D,
-			whitePlayerType: 'AbstractPlayer', // TODO: configure players dynamically
+			whitePlayerType: 'AbstractPlayer',
 			blackPlayerType: 'AbstractPlayer'
 		}
         options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
 		game.setRoom(this._room);
+		game.setNeedsValidation(true); // TODO: this is temporary, change to false later!
 		return game;
 	}
 	
@@ -280,7 +283,6 @@ class ClientGameManager extends GameManager {
 class Embed extends Component {
 	constructor(props) {
 		super(props)
-		
 		// this.props.gameManager.loadAssets().then(() => {
 		// 	try {
 		// 		let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
@@ -301,9 +303,10 @@ class Embed extends Component {
 	}
 
 	render() {
-		this.props.gameManager.setFocus(this.props.focused);
+		let maximized = this.props.focus !== 'minimized';
+		this.props.gameManager.setFocus(this.props.focus);
 		return (
-			<div id="embed" ref={(ref) => (this._root = ref)}>
+			<div id="embed" className={maximized ? 'embed-maximized' : 'embed-minimized'} ref={(ref) => (this._root = ref)}>
 				{this.props.gameManager.overlay()}
 			</div>
 		);

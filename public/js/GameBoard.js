@@ -1,6 +1,6 @@
 import ChessTeam from "./ChessTeam.js";
 import Piece, { Queen } from "./Piece.js";
-import { initTeam8181, initTeam4444 } from "./BoardConfigs.js";
+import BoardConfigs, { initTeam8181, initTeam4444 } from "./BoardConfigs.js";
 import Move from "./Move.js";
 
 import { unique } from "./ArrayUtils.js";
@@ -11,8 +11,12 @@ class GameBoard {
 		// to allPieces, then undo moves, and make new move to rewrite history. 
 		// Then added pieces from overwritten history still remain in allPieces 
 		// and so also in serialized form.
-		this._allPieces = [];
-		this._pieces = null;
+		this._allPieces = []; // all pieces ever instantiated
+		this._pieces = null; // pieces currently on the board
+	}
+
+	dims() {
+		return [this._x(), this._y(), this._z(), this._w()];
 	}
 	
 	initialized() {
@@ -276,7 +280,12 @@ class GameBoard {
 		return (z === 0 && w === 0) || (z === this._z() - 1 && w === this._w() - 1);
 	}
 	
-	_init4D(dim) {
+	_init4D(boardConfig) {
+		if (!boardConfig) {
+			return;
+		}
+		let dim = boardConfig.dims;
+		let initializer = BoardConfigs[boardConfig.initializer];
 		const range = n => [...Array(n)].map((_, i) => i);
 		const rangeIn = dims => {
 		  if (!dims.length) return new Piece();
@@ -291,15 +300,8 @@ class GameBoard {
 		let w0 = this._w() - 1; // Last Rank
 		let w1 = this._w() - 2; // Penultimate Rank
 		
-		// initTeam4444.apply(this, ChessTeam.WHITE, 0, 1, 0, 1);
-		// initTeam4444.apply(this, ChessTeam.BLACK, z0, z1, w0, w1);
-		initTeam8181.call(this, ChessTeam.WHITE, 0, 1);
-		initTeam8181.call(this, ChessTeam.BLACK, z0, z1);
-
-		// let str = JSON.stringify(this._pieces);
-		// let obj = JSON.parse(str);
-		// console.log(str);
-		// console.log(obj);
+		initializer.call(this, ChessTeam.WHITE, 0, 1, 0, 1);
+		initializer.call(this, ChessTeam.BLACK, z0, z1, w0, w1);
 	}
 
 	_x() {
@@ -320,9 +322,9 @@ class GameBoard {
 	
 }
 
-GameBoard.create = (dim) => {
+GameBoard.create = (boardConfig) => {
 	let board = new GameBoard();
-	board._init4D(dim);
+	board._init4D(boardConfig);
 	return board;
 }
 

@@ -65,3 +65,11 @@
     text-align: center;
     box-shadow: 0 0 5px rgba(0,0,0,.3);
 }
+
+.beta {
+    color: var(--primary);
+    background-color: var(--secondary);
+    /* font-weight: bold; */
+    border-radius: 5px;
+    padding: .20em .32em;
+}

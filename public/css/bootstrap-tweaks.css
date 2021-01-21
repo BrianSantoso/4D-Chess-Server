@@ -1,3 +1,7 @@
+.navbar {
+    height: 6vh;
+}
+
 /* Add Spacing between navbar items */
 .navbar-nav > * {
     margin-left: 0.3em;

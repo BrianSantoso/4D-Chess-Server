@@ -7,6 +7,7 @@ import Login from './components/Login.jsx';
 import Popup from './components/Popup.jsx';
 import Logout from './components/Logout.jsx';
 import ChessNavbar from './components/Navbar.jsx';
+import Home from './components/Home.jsx';
 import { Alert } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 import { createBrowserHistory } from "history";
@@ -18,7 +19,7 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			focused: false,
+			focus: 'focused',
 			loggedIn: false,
 			alert: ''
 		};
@@ -33,6 +34,8 @@ class App extends Component {
 		this.gainGameFocus = this.gainGameFocus.bind(this);
 		this.onAuthSuccess = this.onAuthSuccess.bind(this);
 		this.handleCloseAlert = this.handleCloseAlert.bind(this);
+		this.onMinimize = this.onMinimize.bind(this);
+		this.onMaximize = this.onMaximize.bind(this);
 		this.logout = this.logout.bind(this);
 		this.alert = this.alert.bind(this);
 		console.log(this.history)
@@ -46,11 +49,11 @@ class App extends Component {
 	}
 
 	loseGameFocus() {
-		this.setState({focused: false});
+		this.setState({focus: 'popup'});
 	}
 
 	gainGameFocus() {
-		this.setState({focused: true});
+		this.setState({focus: 'focused'});
 	}
 
 	handleCloseAlert() {
@@ -111,12 +114,23 @@ class App extends Component {
 		});
 	}
 
+	onMaximize() {
+		this.setState({focus: 'focused'});
+	}
+
+	onMinimize() {
+		this.setState({focus: 'minimized'});
+	}
+
 	render() {
 		return (
 			<Router history={history}>
 				<ChessNavbar loggedIn={this.state.loggedIn}/>
 				{this.state.alert}
-				<Embed ref={this.embed} gameManager={this.gameManager} focused={this.state.focused} onMount={() => this.setState({focused: true})}></Embed>
+				<Route path="/home">
+					<Home onMount={this.onMinimize} onUnmount={this.onMaximize}></Home>
+				</Route>
+				<Embed ref={this.embed} gameManager={this.gameManager} focus={this.state.focus} onMount={() => this.setState({focus: 'focused'})}></Embed>
 				<Route path="/login">
 					<Popup redirect='/' onOpen={this.loseGameFocus} onClose={this.gainGameFocus}>
 						<Login onSuccess={this.onAuthSuccess} alerter={this.alert}></Login>

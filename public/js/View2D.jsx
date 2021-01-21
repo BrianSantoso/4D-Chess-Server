@@ -72,9 +72,14 @@ class View2D {
 		});
 	}
 
-	setFocus(bool) {
-		this._focused = bool;
-		this._events.setFocus(bool);
+	setFocus(focus) {
+		this._focus = focus;
+		console.log('View2D focus:', this._focus)
+		this._events.setFocus(focus);
+
+		this.setState({
+			focus: focus
+		});
 	}
 
 	addMsg(message) {
@@ -128,13 +133,14 @@ class Overlay extends Component {
 
 		// this.messages = [];
 		this.state = {
-			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'-------'} myTurn={true} time={-1} elo={'--'} position={'playerInfoLeft'}></PlayerInfo>,
-			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'-------'} myTurn={false} time={-1} elo={'--'} position={'playerInfoRight'}></PlayerInfo>,
+			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'-------'} myTurn={true} time={null} elo={'--'} position={'playerInfoLeft'}></PlayerInfo>,
+			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'-------'} myTurn={false} time={null} elo={'--'} position={'playerInfoRight'}></PlayerInfo>,
 			bannerMessages: config.banner.noOpponent,
 			room: this.props.room,
 			messages: [],
 			showing: [],
-			chatOpened: false // chat state is maintained up here so that toggle chat button can toggle chat
+			chatOpened: false, // chat state is maintained up here so that toggle chat button can toggle chat
+			focus: 'focused' // TODO: this is hack to get around initial render
 		}
 
 		this.addMsg = this.addMsg.bind(this);
@@ -146,7 +152,8 @@ class Overlay extends Component {
 	}
 
 	render() {
-		return (
+		let maximized = this.state.focus !== 'minimized';
+		return (maximized ?
 			<div className='overlay'>
 				{this.state.playerLeft}
 				<StatusBanner messages={this.state.bannerMessages}></StatusBanner>
@@ -170,7 +177,7 @@ class Overlay extends Component {
 					showing={this.state.showing} 
 					events={this.props.events}
 				/>
-			</div>
+			</div> : ''
 		);
 	}
 
@@ -253,11 +260,13 @@ class PlayerInfo extends Component {
 	}
 	
 	msToHMS(duration) {
-		if (duration < 0) {
+		if (typeof duration !== 'number') {
 			return '--:--'
 		}
+		duration = Math.max(0, duration);
 		// https://stackoverflow.com/a/54821863
-		let milliseconds = parseInt((duration % 1000) / 100),
+		// let milliseconds = parseInt((duration % 1000) / 100),
+		let milliseconds = parseInt((duration % 1000)),
 		seconds = parseInt((duration / 1000) % 60),
 		minutes = parseInt((duration / (1000 * 60)) % 60),
 		hours = parseInt((duration / (1000 * 60 * 60)) % 24);
@@ -266,8 +275,13 @@ class PlayerInfo extends Component {
 		minutes = (minutes < 10) ? "0" + minutes : minutes;
 		seconds = (seconds < 10) ? "0" + seconds : seconds;
 		
-		return minutes + ":" + seconds;
-		
+		if (duration < 60000) {
+			let paddingValue = '0'
+			let msString = (milliseconds + paddingValue).slice(0, paddingValue.length);
+			return seconds + "." + msString
+		} else {
+			return minutes + ":" + seconds;
+		}
 	}
 	
 	render() {

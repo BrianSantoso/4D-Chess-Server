@@ -7,24 +7,29 @@ class MoveHistory {
         this._moves = [];
     }
 
+    viewingTurn() {
+        return (this._index + 1) % 2 === 0 ? ChessTeam.WHITE : ChessTeam.BLACK;
+    }
+
     currTurn() {
         return this.length() % 2 === 0 ? ChessTeam.WHITE : ChessTeam.BLACK;
     }
     
-    add(move, time, status, allPossibleMoves) {
+    add(move, time, status, possibleMovesBefore, possibleMovesAfter) {
         // Chop off future
         this._moves.splice(this._index + 1);
         // New future
-        this.addToEnd(move, time, status, allPossibleMoves);
+        this.addToEnd(move, time, status, possibleMovesBefore, possibleMovesAfter);
         this._index += 1;
         console.log(this._moves);
     }
 
-    addToEnd(move, time, status, allPossibleMoves) {
+    addToEnd(move, time, status, possibleMovesBefore, possibleMovesAfter) {
         this._moves.push({
             move: move,
-            status: status,
-            allPossibleMoves: allPossibleMoves,
+            status: status, // Status at end of turn
+            possibleMovesBefore: possibleMovesBefore, // All possible moves at beginning of turn
+            possibleMovesAfter: possibleMovesAfter, // All possible moves at end of turn
             time: time,
             timestamp: new Date()
         });
@@ -48,7 +53,7 @@ class MoveHistory {
     }
 
     get(index) {
-        if (index < 0) {
+        if (index < 0 || index >= this.length()) {
             return null;
         } else {
             return this._moves[index];
@@ -61,6 +66,10 @@ class MoveHistory {
 
     curr() {
         return this.get(this._index);
+    }
+
+    next() {
+        return this.get(this._index + 1);
     }
 
     length() {
@@ -97,7 +106,8 @@ MoveHistory.revive = (fields) => {
         _moves: fields._moves.map((moveData) => ({
             move: Move.revive(moveData.move),
             status: ChessTeam.revive(moveData.status),
-            allPossibleMoves: moveData.allPossibleMoves || null,
+            possibleMovesBefore: moveData.possibleMovesBefore.map(Move.revive) || null,
+            possibleMovesAfter: moveData.possibleMovesAfter.map(Move.revive) || null,
             timestamp: new Date(moveData.timestamp),
             time: moveData.time
         }))

@@ -15,12 +15,11 @@ class ChessGame {
 		this._board;
 		this._white = Player.create(ChessGame.WHITE);
 		this._black = Player.create(ChessGame.BLACK);
+		this._needsValidation = true;
 		this._boardGraphics;
 		// this._turn = ChessTeam.WHITE;
 
 		this._moveHistory = new MoveHistory();
-		this._allPossibleMoves;
-		this._status;
 
 		this._room;
 	}
@@ -29,12 +28,14 @@ class ChessGame {
 		return {
 			_mode: this._mode,
 			_board: this._board,
-			// _turn: this._turn,
 			_moveHistory: this._moveHistory,
-			_status: this._status,
 			_white: this._white,
 			_black: this._black
 		};
+	}
+
+	setNeedsValidation(bool) {
+		this._needsValidation = bool;
 	}
 	
 	hasBegun() {
@@ -47,7 +48,6 @@ class ChessGame {
 
 	setBoard(board) {
 		this._board = board;
-		this.status(); // computes board status and allPossibleMoves
 	}
 	
 	setWhite(player) {
@@ -66,53 +66,107 @@ class ChessGame {
 		return this._black;
 	}
 
-	status() {
-		// TODO: Cache status to prevent redundant computation
-		if (this._status) {
-			return this._status;
-		}
-
-		let currTeam = this.currTurn();
-		let oppositeTeam = ChessTeam.oppositeTeam(currTeam);
-		let board = this.board();
-
-		// let allMoves = board.getAllPossibleMoves(oppositeTeam);
-		let allMoves = board.getAllPossibleMoves(currTeam)
-		let hasMoves = allMoves.length > 0;
-		if (hasMoves) {
-			this._status = ChessTeam.ONGOING;
-		} else {
-			let attacking = board.inCheck(oppositeTeam).length > 0;
-			if (attacking) {
-				this._status = oppositeTeam;
-			} else {
-				this._status = ChessTeam.TIE;
+	statusAfter(possibleMovesAfter) {
+		// To be called at end of turn, but before move is added to history
+		// Optional possibleMovesAfter parameter can be passed
+		// since possibleMovesAfter calculation is not cached when making a move
+		// for the first time (not redoing)
+		let cachedData = this._moveHistory.next();
+		if (cachedData) {
+			if (cachedData.status) {
+				return cachedData.status;
 			}
 		}
-		console.log('[ChessGame] Status recomputed')
-		this._allPossibleMoves = allMoves;
-		return this._status;
-	}
 
-	allPossibleMoves() {
-		if (this._allPossibleMoves) {
-			return this._allPossibleMoves;
+		let board = this.board();
+		let currTeam = this.viewingTurn();
+		// We will check for checkmate/stalemate for team opposite the current turn's team
+		let oppositeTeam = ChessTeam.oppositeTeam(currTeam);
+		let allMoves = possibleMovesAfter || this.possibleMovesAfter();
+		let hasMoves = allMoves.length > 0;
+		let status;
+		if (hasMoves) {
+			status = ChessTeam.ONGOING;
+		} else {
+			let attacked = board.inCheck(oppositeTeam).length > 0;
+			if (attacked) {
+				status = currTeam;
+			} else {
+				status = ChessTeam.TIE;
+			}
 		}
 
-		this._clearStatus();
-		this.status();
-
-		return this._allPossibleMoves;
+		// Patch redoData that has no cached data
+		let redoData = this._moveHistory.next();
+		if (redoData && !redoData.status) {
+			redoData.status = status;
+		}
+		return status;
 	}
 
-	validate(move) {
-		// TODO: need to check if move.promotionNew is also equal
-		let allPossibleMoves = this.allPossibleMoves();
-		let eq = (item) => Move.isEqual(item, move)
-		let valid = allPossibleMoves.some(eq);
+	possibleMovesBefore() {
+		// To be called at beginning of turn
+		// All possible moves for the current team's turn, before a move is made
+		let cachedData = this._moveHistory.curr();
+		if (cachedData) {
+			// possibleMovesAfter of previous turn is equal to possibleMovesBefore of current turn
+			if (cachedData.possibleMovesAfter) {
+				return cachedData.possibleMovesAfter;
+			}
+		} 
+		
+		let currTeam = this.viewingTurn();
+		let possibleMovesBefore = this.possibleMoves(currTeam);
 
-		console.log('validating:', allPossibleMoves, move)
+		// Patch redoData that has no cached data
+		let redoData = this._moveHistory.next();
+		if (redoData && !redoData.possibleMovesBefore) {
+			redoData.possibleMovesBefore = possibleMovesBefore;
+		}
 
+		return possibleMovesBefore;
+	}
+
+	possibleMovesAfter() {
+		// To be called at end of turn
+		// All possible moves for the team opposite the current, after a move is made
+		let cachedData = this._moveHistory.next();
+		if (cachedData) {
+			// possibleMovesBefore of next turn is equal to possibleMovesAfter of current turn
+			if (cachedData.possibleMovesBefore) {
+				return cachedData.possibleMovesBefore;
+			}
+		}
+
+		let currTeam = this.viewingTurn();
+		let oppositeTeam = ChessTeam.oppositeTeam(currTeam);
+		let possibleMovesAfter = this.possibleMoves(oppositeTeam);
+
+		// Patch redoData that has no cached data
+		let redoData = this._moveHistory.next();
+		if (redoData && !redoData.possibleMovesAfter) {
+			redoData.possibleMovesAfter = possibleMovesAfter;
+		}
+		return possibleMovesAfter;
+	}
+
+	possibleMoves(team) {
+		let board = this.board();
+		return board.getAllPossibleMoves(team);
+	}
+
+	validate(move, possibleMovesBefore) {
+		if (!this._needsValidation) {
+			return true;
+		}
+		// Optional possibleMovesBefore parameter can be passed
+		// since possibleMovesBefore calculation is not cached when making a move
+		// for the first time (not redoing)
+		// TODO: check if gameover.
+		possibleMovesBefore = possibleMovesBefore || this.possibleMovesBefore();
+		let isEqualMove = (item) => Move.isEqual(item, move)
+		let valid = possibleMovesBefore.some(isEqualMove);
+		console.log('validating:', possibleMovesBefore, move)
 		if (valid) {
 			return true;
 		} else {
@@ -134,25 +188,30 @@ class ChessGame {
 		return this.board().isBlocked(pieceToMove, pieceToCapture);
 	}
 
-	_clearStatus() {
-		this._allPossibleMoves = null;
-		this._status = null;
+	isGameOver() {
+		let status = this.statusAfter();
+		return status.hasPermissions(ChessTeam.WHITE) || status.hasPermissions(ChessTeam.BLACK);
 	}
 
-	isGameOver() {
-		let status = this.status();
+	gameFinished() {
+		let last = this._moveHistory.getLast();
+		let status;
+		if (last && last.status) {
+			status = last.status;
+		} else {
+			// TODO: If board is initialized in a terminating state, this will fail.
+			status = ChessTeam.ONGOING;
+		}
 		return status.hasPermissions(ChessTeam.WHITE) || status.hasPermissions(ChessTeam.BLACK);
 	}
 	
 	setBoardGraphics(boardGraphics) {
 		this._boardGraphics = boardGraphics;
-		// this._boardGraphics.spawnPieces(this._board.getPieces());
-		
-		// Managing these dependencies is cumbersome, so for the sake
-		// of simplicity I am willing to compromise the fact that
-		// ChessPlayers get their boardGraphics through chessGame,
-		// instead of directly through a boardGraphics reference
-//		this.getPlayers().forEach(player => player.setBoardGraphics(boardGraphics));
+	}
+
+	initBoardGraphics() {
+		this._boardGraphics.init(this._board.dims());
+		this._boardGraphics.spawnPieces(this._board.getPieces(), this._board.allPieces());
 	}
 	
 	boardGraphics() {
@@ -165,7 +224,7 @@ class ChessGame {
 	
 	makeMove(move) {
 		this.update();
-		this._mode.makeMove.call(this, move);
+		return this._mode.makeMove.call(this, move);
 	}
 
 	redo() {
@@ -173,27 +232,17 @@ class ChessGame {
 			// Temporary fix. Make animator able to queue items
 			return;
 		}
-		let redoData = this._moveHistory.redo();
+		let redoData = this._moveHistory.next();
 		if (redoData) {
-			let moveToRedo = redoData.move;
-			let statusToRestore = redoData.status;
-			let allPossibleMovesToRestore = redoData.allPossibleMoves;
-			this._board.redoMove(moveToRedo);
-			this._boardGraphics.makeMove(moveToRedo, config.animFrames.move);
-
-			if (statusToRestore && allPossibleMovesToRestore) {
-				// if memoized info is availlable, used that, otherwise compute manually
-				// TODO: potential for bugs
-				this._status = statusToRestore;
-				this._allPossibleMoves = allPossibleMovesToRestore;
-			} else {
-				this._clearStatus();
-				this.status();
-				redoData.status = this._status;
-				redoData.allPossibleMoves = this._allPossibleMoves;
-			}
+			let move = redoData.move;
 			
-			// this._switchTurns();
+			// Patch moveData. This is needed for moves that were received while
+			// viewing history
+			this.validate(move); // implicitly patches redoData's possibleMovesBefore
+			this._board.redoMove(move);
+			this._boardGraphics.makeMove(move, config.animFrames.move);
+			this.statusAfter(); // implicitly patches redoData's possibleMovesAfter
+			this._moveHistory.redo();
 		}
 	}
 
@@ -202,27 +251,11 @@ class ChessGame {
 			// Temporary fix. Make animator able to queue items
 			return;
 		}
-		let undoData = this._moveHistory.undo();
+		let undoData = this._moveHistory.undo(); // be careful with indices if calculating possibleMovesBefore/After
 		if (undoData) {
-			let moveToUndo = undoData.move;
-			let statusToRestore = undoData.status;
-			let allPossibleMovesToRestore = undoData.allPossibleMoves;
-			this._board.undoMove(moveToUndo);
-			this._boardGraphics.undoMove(moveToUndo, config.animFrames.move);
-
-			if (statusToRestore && allPossibleMovesToRestore) {
-				// if memoized info is availlable, used that, otherwise compute manually
-				// TODO: potential for bugs
-				this._status = statusToRestore;
-				this._allPossibleMoves = allPossibleMovesToRestore;
-			} else {
-				this._clearStatus();
-				this.status();
-				undoData.status = this._status;
-				undoData.allPossibleMoves = this._allPossibleMoves;
-			}
-
-			// this._switchTurns();
+			let move = undoData.move;
+			this._board.undoMove(move);
+			this._boardGraphics.undoMove(move, config.animFrames.move);
 		}
 	}
 	
@@ -272,6 +305,10 @@ class ChessGame {
 		this._mode.update.call(this, timeOfLastMove, timestampOfLastMove, this.hasBegun());
 	}
 	
+	viewingTurn() {
+		return this._moveHistory.viewingTurn();
+	}
+
 	currTurn() {
 		return this._moveHistory.currTurn();
 	}
@@ -314,10 +351,10 @@ class ChessGame {
 ChessGame.create = (options) => {
 	// Factory to create game, instantiating and injecting required dependencies
 	let game = new ChessGame();
-	let board = GameBoard.create(options.dim);
+	let board = GameBoard.create(options.boardConfig);
 	game.setBoard(board);
 	
-	let boardGraphics = new options.BoardGraphics(options.dim);
+	let boardGraphics = new options.BoardGraphics();
 	game.setBoardGraphics(boardGraphics);
 	
 	// let white = new options.WhitePlayer(ChessTeam.WHITE, game);
@@ -337,9 +374,7 @@ ChessGame.revive = (fields) => {
 	return Object.assign(game, fields, {
 		_mode: ChessMode.revive(fields._mode),
 		_board: GameBoard.revive(fields._board),
-		// _turn: ChessTeam.revive(fields._turn),
 		_moveHistory: MoveHistory.revive(fields._moveHistory),
-		_status: ChessTeam.revive(fields._status),
 		_white: fields._white, // this is just an Object.assign call
 		_black: fields._black
 	});
@@ -367,6 +402,7 @@ ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER',
 		this._boardGraphics.update();
 	}, 
 	function makeMove(move) {
+		// TODO: rewrite, following online_multiplayer
 		if (this.isGameOver()) {
 			return;
 		}
@@ -399,33 +435,28 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		this._boardGraphics.update();
 	},
 	function makeMove(move) {
-		this._clearStatus();
-		this.validate(move);
-		// Calculate status and allpossiblemoves
-		if (this.isGameOver()) {
-			return;
-		}
-		
+		// Check not game over and is legal
 		let time = this._getCurrentPlayer().getTime();
+		let moveData;
 		if (this._moveHistory.atLast()) {
-			this._board.makeMove(move); // update state
-			this._boardGraphics.makeMove(move, config.animFrames.move); // animate
-			let allPossibleMoves = this.allPossibleMoves();
-			this._clearStatus(); // reset gameover status
-			let status = this.status(); // recalculate status
-			this._moveHistory.add(move, time, status, allPossibleMoves); // add to history
-			// this._moveHistory.add(move, time, status, this._allPossibleMoves); // add to history
-			
-			// implicitly recalculates status if needed
-			if (this.isGameOver()) {
+			// Possible moves for current team
+			let possibleMovesBefore = this.possibleMovesBefore();
+			this.validate(move, possibleMovesBefore);
+			 // update state and animate
+			this._board.makeMove(move);
+			this._boardGraphics.makeMove(move, config.animFrames.move);
 
-			} else {
-				// this._switchTurns();
-			}
+			// Possible moves for after team
+			let possibleMovesAfter = this.possibleMovesAfter();
+			// status after move has made
+			let status = this.statusAfter(possibleMovesAfter);
+			// add to history
+			moveData = this._moveHistory.add(move, time, status, possibleMovesBefore, possibleMovesAfter);
 		} else {
 			// TODO: status and allPossibleMoves will not be memoized
-			this._moveHistory.addToEnd(move, time); // add to history
+			moveData = this._moveHistory.addToEnd(move, time); // add to history
 		}
+		return moveData;
 	},
 	function setPlayerControls(clientTeam) {
 		if (clientTeam === ChessTeam.WHITE) {
