@@ -306,8 +306,10 @@ class Embed extends Component {
 		let maximized = this.props.focus !== 'minimized';
 		this.props.gameManager.setFocus(this.props.focus);
 		return (
-			<div id="embed" className={maximized ? 'embed-maximized' : 'embed-minimized'} ref={(ref) => (this._root = ref)}>
-				{this.props.gameManager.overlay()}
+			<div id="embedPositioner">
+				<div id="embed" className={maximized ? 'embed-maximized' : 'embed-minimized'} ref={(ref) => (this._root = ref)}>
+					{this.props.gameManager.overlay()}
+				</div>
 			</div>
 		);
 	}

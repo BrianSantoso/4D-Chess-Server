@@ -14,7 +14,7 @@ class ChessNavbar extends Component {
                         alt="4D Chess logo"
                     />
         return (
-            <Navbar expand="lg">
+            <Navbar className="navbar-custom" sticky="top" expand="lg">
                 <Navbar.Brand href="#home">
                     <strong>4D Chess</strong> <span className='beta'>Beta</span>
                 </Navbar.Brand>

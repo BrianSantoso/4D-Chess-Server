@@ -1,9 +1,12 @@
-.navbar {
-    height: 6vh;
+.navbar-custom {
+    min-height: var(--nav-height);
+    /* height: var(--nav-height); */
+    background-color: white;
 }
 
 /* Add Spacing between navbar items */
 .navbar-nav > * {
-    margin-left: 0.3em;
-    margin-right: 0.3em;
+    /* margin-left: 0.3em;
+    margin-right: 0.3em; */
+    margin: 0.05em 0.3em;
 }
