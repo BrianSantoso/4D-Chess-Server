@@ -92,13 +92,6 @@ class MoveHistory {
     atOrigin() {
         return this._index === -1;
     }
-
-    // toJSON() {
-    //     return {
-    //         _index: this._index,
-
-    //     };
-    // }
 }
 
 MoveHistory.revive = (fields) => {
