@@ -52,7 +52,7 @@ class ChessRoom extends Room {
         let stripped = this.strip(user);
         let _id = stripped._id;
         this.sessionIdToUser.set(client.sessionId, stripped);
-
+        this.users.set(_id, stripped);
         if (!this.whiteId || !this.blackId) {
             // If user has not joined the room yet
             if (!this.whiteId) {
@@ -61,7 +61,7 @@ class ChessRoom extends Room {
                 this.blackId = _id;
             }
 
-            this.users.set(_id, stripped);
+            // this.users.set(_id, stripped);
             // TODO: this will mutate and add a weird _time field to the user in this.users map
             // but is necessary in order to properly attach _time to an empty player.
             // To fix, reverse the order of Object.assign, and create a deep copy of

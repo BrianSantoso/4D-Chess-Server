@@ -9,7 +9,11 @@ import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
 import RedoIcon from '../assets/icons/redo-black-24dp.svg';
 import ChatIcon from '../assets/icons/chat-black-24dp.svg';
+import OnlineIcon from '../assets/player/online.svg';
+import OfflineIcon from '../assets/player/offline.svg';
 import config from './config.json';
+import { Nav } from 'react-bootstrap';
+
 
 class View2D {
 	constructor(gameManager, client) {
@@ -68,13 +72,14 @@ class View2D {
 						playerName={white._username} 
 						myTurn={true} time={white._time} 
 						elo={white._elo} 
-						position={whiteSide}></PlayerInfo>;
+						position={whiteSide}
+						online={whiteConnected}></PlayerInfo>;
 		let right = <PlayerInfo team={ChessTeam.BLACK} 
 						playerName={black._username} 
 						myTurn={true} time={black._time} 
 						elo={black._elo} 
-						position={blackSide}></PlayerInfo>;
-		
+						position={blackSide}
+						online={blackConnected}></PlayerInfo>;
 		this.setState({
 			playerLeft: left,
 			playerRight: right,
@@ -150,8 +155,8 @@ class Overlay extends Component {
 
 		// this.messages = [];
 		this.state = {
-			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'-------'} myTurn={true} time={null} elo={'--'} position={'playerInfoLeft'}></PlayerInfo>,
-			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'-------'} myTurn={false} time={null} elo={'--'} position={'playerInfoRight'}></PlayerInfo>,
+			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'-------'} myTurn={true} time={null} elo={'--'} position={'playerInfoLeft'} online={false}></PlayerInfo>,
+			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'-------'} myTurn={false} time={null} elo={'--'} position={'playerInfoRight'} online={false}></PlayerInfo>,
 			bannerMessage: '',
 			whiteConnected: false,
 			blackConnected: false,
@@ -177,8 +182,8 @@ class Overlay extends Component {
 		} else {
 			bannerMessage = config.banner.noOpponent;
 		}
-		let maximized = this.state.focus !== 'minimized';
-		return (maximized ?
+		let minimized = this.state.focus === 'minimized';
+		return (minimized ? <Nav.Link className='overlay clickable' href="#/play"></Nav.Link> :
 			<div className='overlay'>
 				{this.state.playerLeft}
 				<StatusBanner message={bannerMessage}></StatusBanner>
@@ -202,7 +207,7 @@ class Overlay extends Component {
 					showing={this.state.showing} 
 					events={this.props.events}
 				/>
-			</div> : ''
+			</div>
 		);
 	}
 
@@ -313,7 +318,7 @@ class PlayerInfo extends Component {
 		let className = 'playerInfo ' + this.props.position;
 		let isWhite = this.props.team === ChessTeam.WHITE;
 		let playerTime = <div className='playerTime'>{this.msToHMS(this.props.time)}</div>;
-		let playerStatus = <img className='playerStatus' src='../assets/player/online.svg' />
+		let playerStatus = <img className='playerStatus' src={this.props.online ? OnlineIcon : OfflineIcon} />
 		let playerIcon = <img className='playerIcon' src={isWhite ? WhiteIcon : BlackIcon}/>;
 		let elo = `(${this.props.elo})`;
 		let footer = (
