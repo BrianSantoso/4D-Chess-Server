@@ -23,10 +23,10 @@ class ChessRoom extends Room {
 
     getPlayerData() {
         let playerData = this._gameManager.getPlayerData();
-        return playerData;
-        // Object.assign(, {
-        //     connectedUsers: this.connectedUsers()
-        // });
+        // return playerData;
+        return Object.assign(playerData, {
+            _connectedUsers: this.connectedUsers()
+        });
     }
 
     broadcastPlayerData(options) {

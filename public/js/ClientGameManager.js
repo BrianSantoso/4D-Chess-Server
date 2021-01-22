@@ -103,7 +103,7 @@ class ClientGameManager extends GameManager {
 		});
 
 		room.onMessage('playerData', (jsonData) => {
-			console.log('received playerData');
+			console.log('received playerData', jsonData);
 			this.setPlayerData(jsonData);
 		})
 
@@ -130,6 +130,7 @@ class ClientGameManager extends GameManager {
 		} else {
 			this._clientTeam = ChessTeam.SPECTATOR;
 		}
+		console.log('If this gets logged repeatedly then this is a huge performance cost.')
 		this._game.setPlayerControls(this.getClientTeam());
 		this.subscribePlayers();
 		
@@ -230,6 +231,8 @@ class ClientGameManager extends GameManager {
 			this._game.update(step);
 			let playerData = this.getPlayerData();
 			this._view2D.setPlayerData(playerData, this.getClientTeam());
+			this._view2D.setBannerMessage(this._game.getStatusMessage());
+
 			// this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
 		this._view3D.update();

@@ -97,6 +97,15 @@ class GameBoard {
 	isClassic() {
 		return this._z() === 1 && this._w() === 1;
 	}
+
+	hasNoMoves(team) {
+		let sameTeam = (piece) => piece.team === team;
+		let pieceHasMoves = (piece) => {
+			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w);
+			return moves.length > 0;
+		};
+		return !this._applyTo(pieceHasMoves, sameTeam);
+	}
 	
 	getPossibleMoves(x, y, z, w, legalOnly=true, attacksOnly=false) {
 		// Returns list of possible moves for a piece at the given
@@ -118,7 +127,7 @@ class GameBoard {
 			result.push(...moves);
 		});
 		
-		result = unique(result, Move.hash);
+		result = unique(result, Move.weakHash);
 
 		if (legalOnly) {
 			// Must impose this extra condition to prevent mutual recursion 
@@ -134,19 +143,25 @@ class GameBoard {
 		let isKing = (piece) => {
 			return piece.type === 'King' && piece.team === team;
 		}
-		let exit = (piece) => true;
-		let king = this._applyTo(exit, isKing);
+		let kingIds = new Set();
+		let grabKings = (piece) => {
+			kingIds.add(piece.id);
+			return false;
+		};
+		this._applyTo(grabKings, isKing);
 		
-		let oppositeTeam = (piece) => piece.oppositeTeam(king);
+		let attackerTeam = ChessTeam.oppositeTeam(team);
+		let oppositeTeam = (piece) => piece.team === attackerTeam;
 		let attacksKing = (piece) => {
 			// Must request legalOnly=false to prevent mutual recursion
 			// between inCheck and getPossibleMoves
 			// (getLegalMoves -> isLegal -> inCheck)
 			let moves = this.getPossibleMoves(piece.x, piece.y, piece.z, piece.w, false, true);
-			let attacks = moves.filter(move => move.isCapture());
+			let attacks = moves.filter(move => move.isCapture()); // TODO: don't think this is needed
+
 			return attacks.some(move => {
-				let capturedPiece = this.getById(move.capturedPieceId);
-				return capturedPiece === king
+				// Whether any of the attacks is targeting a king
+				return kingIds.has(move.capturedPieceId);
 			});
 		}
 		let predicate = (piece) => oppositeTeam(piece) && attacksKing(piece);
@@ -357,6 +372,7 @@ GameBoard.revive = (fields) => {
 		}
 	}
 
+	// WARNING: When loading a game, this causes the pieces and allPieces to have referrentially unequal objects
 	let _allPieces = fields._allPieces.map(Piece.revive);
 
 	return Object.assign(new GameBoard(), fields, {

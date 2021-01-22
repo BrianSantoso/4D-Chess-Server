@@ -265,7 +265,7 @@ class Interactor3DWorker {
 
 	explainIfUnadressedCheck(meshToMove) {
 		let pieceToMoveId = meshToMove.pieceId;
-		let notKing = pieceToMoveId.type !== 'king';
+		let notKing = pieceToMoveId.type !== 'King';
 		let legalMoves = this._getPossibleMoves(pieceToMoveId);
 		let theoreticalMoves = this._getPossibleMoves(pieceToMoveId, false);
 		if (notKing && legalMoves.length === 0 && theoreticalMoves.length > 0) {

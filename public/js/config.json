@@ -25,7 +25,7 @@
         "msPerMsg": 500,
         "whitesTurn": ["White to Move"],
         "blacksTurn": ["Black to Move"],
-        "noOpponent": ["Waiting for opponent", "Waiting for opponent.", "Waiting for opponent..", "Waiting for opponent..."]
+        "noOpponent": ["Waiting for opponent to join", "Waiting for opponent to join.", "Waiting for opponent to join..", "Waiting for opponent to join..."]
     },
     "schema": {
         "white": "white",

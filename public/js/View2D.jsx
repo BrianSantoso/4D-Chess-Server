@@ -56,19 +56,36 @@ class View2D {
 		}
 		let white = playerData._white;
 		let black = playerData._black;
+		let whiteConnected = false;
+		let blackConnected = false;
+		if (playerData._connectedUsers) {
+			let connectedUsers = playerData._connectedUsers.map(user => user._id);		
+			whiteConnected = connectedUsers.indexOf(white._id) >= 0;
+			blackConnected = connectedUsers.indexOf(black._id) >= 0;
+		}
+		
 		let left = <PlayerInfo team={ChessTeam.WHITE} 
 						playerName={white._username} 
 						myTurn={true} time={white._time} 
 						elo={white._elo} 
-						position={whiteSide}></PlayerInfo>
+						position={whiteSide}></PlayerInfo>;
 		let right = <PlayerInfo team={ChessTeam.BLACK} 
 						playerName={black._username} 
 						myTurn={true} time={black._time} 
 						elo={black._elo} 
-						position={blackSide}></PlayerInfo>
+						position={blackSide}></PlayerInfo>;
+		
 		this.setState({
 			playerLeft: left,
-			playerRight: right
+			playerRight: right,
+			whiteConnected: whiteConnected,
+			blackConnected: blackConnected
+		});
+	}
+
+	setBannerMessage(message) {
+		this.setState({
+			bannerMessage: message
 		});
 	}
 
@@ -135,7 +152,9 @@ class Overlay extends Component {
 		this.state = {
 			playerLeft: <PlayerInfo team={ChessTeam.WHITE} playerName={'-------'} myTurn={true} time={null} elo={'--'} position={'playerInfoLeft'}></PlayerInfo>,
 			playerRight: <PlayerInfo team={ChessTeam.BLACK} playerName={'-------'} myTurn={false} time={null} elo={'--'} position={'playerInfoRight'}></PlayerInfo>,
-			bannerMessages: config.banner.noOpponent,
+			bannerMessage: '',
+			whiteConnected: false,
+			blackConnected: false,
 			room: this.props.room,
 			messages: [],
 			showing: [],
@@ -152,11 +171,17 @@ class Overlay extends Component {
 	}
 
 	render() {
+		let bannerMessage;
+		if (this.state.whiteConnected && this.state.blackConnected) {
+			bannerMessage = this.state.bannerMessage;
+		} else {
+			bannerMessage = config.banner.noOpponent;
+		}
 		let maximized = this.state.focus !== 'minimized';
 		return (maximized ?
 			<div className='overlay'>
 				{this.state.playerLeft}
-				<StatusBanner messages={this.state.bannerMessages}></StatusBanner>
+				<StatusBanner message={bannerMessage}></StatusBanner>
 				{this.state.playerRight}
 				
 				<div className='sidebar'>
@@ -325,12 +350,16 @@ class StatusBanner extends Component {
 
 	tick() {
 		this.setState(prevState => ({
-			frame: (prevState.frame + 1) % this.props.messages.length
+			frame: (prevState.frame + 1) % this.props.message.length
 		}));
 	}
 
 	currMessage() {
-		return this.props.messages[this.state.frame];
+		if (typeof this.props.message === 'string') {
+			return this.props.message;
+		} else {
+			return this.props.message[this.state.frame];
+		}
 	}
 
 	componentDidMount() {
