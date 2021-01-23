@@ -191,7 +191,7 @@ class ClientGameManager extends GameManager {
         options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
 		game.setRoom(this._room);
-		game.setNeedsValidation(true); // TODO: this is temporary, change to false later!
+		game.setNeedsValidation(false); // TODO: this is temporary, change to false later!
 		return game;
 	}
 	
@@ -284,24 +284,11 @@ class ClientGameManager extends GameManager {
 }
 
 class Embed extends Component {
-	constructor(props) {
-		super(props)
-		// this.props.gameManager.loadAssets().then(() => {
-		// 	try {
-		// 		let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
-		// 		this.props.gameManager.join(roomId);
-		// 	} catch {
-		// 		console.log('[App] No roomId parameter found');
-		// 		this.props.gameManager.join('standard');
-		// 	}
-
-		// 	this.props.gameManager._startLoop();
-		// });
-	}
 
 	componentDidMount() {
 		// Mount three.js canvas
 		this.props.gameManager.mount(this._root);
+		// Trigger onMount callback
 		this.props.onMount();
 	}
 

@@ -42,7 +42,7 @@ class BoardGraphics3D extends BoardGrahpics {
 		this._allAnimProms = [];
 		
 		this._squareSize = 25;
-		this._deltaY = this._squareSize * 3;
+		this._deltaY = this._squareSize * 2.8;
 		this._deltaW = this._squareSize * 1.5;
 	}
 
@@ -133,8 +133,7 @@ class BoardGraphics3D extends BoardGrahpics {
 	init(dims) {
 		this.dim = dims;
 		// TODO: revive after testing fix for transparent objects (im trying to add the board last)
-		let square = 25;
-		this._checkerboards.add(checkerboard4D(this.dim, square, square * 3, square * 1.5));
+		this._checkerboards.add(checkerboard4D(this.dim, this._squareSize, this._deltaY, this._deltaW));
 		
 		console.log('BoardGraphics', this._container);
 	}

@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import Leaderboard from './Leaderboard.jsx';
+import { Button, Container, Row, Col } from 'react-bootstrap';
 
 class Home extends Component {
     constructor(props) {
@@ -14,88 +16,19 @@ class Home extends Component {
     }
 
     render() {
-        return <p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-            <p>a</p>
-        </p>;
+        return (
+            <div className='home'>
+                <div className='greeting'>
+                    <div className='greetingContent'>
+                        <div className='greetingText'>New ways to play Chess</div>
+                        <Button size='lg' className='greetingButton' variant='dark'>Play</Button>
+                        <Button size='lg' className='greetingButton' variant='outline-dark'>Custom Game</Button>
+                    </div>
+                    <canvas className='greetingCanvas'></canvas>
+                </div>
+                <Leaderboard></Leaderboard>
+            </div>
+        );
     }
 }
 

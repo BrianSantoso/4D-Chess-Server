@@ -73,3 +73,57 @@
     border-radius: 5px;
     padding: .20em .32em;
 }
+
+.home {
+
+}
+
+.greeting {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.greetingContent {
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 30%;
+    height: 50%;
+    
+}
+
+.greetingText {
+    width: 100%;
+    text-align: center;
+    font-size: 4em;
+    font-weight: bold;
+    color: var(--secondary);
+
+    margin: 0.5em 0;
+}
+
+.greetingButton {
+    display: block;
+    margin: 0.5em auto;
+
+    /* background-color: var(--secondary);
+    color: white;
+    cursor: pointer;
+    opacity: 0.9; */
+}
+
+.greetingCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.sectionHeader {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: var(--secondary);
+}

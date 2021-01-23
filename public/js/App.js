@@ -104,13 +104,12 @@ class App extends Component {
 	}
 
 	alert(props) {
+		let alert = <Alert className="alert-banner" 
+			variant={props.variant} 
+			onClose={this.handleCloseAlert} 
+			dismissible> {props.content} </Alert>;
 		this.setState({
-			alert: (
-				<Alert className="alert-banner" 
-				variant={props.variant} 
-				onClose={this.handleCloseAlert} 
-				dismissible> {props.content} </Alert>
-			)
+			alert: alert
 		});
 	}
 
