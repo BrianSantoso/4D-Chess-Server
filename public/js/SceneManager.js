@@ -14,7 +14,7 @@ class SceneManager {
 		this._scene = null;
 		this._camera = null;
 		this._renderer = null;
-		this._rayCaster = null;
+		this._rayCaster = new THREE.Raycaster();;
 		this._controls = null;
 		this._animator = new Animator();
 
@@ -45,11 +45,14 @@ class SceneManager {
 		});
 	}
 
-	mount(root) {
+	mount(root, useControls=true) {
 		this._root = root;
 
 		this._initScene();
-		this._initControls();
+		if (useControls) {
+			this._initControls();
+		}
+		
 		this._initEventListeners();
 
 		this._root.appendChild(this._renderer.domElement);
@@ -62,7 +65,7 @@ class SceneManager {
 		this._camera.position.set(0, 0, 0);
 		this._renderer = new THREE.WebGLRenderer({antialias: true});
 		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
-		this._renderer.domElement.id = "three-canvas";
+		// this._renderer.domElement.id = "three-canvas";
 		// this._renderer.domElement.classList += " ";
 
 		this._renderer.setClearColor(0xf7f7f7);
@@ -102,7 +105,9 @@ class SceneManager {
 	onContainerResize() {
 		this._camera.aspect = this._root.clientWidth / this._root.clientHeight;
 		this._camera.updateProjectionMatrix();
-		this._controls2.handleResize();
+		if (this._controls2) {
+			this._controls2.handleResize();
+		}
 		this._renderer.setSize(this._root.clientWidth, this._root.clientHeight);
 		this.draw(); // Need to draw immediately after resize to prevent flickering
 	}
@@ -204,8 +209,6 @@ class SceneManager {
 		this._controls2.zoomSpeed = 1.5;
 		this._controls2.minDistance = minDistance;
 		this._controls2.maxDistance = maxDistance;
-		
-		this._rayCaster = new THREE.Raycaster();
 	}
 	
 	_updateRayCaster(pos2D) {
@@ -217,20 +220,7 @@ class SceneManager {
 	}
 	
 	keyInputs() {
-		this._controls.update();
-		
-//		let min = new THREE.Vector3(0, 0, 0);
-//		let boardSize = 25 * 4;
-//		let max = new THREE.Vector3(boardSize, 
-//									25 * 3 * 4,
-//									-(boardSize * 4 + 25 * 1.5 * (4 - 1))
-//								   ).add(min);
-//		let boundingBox = new THREE.Box3(min, max);
-//		boundingBox.clampPoint(this._controls.target, this._controls.target);
-		
-		let target = this._controls.target;
-		this._controls2.target.set(target.x, target.y, target.z);
-		this._controls2.update();
+		this._syncControls();
 	}
 	
 	update() {
@@ -238,10 +228,12 @@ class SceneManager {
 	}
 	
 	_syncControls() {
-		this._controls.update();
-		let target = this._controls.target;
-		this._controls2.target.set(target.x, target.y, target.z);
-		this._controls2.update();
+		if (this._controls && this._controls2) {
+			this._controls.update();
+			let target = this._controls.target;
+			this._controls2.target.set(target.x, target.y, target.z);
+			this._controls2.update();
+		}
 	}
 	
 	draw() {
