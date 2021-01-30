@@ -24,8 +24,9 @@ class Home extends Component {
                         <Button size='lg' className='greetingButton' variant='dark'>Play</Button>
                         <Button size='lg' className='greetingButton' variant='outline-dark'>Custom Game</Button>
                     </div>
-                    <canvas className='greetingCanvas'></canvas>
+                    <canvas id='greetingCanvas' className='greetingCanvas'></canvas>
                 </div>
+
                 <Leaderboard></Leaderboard>
             </div>
         );

@@ -14,7 +14,7 @@ class ChessNavbar extends Component {
                         alt="4D Chess logo"
                     />
         return (
-            <Navbar className="navbar-custom" sticky="bottom" expand="lg">
+            <Navbar className="navbar-custom" sticky="top" expand="lg">
                 <Navbar.Brand href="#home">
                     <strong>4D Chess</strong> <span className='beta'>Beta</span>
                 </Navbar.Brand>
@@ -24,13 +24,13 @@ class ChessNavbar extends Component {
                     {this.props.loggedIn ? '' : <Button href="#/login" variant="outline-dark">Log In</Button>}
                     {this.props.loggedIn ? '' : <Button href="#/register" variant="outline-dark">Sign Up</Button>}
                     <Nav.Link href="#/play">Play</Nav.Link>
-                    <Nav.Link href="#/leaderboards">Leaderboards</Nav.Link>
+                    <Nav.Link href="#/home#leaderboards">Leaderboards</Nav.Link>
                     <NavDropdown title="Other Stuff" id="basic-nav-dropdown">
-                        <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-                        <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
-                        <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+                        <NavDropdown.Item href="#/about">About</NavDropdown.Item>
+                        <NavDropdown.Item href="#/suggest">Suggest a Feature</NavDropdown.Item>
+                        <NavDropdown.Item href="#/bug">Report a Bug</NavDropdown.Item>
                         <NavDropdown.Divider />
-                        <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+                        <NavDropdown.Item href="#/patron">Support 4D Chess</NavDropdown.Item>
                     </NavDropdown>
                     {this.props.loggedIn ? <Nav.Link href="#/logout">Logout</Nav.Link> : ''}
                     </Nav>

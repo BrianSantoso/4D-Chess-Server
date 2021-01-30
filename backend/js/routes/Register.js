@@ -76,6 +76,8 @@ const createGuestUser = (res) => {
     let newUser = new User(fields);
     return newUser.save()
         .then(user => {
+            // TODO: Rate limit. Don't allow repeated logout or authToken requests
+            // to create infinite accounts
             sendAuthToken(res, user, 'Guest Account created!');
         })
         .catch(err => {

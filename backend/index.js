@@ -65,7 +65,7 @@ class ServerInstance {
     defineRooms() {
         let standardOptions = {
             mode: ChessMode.ONLINE_MULTIPLAYER,
-            boardConfig: config.boards.classic4d,
+            boardConfig: config.boards.classic,
             BoardGraphics: BoardGraphics, // empty BoardGraphics
             whitePlayerType: 'AbstractPlayer',
             blackPlayerType: 'AbstractPlayer',

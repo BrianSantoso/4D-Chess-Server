@@ -19,7 +19,7 @@ class ClientGameManager extends GameManager {
 		super();
 		// this._domElement = document.getElementById("embed");
 		this._authToken = '';
-		this._view3D = new SceneManager();
+		this._view3D; // initialized on mount
         this._controller = null;
 		this._client = client;
 		this._clientTeam = ChessTeam.SPECTATOR;
@@ -28,12 +28,17 @@ class ClientGameManager extends GameManager {
 
 		this._focus = '';
 
-		this.setAuthToken = this.setAuthToken.bind(this);
+		this._ready = [
+			this.loadAssets(), 
+			new Promise((resolve, reject) => {
+				this._authTokenSet = resolve;
+			}), 
+			new Promise((resolve, reject) => {
+				this._mounted = resolve;
+			})
+		];
 
-		const proms = [this.loadAssets(), new Promise((resolve, reject) => {
-			this._authTokenSet = resolve;
-		})]
-		Promise.all(proms).then(() => {
+		Promise.all(this._ready).then(() => {
 			try {
 				let roomId = location.href.match(/roomId=([a-zA-Z0-9\-_]+)/)[1];
 				this.join(roomId);
@@ -43,6 +48,8 @@ class ClientGameManager extends GameManager {
 			}
 			this._startLoop();
 		});
+		
+		this.setAuthToken = this.setAuthToken.bind(this);
 	}
 
 	setAuthToken(token) {
@@ -59,7 +66,9 @@ class ClientGameManager extends GameManager {
 	}
 
 	mount(root) {
+		this._view3D = new SceneManager();
 		this._view3D.mount(root);
+		this._mounted();
 	}
 
 	overlay() {
@@ -223,7 +232,9 @@ class ClientGameManager extends GameManager {
 	}
 	
 	_keyInputs() {
-		this._view3D.keyInputs();
+		if (this._view3D) {
+			this._view3D.keyInputs();
+		}
 	}
 	
 	_update(step) {
@@ -235,11 +246,16 @@ class ClientGameManager extends GameManager {
 
 			// this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
-		this._view3D.update();
+
+		if (this._view3D) {
+			this._view3D.update();
+		}
 	}
 	
 	_draw() {
-		this._view3D.draw();
+		if (this._view3D) {
+			this._view3D.draw();
+		}
 	}
 	
 	_startLoop() {
