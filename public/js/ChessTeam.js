@@ -79,7 +79,11 @@ class ChessStatus {
 
     toJSON() {
         return this.type;
-    }
+	}
+	
+	terminating() {
+		return this.terminating;
+	}
 
     ongoing() {
         return !this.terminating;

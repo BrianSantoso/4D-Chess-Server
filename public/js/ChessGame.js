@@ -24,6 +24,7 @@ class ChessGame {
 		this._connectedUsers;
 
 		this._cachedStatus = null;
+		this._gameOver = false;
 	}
 
 	toJSON() {
@@ -32,7 +33,8 @@ class ChessGame {
 			_board: this._board,
 			_moveHistory: this._moveHistory,
 			_white: this._white,
-			_black: this._black
+			_black: this._black,
+			_gameOver: this._gameOver
 		};
 	}
 
@@ -176,7 +178,18 @@ class ChessGame {
 
 	turnChange() {
 		this._cachedStatus = null;
-		console.log('Status:', this.status());
+
+		if (!this._gameOver) {
+			let status = this.status();
+			console.log('Status:', status);
+			if (status.terminating()) {
+				this._gameOver = true;
+			}
+		}
+	}
+
+	gameOver() {
+		return this._gameOver;
 	}
 	
 	getPossibleMoves(id, legalOnly=true) {

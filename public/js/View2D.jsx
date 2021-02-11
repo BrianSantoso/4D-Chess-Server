@@ -12,7 +12,8 @@ import ChatIcon from '../assets/icons/chat-black-24dp.svg';
 import OnlineIcon from '../assets/player/online.svg';
 import OfflineIcon from '../assets/player/offline.svg';
 import config from './config.json';
-import { Nav } from 'react-bootstrap';
+import { Nav, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 
 class View2D {
@@ -88,6 +89,12 @@ class View2D {
 		});
 	}
 
+	showGameOverWindow() {
+		this.setState({
+			showGameOverWindow: true
+		});
+	}
+
 	setBannerMessage(message) {
 		this.setState({
 			bannerMessage: message
@@ -148,6 +155,21 @@ class View2D {
 	}
 }
 
+class GameOverWindow extends Component {
+	render() {
+		return (
+			<div className='popup' onClick={(e) => e.stopPropagation()}>
+				<form className="form" onSubmit={this._handleSubmit}>
+					<div className='form-header'>{this.props.message}</div>
+					<button className='form-input form-submit' type="submit">Rematch</button>
+					<button className='form-input form-submit' type="submit">New Game</button>
+					<Link to="/login">Login</Link> to save your progress!
+				</form>
+			</div>
+		);
+	}
+}
+
 class Overlay extends Component {
 
 	constructor(props) {
@@ -164,6 +186,7 @@ class Overlay extends Component {
 			messages: [],
 			showing: [],
 			chatOpened: false, // chat state is maintained up here so that toggle chat button can toggle chat
+			showGameOverWindow: false,
 			focus: 'focused' // TODO: this is hack to get around initial render
 		}
 
@@ -185,6 +208,7 @@ class Overlay extends Component {
 		let minimized = this.state.focus === 'minimized';
 		return (minimized ? <Nav.Link className='overlay clickable' href="#/play"></Nav.Link> :
 			<div className='overlay'>
+				{this.state.showGameOverWindow ? <GameOverWindow message={bannerMessage}></GameOverWindow> : ''}
 				{this.state.playerLeft}
 				<StatusBanner message={bannerMessage}></StatusBanner>
 				{this.state.playerRight}

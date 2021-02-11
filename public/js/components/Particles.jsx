@@ -105,7 +105,7 @@ class Particles extends Component {
         const zero = new THREE.Vector3(0, 0, 0);
         this._checkerboards.children.forEach(particle => {
             let distance = particle.position.distanceTo(zero);
-            if (distance > 800) {
+            if (distance > 470) {
                 this._randomize(particle);
             }
             particle.position.add(particle.velocity);

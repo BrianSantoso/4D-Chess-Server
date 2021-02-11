@@ -244,6 +244,9 @@ class ClientGameManager extends GameManager {
 			this._view2D.setPlayerData(playerData, this.getClientTeam());
 			this._view2D.setBannerMessage(this._game.getStatusMessage());
 
+			if (this._game.gameOver()) {
+				this._view2D.showGameOverWindow()
+			}
 			// this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
 

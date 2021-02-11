@@ -28,7 +28,7 @@ class Home extends Component {
                         </Link>
                         <Button size='lg' className='greetingButton' variant='outline-dark'>Custom Game</Button>
                     </div>
-                    <Particles></Particles>
+                    {/* <Particles></Particles> */}
                 </div>
 
                 <Leaderboard></Leaderboard>
