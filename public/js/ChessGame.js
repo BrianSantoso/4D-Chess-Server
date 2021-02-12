@@ -17,9 +17,11 @@ class ChessGame {
 		this._black = Player.create(ChessGame.BLACK);
 		this._needsValidation = true;
 		this._boardGraphics;
+		this._gui;
 
 		this._moveHistory = new MoveHistory();
 
+		this._gameManager;
 		this._room;
 		this._connectedUsers;
 
@@ -132,6 +134,15 @@ class ChessGame {
 		this._boardGraphics.init(this._board.dims());
 		this._boardGraphics.spawnPieces(this._board.getPieces(), this._board.allPieces());
 	}
+
+	initGUI() {
+		this._gui = this._gameManager.createGUI(this._mode);
+		this._gui.setGame(this);
+	}
+
+	setManager(gameManager) {
+		this._gameManager = gameManager;
+	}
 	
 	boardGraphics() {
 		return this._boardGraphics;
@@ -182,7 +193,7 @@ class ChessGame {
 		if (!this._gameOver) {
 			let status = this.status();
 			console.log('Status:', status);
-			if (status.terminating()) {
+			if (status.isTerminating()) {
 				this._gameOver = true;
 			}
 		}
@@ -240,6 +251,10 @@ class ChessGame {
 
 	view3D() {
 		return this._boardGraphics.view3D();
+	}
+
+	view2D() {
+		return this._gui.view2D();
 	}
 
 	setRoom(room) {

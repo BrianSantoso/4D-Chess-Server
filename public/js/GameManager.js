@@ -32,8 +32,11 @@ class GameManager {
 	}
 	
 	setGame(game) {
+		if (this._game) {
+			this._game.setManager(null);
+		}
 		this._game = game;
-		this._game.initBoardGraphics();
+		this._game.setManager(this);
 	}
 	
 	createGame(options) {

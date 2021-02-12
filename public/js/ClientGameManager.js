@@ -1,18 +1,14 @@
 import GameManager from "./GameManager.js";
-import config from "./config.json";
 import BoardGraphics3D from "./BoardGraphics3D.js";
-import { LocalPlayer3D, OnlinePlayer3D, Spectator3D } from "./ChessPlayer.js";
 import ChessTeam from "./ChessTeam.js";
 import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
 import Models from "./Models.js";
-import View2D from "./View2D.jsx";
-import ChessGame, { ChessMode } from "./ChessGame.js";
 import games from "./Games.json";
-
+import { Nav } from "react-bootstrap";
 import React, { Component } from "react";
-import * as Colyseus from "colyseus.js";
 import jwt from 'jsonwebtoken';
+import View2D from "./View2D.js"
 
 class ClientGameManager extends GameManager {
 	constructor(client) {
@@ -24,7 +20,7 @@ class ClientGameManager extends GameManager {
 		this._client = client;
 		this._clientTeam = ChessTeam.SPECTATOR;
 		this._room = null;
-		this._view2D = new View2D(this, this._client);
+		// this._view2D = new View2D(this, this._client);
 
 		this._focus = '';
 
@@ -62,7 +58,7 @@ class ClientGameManager extends GameManager {
 
 	setFocus(focus) {
 		this._focus = focus;
-		this._view2D.setFocus(focus);
+		// this._view2D.setFocus(focus);
 	}
 
 	mount(root) {
@@ -72,7 +68,12 @@ class ClientGameManager extends GameManager {
 	}
 
 	overlay() {
-		return this._view2D.overlay();
+		// return this._view2D.overlay();
+
+		// TODO: have view2d wrapper that has layerstack which has game's view2d
+		if (this._game) {
+			return this._game.view2D();
+		}
 	}
 
 	async join(roomName) {
@@ -91,7 +92,7 @@ class ClientGameManager extends GameManager {
 	
 	setRoom(room) {
 		room.onMessage('chatMsg', (message) => {
-			this._view2D.addMsg(message);
+			// this._view2D.addMsg(message);
 		});
 
 		room.onMessage('move', (data) => {
@@ -120,7 +121,7 @@ class ClientGameManager extends GameManager {
 			this._room.leave();
 		}
 		this._room = room;
-		this._view2D.setRoom(room);
+		// this._view2D.setRoom(room);
 
 		if (this._game) {
 			this._game.setRoom(room);
@@ -145,7 +146,7 @@ class ClientGameManager extends GameManager {
 		
 		
 		// TODO: whose turn is it bruh
-		this._view2D.setPlayerData(playerData, this.getClientTeam());
+		// this._view2D.setPlayerData(playerData, this.getClientTeam());
 	}
 
 	getClientTeam() {
@@ -167,7 +168,9 @@ class ClientGameManager extends GameManager {
 		}
 		
 		super.setGame(game);
-
+		game.initBoardGraphics();
+		game.initGUI();
+		
 		this._view3D.add(game.view3D());
 		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
 		
@@ -197,7 +200,7 @@ class ClientGameManager extends GameManager {
 			whitePlayerType: 'AbstractPlayer',
 			blackPlayerType: 'AbstractPlayer'
 		}
-        options = Object.assign(defaultOptions, options);
+		options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
 		game.setRoom(this._room);
 		game.setNeedsValidation(false); // TODO: this is temporary, change to false later!
@@ -230,6 +233,16 @@ class ClientGameManager extends GameManager {
 		let modelsPromise = Models.loadModels();
 		return Promise.all([modelsPromise]);
 	}
+
+	createGUI(mode) {
+		const guis = {
+			'ONLINE_MULTIPLAYER': 'BasicGUI',
+			'LOCAL_MULTIPLAYER': 'BasicGUI',
+			'FREE_PLAY': 'BasicGUI'
+		};
+		const guiType = guis[mode.type];
+		return View2D.create(guiType);
+	}
 	
 	_keyInputs() {
 		if (this._view3D) {
@@ -241,12 +254,11 @@ class ClientGameManager extends GameManager {
 		if (this._game) {
 			this._game.update(step);
 			let playerData = this.getPlayerData();
-			this._view2D.setPlayerData(playerData, this.getClientTeam());
-			this._view2D.setBannerMessage(this._game.getStatusMessage());
-
-			if (this._game.gameOver()) {
-				this._view2D.showGameOverWindow()
-			}
+			// this._view2D.setPlayerData(playerData, this.getClientTeam());
+			// this._view2D.setBannerMessage(this._game.getStatusMessage());
+			// if (this._game.gameOver()) {
+			// 	this._view2D.showGameOverWindow()
+			// }
 			// this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
 
@@ -317,7 +329,7 @@ class Embed extends Component {
 		return (
 			<div id="embedPositioner">
 				<div id="embed" className={maximized ? 'embed-maximized' : 'embed-minimized'} ref={(ref) => (this._root = ref)}>
-					{this.props.gameManager.overlay()}
+					{maximized ? this.props.gameManager.overlay() : <Nav.Link className='overlay clickable' href="#/play"></Nav.Link>}
 				</div>
 			</div>
 		);

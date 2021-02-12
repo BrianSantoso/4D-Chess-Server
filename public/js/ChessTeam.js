@@ -81,7 +81,7 @@ class ChessStatus {
         return this.type;
 	}
 	
-	terminating() {
+	isTerminating() {
 		return this.terminating;
 	}
 
