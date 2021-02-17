@@ -20,7 +20,7 @@ class ClientGameManager extends GameManager {
 		this._client = client;
 		this._clientTeam = ChessTeam.SPECTATOR;
 		this._room = null;
-		this._view2D = View2D.create('LayerStack');
+		this._view2D = View2D.create('Overlay');
 		// this._view2D = new View2D(this, this._client);
 
 		this._focus = '';
@@ -68,13 +68,14 @@ class ClientGameManager extends GameManager {
 		this._mounted();
 	}
 
-	overlay() {
+	view2D() {
+		return this._view2D.view2D();
 		// return this._view2D.overlay();
 
 		// TODO: have view2d wrapper that has layerstack which has game's view2d
-		if (this._game) {
-			return this._game.view2D();
-		}
+		// if (this._game) {
+		// 	return this._game.view2D();
+		// }
 	}
 
 	async join(roomName) {
@@ -173,6 +174,8 @@ class ClientGameManager extends GameManager {
 		game.initBoardGraphics();
 		game.initGUI();
 		
+		this._view2D.setAddons(game.view2D());
+
 		this._view3D.add(game.view3D());
 		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);
 		
@@ -238,9 +241,9 @@ class ClientGameManager extends GameManager {
 
 	createGUI(mode) {
 		const guis = {
-			'ONLINE_MULTIPLAYER': 'BasicGUI',
-			'LOCAL_MULTIPLAYER': 'BasicGUI',
-			'FREE_PLAY': 'BasicGUI'
+			'ONLINE_MULTIPLAYER': 'BasicOverlayAddons',
+			'LOCAL_MULTIPLAYER': 'BasicOverlayAddons',
+			'FREE_PLAY': 'BasicOverlayAddons'
 		};
 		const guiType = guis[mode.type];
 		return View2D.create(guiType);
@@ -331,7 +334,7 @@ class Embed extends Component {
 		return (
 			<div id="embedPositioner">
 				<div id="embed" className={maximized ? 'embed-maximized' : 'embed-minimized'} ref={(ref) => (this._root = ref)}>
-					{maximized ? this.props.gameManager.overlay() : <Nav.Link className='overlay clickable' href="#/play"></Nav.Link>}
+					{maximized ? this.props.gameManager.view2D() : <Nav.Link className='overlay clickable' href="#/play"></Nav.Link>}
 				</div>
 			</div>
 		);

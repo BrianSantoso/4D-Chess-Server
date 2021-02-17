@@ -7,33 +7,16 @@ import RedoIcon from '../assets/icons/redo-black-24dp.svg';
 import ChatIcon from '../assets/icons/chat-black-24dp.svg';
 import { Chat, ChatMessage } from './gui/Chat.jsx';
 import StatusBanner from './gui/StatusBanner.jsx';
+import CircleButton from './gui/CircleButton.jsx';
 
 // A wrapper class that holds a React component and can change the state of that component externally
 class View2D {
     constructor() {
 		this.type;
-        this.name;
-		this._stateHelper = {
-			setStateHandler: (state) => console.log('setStateHandler not configured'),
-			onStateChange: function(callback) {
-				this.setStateHandler = callback;
-			},
-			setState: function(state) {
-				this.setStateHandler(state);
-			}
-		};
-    }
-
-    setState(state) {
-        this._stateHelper.setState(state);
     }
 
     toJSON() {
         return this.type;
-    }
-
-    update() {
-        
     }
 
     to(type) {
@@ -43,6 +26,26 @@ class View2D {
 }
 
 View2D.methods = {
+    setState: (self) => {
+        return (state) => {
+            self._stateHelper.setState(state);
+        }
+    },
+
+    setAddons: (self) => {
+        return (addonsView2D) => {
+            addonsView2D.setParentComponent(self);
+            let addons = addonsView2D.getAddons();
+            self.setState(addons);
+        }
+    },
+
+    setGame: (self) => {
+        return (game) => {
+            self._game = game;
+        }
+    },
+
     undo: (self) => {
         return () => {
             self._game.undo()
@@ -69,12 +72,28 @@ View2D.methods = {
         }
     },
 
-    overlayView2D: (self) => {
+    componentView2D: (self) => {
         return () => self._reactComponent;
     },
 
+    addonsView2D: (self) => {
+        return () => self;
+    },
+
+    getAddons: (self) => {
+        return () => self._addons;
+    },
+
+    addonsSetParentComponent: (self) => {
+        return (parentComponent) => {
+            // parentComponent is a View2D object but can also be a react component,
+            // since both have setState methods
+            self._parentComponent = parentComponent;
+        }
+    },
+
     layerStackAdd: (self) => {
-        return (component, name, index) => {
+        return (component, index) => {
             self._stateHelper.setState(prevState => {
                 let arr = prevState.stack;
                 if (typeof index !== 'number') {
@@ -88,15 +107,11 @@ View2D.methods = {
     },
 
     layerStackPop: (self) => {
-        return (name, indexOrName) => {
+        return (index) => {
             self.setState(prevState => {
                 let arr = prevState.stack;
-                let index;
-                if (typeof indexOrName === 'number') {
-                    index = indexOrName;
-                } else {
-                    let name = indexOrName;
-                    index = prevState.indexOf(name); // TODO: look up by name
+                if (typeof index !== 'number') {
+                    index = arr.length - 1;
                 }
                 return {
                     stack: arr.slice(0, index).concat(arr.slice(index + 1))
@@ -106,8 +121,8 @@ View2D.methods = {
     }
 };
 
-View2D.LayerStack = (name) => {
-    let base = View2D.create('', name);
+View2D.LayerStack = () => {
+    let base = View2D.create('');
     let delta = {
         type: 'LayerStack',
         _layerStack: <LayerStack stateHelper={base._stateHelper}></LayerStack>,
@@ -117,47 +132,75 @@ View2D.LayerStack = (name) => {
     return Object.assign(base, delta);
 }
 
-View2D.Overlay = (name) => {
-    let base = View2D.create('', name);
+View2D.Component = () => {
+    let base = View2D.create('');
+    let delta = {
+        type: 'Component',
+        _reactComponent: null,
+        _stateHelper: {
+			setStateHandler: (state) => console.log('setStateHandler not configured'),
+			onStateChange: function(callback) {
+				this.setStateHandler = callback;
+			},
+			setState: function(state) {
+				this.setStateHandler(state);
+			}
+		},
+        setState: View2D.methods.setState(base),
+        setAddons: View2D.methods.setAddons(base),
+        view2D: View2D.methods.componentView2D(base)
+    };
+    return Object.assign(base, delta);
+}
+
+View2D.Overlay = () => {
+    let base = View2D.create('Component');
     let delta = {
         type: 'Overlay',
         _reactComponent: <Overlay stateHelper={base._stateHelper}></Overlay>,
-        view2D: View2D.methods.overlayView2D(base)
     }
     return Object.assign(base, delta);
 }
 
-View2D.BasicOverlayAddons = (name) => {
-    let base = View2D.create(name);
-    
-    // const delta = {
-	// 	type: 'BasicGUI',
-    //     _reactComponent: <BasicOverlayAddons 
-    //                         stateHelper={base._stateHelper} 
-    //                         undo={View2D.methods.undo(base)}
-    //                         redo={View2D.methods.redo(base)}></BasicOverlayAddons>
-    // };
+View2D.Addons = () => {
+    let base = View2D.create('');
+    const delta = {
+        type: 'Addons',
+        _parentComponent: null,
+        _addons: {},
+        setParentComponent: View2D.methods.addonsSetParentComponent(base),
+        getAddons: View2D.methods.getAddons(base),
+        view2D: View2D.methods.addonsView2D(base)
+    };
+    return Object.assign(base, delta);
+}
+
+View2D.BasicOverlayAddons = () => {
+    let base = View2D.create('Addons');
     const delta = {
         type: 'BasicOverlayAddons',
-        _parentComponent: null,
-        _topbar: [],
-        _rightbar: [
-            <CircleButton icon={UndoIcon} handleClick={View2D.methods.undo(base)}></CircleButton>,
-            <CircleButton icon={RedoIcon} handleClick={View2D.methods.redo(base)}></CircleButton>,
-            <CircleButton icon={ChatIcon} handleClick={View2D.methods.toggleChat(base)}></CircleButton>
-        ],
-        _leftbar: [],
-        _bottombar: []
+        _addons: {
+            topbar: [],
+            rightbar: [
+                <CircleButton icon={UndoIcon} handleClick={View2D.methods.undo(base)}></CircleButton>,
+                <CircleButton icon={RedoIcon} handleClick={View2D.methods.redo(base)}></CircleButton>,
+                <CircleButton icon={ChatIcon} handleClick={View2D.methods.toggleChat(base)}></CircleButton>
+            ],
+            leftbar: [],
+            bottombar: [],
+        },
+        _game: null,
+        setGame: View2D.methods.setGame(base)
     }
 
     return Object.assign(base, delta);
 }
 
-View2D.create = (type, name) => {
+View2D.create = (type) => {
     if (View2D[type]) {
-        return View2D[type](name);
+        return View2D[type]();
     } else {
-        return new View2D(name);
+        return new View2D();
     }
 }
 
@@ -195,44 +238,5 @@ class Overlay extends Component {
         );
     }
 }
-
-// class BasicOverlayAddons extends Component {
-// 	constructor(props) {
-//         super(props);
-//         this.state = {
-//             chatOpened: false,
-//         };
-// 		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
-// 	}
-
-// 	render() {
-// 		return (
-//             <div className='overlay'>
-//                 {this.state.playerLeft}
-//                 <StatusBanner message={bannerMessage}></StatusBanner>
-//                 {this.state.playerRight}
-                
-//                 <div className='sidebar'>
-//                     <CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
-//                     <CircleButton icon={UndoIcon} handleClick={this.props.undo}></CircleButton>
-//                     <CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
-//                     <CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
-//                 </div>
-
-//                 <Chat 
-//                     room={this.state.room} 
-//                     client={this.props.client} 
-//                     chatOpened={this.state.chatOpened} 
-//                     handleMsg={this.addMsg} 
-//                     handleOpenChat={this.openChat} 
-//                     handleCloseChat={this.closeChat} 
-//                     messages={this.state.messages} 
-//                     showing={this.state.showing} 
-//                     events={this.props.events}
-//                 />
-//             </div>
-//         );
-// 	}
-// }
 
 export default View2D;
