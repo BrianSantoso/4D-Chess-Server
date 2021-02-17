@@ -8,15 +8,12 @@ import ChatIcon from '../assets/icons/chat-black-24dp.svg';
 import { Chat, ChatMessage } from './gui/Chat.jsx';
 import StatusBanner from './gui/StatusBanner.jsx';
 import CircleButton from './gui/CircleButton.jsx';
+import LayerStack from './gui/LayerStack.jsx';
+import Home from './components/Home.jsx';
 
-// A wrapper class that holds a React component and can change the state of that component externally
 class View2D {
     constructor() {
 		this.type;
-    }
-
-    toJSON() {
-        return this.type;
     }
 
     to(type) {
@@ -122,6 +119,7 @@ View2D.methods = {
 };
 
 View2D.LayerStack = () => {
+    // TODO: make ClientGameManager use LayerStack instead
     let base = View2D.create('');
     let delta = {
         type: 'LayerStack',
@@ -133,6 +131,7 @@ View2D.LayerStack = () => {
 }
 
 View2D.Component = () => {
+    // A wrapper class that holds a React component and can change the state of that component externally
     let base = View2D.create('');
     let delta = {
         type: 'Component',
@@ -163,6 +162,7 @@ View2D.Overlay = () => {
 }
 
 View2D.Addons = () => {
+    // A modular attachment to a View2D.Component
     let base = View2D.create('');
     const delta = {
         type: 'Addons',
@@ -182,15 +182,29 @@ View2D.BasicOverlayAddons = () => {
         _addons: {
             topbar: [],
             rightbar: [
+                <CircleButton icon={HomeIcon} handleClick={View2D.methods.cameraHome(base)}></CircleButton>,
                 <CircleButton icon={UndoIcon} handleClick={View2D.methods.undo(base)}></CircleButton>,
                 <CircleButton icon={RedoIcon} handleClick={View2D.methods.redo(base)}></CircleButton>,
                 <CircleButton icon={ChatIcon} handleClick={View2D.methods.toggleChat(base)}></CircleButton>
             ],
             leftbar: [],
-            bottombar: [],
+            bottombar: [
+                <Chat 
+					room={} 
+					client={} 
+					chatOpened={} 
+					handleMsg={} 
+					handleOpenChat={} 
+					handleCloseChat={} 
+					messages={} 
+					showing={} 
+					events={}
+				/>
+            ],
         },
         _game: null,
-        setGame: View2D.methods.setGame(base)
+        setGame: View2D.methods.setGame(base),
+        update: () => {}
     }
 
     return Object.assign(base, delta);

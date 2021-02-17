@@ -1,0 +1,37 @@
+.fade-enter {
+	opacity: 0;
+}
+
+.fade-enter.fade-enter-active {
+	opacity: 1;
+	transition: opacity 300ms ease-in;
+}
+
+.fade-leave {
+	opacity: 1;
+}
+
+.fade-leave.fade-leave-active {
+	opacity: 0;
+	transition: opacity 300ms ease-in;
+}
+
+/* .idleFloat {
+	transform: translatey(0);
+	animation: float 1s ease-in-out infinite;
+}
+
+@keyframes float {
+	0% {
+		transform: translatey(0);
+	}
+	30% {
+		transform: translatey(.5em);
+	}
+	60% {
+		transform: translatey(0);
+	}
+	100% {
+		transform: translatey(0);
+	}
+} */

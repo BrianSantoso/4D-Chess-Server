@@ -7,9 +7,9 @@ import Move from "./Move.js";
 
 class ChessGame {
 	constructor() {
-		// We want to leave some fields undefined because if we create a ChessGame without
-		// assigning Players, GameBoard, BoardGraphics, those undefined fields will not
-		// override a templated gam,e's (A game with those aforementioned fields specified) 
+		// We want to leave some fields undefined so that if we create a ChessGame without
+		// assigning Players, GameBoard, BoardGraphics, those undefined fields will NOT
+		// override a templated game's (A game with those aforementioned fields specified) 
 		// config when merging via Object.assign(template, gameWithSomeEmptyFields)
 		this._mode;
 		this._board;
@@ -342,38 +342,38 @@ class ChessMode {
 
 ChessMode.TEMPLATE = new ChessMode('TEMPLATE', () => {}, () => {}, () => {});
 
-ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
-	function update(timeOfLastMove, timestampOfLastMove, hasBegun) {
-		let playerCanInteract = true;
-		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, playerCanInteract, hasBegun);
-		this._boardGraphics.update();
-	}, 
-	function makeMove(move) {
-		// TODO: rewrite, following online_multiplayer
-		if (this.isGameOver()) {
-			return;
-		}
+// ChessMode.LOCAL_MULTIPLAYER = new ChessMode('LOCAL_MULTIPLAYER', 
+// 	function update(timeOfLastMove, timestampOfLastMove, hasBegun) {
+// 		let playerCanInteract = true;
+// 		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, playerCanInteract, hasBegun);
+// 		this._boardGraphics.update();
+// 	}, 
+// 	function makeMove(move) {
+// 		// TODO: rewrite, following online_multiplayer
+// 		if (this.isGameOver()) {
+// 			return;
+// 		}
 		
-		this._board.makeMove(move); // update state
-		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
-		let allPossibleMoves = this.allPossibleMoves();
-		this._clearStatus(); // reset gameover status
-		let status = this.status(); // recalculate status
-		let time = this._getCurrentPlayer().getTime();
-		this._moveHistory.add(move, time); // add to history
+// 		this._board.makeMove(move); // update state
+// 		this._boardGraphics.makeMove(move, config.animFrames.move); // animate
+// 		let allPossibleMoves = this.allPossibleMoves();
+// 		this._clearStatus(); // reset gameover status
+// 		let status = this.status(); // recalculate status
+// 		let time = this._getCurrentPlayer().getTime();
+// 		this._moveHistory.add(move, time); // add to history
 
-		// implicitly recalculates status if needed
-		if (this.isGameOver()) {
+// 		// implicitly recalculates status if needed
+// 		if (this.isGameOver()) {
 
-		} else {
-			// this._switchTurns();
-		}
-	},
-	function setPlayerControls(clientTeam) {
-		this._white.to('LocalPlayer3D');
-		this._black.to('LocalPlayer3D');
-	}
-);
+// 		} else {
+// 			// this._switchTurns();
+// 		}
+// 	},
+// 	function setPlayerControls(clientTeam) {
+// 		this._white.to('LocalPlayer3D');
+// 		this._black.to('LocalPlayer3D');
+// 	}
+// );
 
 ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER', 
 	function update(timeOfLastMove, timestampOfLastMove, hasBegun) {
