@@ -20,6 +20,7 @@ class ClientGameManager extends GameManager {
 		this._client = client;
 		this._clientTeam = ChessTeam.SPECTATOR;
 		this._room = null;
+		this._view2D = View2D.create('LayerStack');
 		// this._view2D = new View2D(this, this._client);
 
 		this._focus = '';
@@ -158,6 +159,7 @@ class ClientGameManager extends GameManager {
 		if (this._game) {
 			// Decouple current game from Scene Manager
 			this._view3D.remove(this.view3D());
+
 			// TODO: unsubscribe current game from mouse event handlers
 			this._game.getPlayers().forEach(player => {
 				if (player.needsClickEvent()) {

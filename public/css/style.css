@@ -3,6 +3,6 @@
 @import "modules.css";
 
 @import "game/base.css";
+@import "game/layout.css";
 @import "game/modules.css";
-
 /*@import "game/style.css";*/

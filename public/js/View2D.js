@@ -12,12 +12,9 @@ import StatusBanner from './gui/StatusBanner.jsx';
 class View2D {
     constructor() {
 		this.type;
-		this.root = React.createRef();
-		this._game;
-		this._reactComponentType
-		this._reactComponent;
+        this.name;
 		this._stateHelper = {
-			setStateHandler: (state) => {},
+			setStateHandler: (state) => console.log('setStateHandler not configured'),
 			onStateChange: function(callback) {
 				this.setStateHandler = callback;
 			},
@@ -27,99 +24,215 @@ class View2D {
 		};
     }
 
+    setState(state) {
+        this._stateHelper.setState(state);
+    }
+
     toJSON() {
         return this.type;
+    }
+
+    update() {
+        
     }
 
     to(type) {
         let delta = View2D.create(type);
         return Object.assign(this, delta);
     }
-
-    // to(type, props={}) {
-    //     let delta = View2D[type]()
-	// 	Object.assign(this, delta);
-
-	// 	Object.assign(props, {
-	// 		stateHelper: this._stateHelper
-	// 	});
-	// 	let children = [];
-
-	// 	this._reactComponent = React.createElement(
-	// 		this._reactComponentType,
-	// 		props,
-	// 		children
-	// 	);
-	// 	return this;
-    // }
-
-    setGame(game) {
-        this._game = game;
-    }
-
-    view2D() {
-		return this._reactComponent;
-	}
 }
 
-View2D.BasicGUI = () => {
-    let base = View2D.create();
+View2D.methods = {
+    undo: (self) => {
+        return () => {
+            self._game.undo()
+        }
+    },
+
+    redo: (self) => {
+        return () => {
+            self._game.redo()
+        }
+    },
+
+    cameraHome: (self) => {
+        return () => {
+            self.cameraHome()
+        }
+    },
+
+    toggleChat: (self) => {
+        return () => {
+            self._parentComponent.setState(prevState => ({
+                chatOpened: !prevState.chatOpened
+            }));
+        }
+    },
+
+    overlayView2D: (self) => {
+        return () => self._reactComponent;
+    },
+
+    layerStackAdd: (self) => {
+        return (component, name, index) => {
+            self._stateHelper.setState(prevState => {
+                let arr = prevState.stack;
+                if (typeof index !== 'number') {
+                    index = arr.length;
+                }
+                return {
+                    stack: arr.slice(0, index).concat([component]).concat(arr.slice(index))
+                }
+            });
+        }
+    },
+
+    layerStackPop: (self) => {
+        return (name, indexOrName) => {
+            self.setState(prevState => {
+                let arr = prevState.stack;
+                let index;
+                if (typeof indexOrName === 'number') {
+                    index = indexOrName;
+                } else {
+                    let name = indexOrName;
+                    index = prevState.indexOf(name); // TODO: look up by name
+                }
+                return {
+                    stack: arr.slice(0, index).concat(arr.slice(index + 1))
+                }
+            });
+        }
+    }
+};
+
+View2D.LayerStack = (name) => {
+    let base = View2D.create('', name);
+    let delta = {
+        type: 'LayerStack',
+        _layerStack: <LayerStack stateHelper={base._stateHelper}></LayerStack>,
+        add: View2D.methods.layerStackAdd(base),
+        pop: View2D.methods.layerStackPop(base)
+    }
+    return Object.assign(base, delta);
+}
+
+View2D.Overlay = (name) => {
+    let base = View2D.create('', name);
+    let delta = {
+        type: 'Overlay',
+        _reactComponent: <Overlay stateHelper={base._stateHelper}></Overlay>,
+        view2D: View2D.methods.overlayView2D(base)
+    }
+    return Object.assign(base, delta);
+}
+
+View2D.BasicOverlayAddons = (name) => {
+    let base = View2D.create(name);
     
+    // const delta = {
+	// 	type: 'BasicGUI',
+    //     _reactComponent: <BasicOverlayAddons 
+    //                         stateHelper={base._stateHelper} 
+    //                         undo={View2D.methods.undo(base)}
+    //                         redo={View2D.methods.redo(base)}></BasicOverlayAddons>
+    // };
     const delta = {
-		type: 'BasicGUI',
-        _reactComponent: <Overlay stateHelper={base._stateHelper}></Overlay>
-    };
+        type: 'BasicOverlayAddons',
+        _parentComponent: null,
+        _topbar: [],
+        _rightbar: [
+            <CircleButton icon={UndoIcon} handleClick={View2D.methods.undo(base)}></CircleButton>,
+            <CircleButton icon={RedoIcon} handleClick={View2D.methods.redo(base)}></CircleButton>,
+            <CircleButton icon={ChatIcon} handleClick={View2D.methods.toggleChat(base)}></CircleButton>
+        ],
+        _leftbar: [],
+        _bottombar: []
+    }
 
     return Object.assign(base, delta);
 }
 
-View2D.create = (type) => {
-    // let base = new View2D();
-    // return base.to(type);
-    if (type) {
-        return View2D[type]();
+View2D.create = (type, name) => {
+    if (View2D[type]) {
+        return View2D[type](name);
     } else {
-        return new View2D();
+        return new View2D(name);
     }
 }
 
 class Overlay extends Component {
-	constructor(props) {
+    constructor(props) {
         super(props);
         this.state = {
-
+            topbar: [],
+            leftbar: [],
+            rightbar: [],
+            bottombar: []
         };
-		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
-	}
+        this.props.stateHelper.onStateChange((state) => {this.setState(state)});
+    }
 
-	render() {
-		return (
+    render() {
+        return (
             <div className='overlay'>
-                {this.state.playerLeft}
-                <StatusBanner message={bannerMessage}></StatusBanner>
-                {this.state.playerRight}
-                
-                <div className='sidebar'>
-                    <CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
-                    <CircleButton icon={UndoIcon} handleClick={this.props.undo}></CircleButton>
-                    <CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
-                    <CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
+                <div className='overlay-topbar'>
+                    {this.state.topbar}
                 </div>
 
-                <Chat 
-                    room={this.state.room} 
-                    client={this.props.client} 
-                    chatOpened={this.state.chatOpened} 
-                    handleMsg={this.addMsg} 
-                    handleOpenChat={this.openChat} 
-                    handleCloseChat={this.closeChat} 
-                    messages={this.state.messages} 
-                    showing={this.state.showing} 
-                    events={this.props.events}
-                />
+                <div className='overlay-leftbar'>
+                    {this.state.leftbar}
+                </div>
+                
+                <div className='overlay-rightbar'>
+                    {this.state.rightbar}
+                </div>
+
+                <div className='overlay-bottombar'>
+                    {this.state.bottombar}
+                </div>
             </div>
         );
-	}
+    }
 }
+
+// class BasicOverlayAddons extends Component {
+// 	constructor(props) {
+//         super(props);
+//         this.state = {
+//             chatOpened: false,
+//         };
+// 		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
+// 	}
+
+// 	render() {
+// 		return (
+//             <div className='overlay'>
+//                 {this.state.playerLeft}
+//                 <StatusBanner message={bannerMessage}></StatusBanner>
+//                 {this.state.playerRight}
+                
+//                 <div className='sidebar'>
+//                     <CircleButton icon={HomeIcon} handleClick={this.props.cameraHome}></CircleButton>
+//                     <CircleButton icon={UndoIcon} handleClick={this.props.undo}></CircleButton>
+//                     <CircleButton icon={RedoIcon} handleClick={this.props.redo}></CircleButton>
+//                     <CircleButton icon={ChatIcon} handleClick={this.toggleChat}></CircleButton>
+//                 </div>
+
+//                 <Chat 
+//                     room={this.state.room} 
+//                     client={this.props.client} 
+//                     chatOpened={this.state.chatOpened} 
+//                     handleMsg={this.addMsg} 
+//                     handleOpenChat={this.openChat} 
+//                     handleCloseChat={this.closeChat} 
+//                     messages={this.state.messages} 
+//                     showing={this.state.showing} 
+//                     events={this.props.events}
+//                 />
+//             </div>
+//         );
+// 	}
+// }
 
 export default View2D;

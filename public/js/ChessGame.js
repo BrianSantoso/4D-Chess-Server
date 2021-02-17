@@ -380,6 +380,7 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		let playerCanInteract = this._moveHistory.atLast();
 		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, hasBegun, playerCanInteract); // TODO: determine better way to disable interaction
 		this._boardGraphics.update();
+		this._gui.update();
 	},
 	function makeMove(move) {
 		// Check not game over and is legal
