@@ -12,6 +12,7 @@
 	z-index: 990;
 	pointer-events: none;
 
+    /* TODO: this should switch to gui-* later */
     padding-top: var(--margin-top);
     padding-left: var(--margin-left);
     padding-right: var(--margin-right);

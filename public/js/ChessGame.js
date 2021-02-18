@@ -24,6 +24,8 @@ class ChessGame {
 		this._gameManager;
 		this._room;
 
+		this._roomData;
+
 		this._cachedStatus = null;
 		this._gameOver = false;
 	}
@@ -35,7 +37,8 @@ class ChessGame {
 			_moveHistory: this._moveHistory,
 			_white: this._white,
 			_black: this._black,
-			_gameOver: this._gameOver
+			_gameOver: this._gameOver,
+			_roomData: this._roomData
 		};
 	}
 
@@ -278,6 +281,10 @@ class ChessGame {
 
 	setPlayerControls(clientTeam) {
 		this._mode.setPlayerControls.call(this, clientTeam);
+	}
+
+	getRoomData() {
+		return this._roomData;
 	}
 
 	getPlayerData() {
