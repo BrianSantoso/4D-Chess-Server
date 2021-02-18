@@ -26,6 +26,10 @@ class View2D {
     }
 }
 
+View2D.unwrap = (view2D) => {
+    return view2D.view2D();
+}
+
 View2D.methods = {
     setState: (self) => {
         return (state) => {
@@ -90,6 +94,15 @@ View2D.methods = {
             // parentComponent is a View2D object but can also be a react component,
             // since both have setState methods
             self._parentComponent = parentComponent;
+        }
+    },
+
+    addonsUpdate: (self, updater) => {
+        return () => {
+            // Trigger parent component's setState
+            const result = updater();
+            self._parentComponent.setAddons(self);
+            return result;
         }
     },
 
@@ -165,6 +178,24 @@ View2D.Overlay = () => {
     return Object.assign(base, delta);
 }
 
+View2D.PlayerInfo = (props) => {
+    let base = View2D.create('Component');
+    let delta = {
+        type: 'PlayerInfo',
+        _reactComponent: <PlayerInfo {...props}></PlayerInfo>,
+    }
+    return Object.assign(base, delta);
+}
+
+View2D.CircleButton = (props) => {
+    let base = View2D.create('Component');
+    let delta = {
+        type: 'CircleButton',
+        _reactComponent: <CircleButton {...props}></CircleButton>,
+    }
+    return Object.assign(base, delta);
+}
+
 View2D.Addons = () => {
     // A modular attachment to a View2D.Component
     let base = View2D.create('');
@@ -185,26 +216,30 @@ View2D.BasicOverlayAddons = () => {
         type: 'BasicOverlayAddons',
         _addons: {
             topbar: [
-                <PlayerInfo team={ChessTeam.WHITE} 
-						playerName={'AnonymousCow'} 
-						myTurn={true} 
-                        time={'--:--'} 
-						elo={1000} 
-						position={'playerInfoLeft'}
-						online={true}></PlayerInfo>,
-                <PlayerInfo team={ChessTeam.BLACK} 
-						playerName={'AnonymousPig'} 
-						myTurn={false} 
-                        time={'--:--'} 
-						elo={1000} 
-						position={'playerInfoRight'}
-						online={true}></PlayerInfo>
+                View2D.create('PlayerInfo', {
+                    team: ChessTeam.WHITE,
+                    playerName: 'AnonCow',
+                    myTurn: true,
+                    time: 0,
+                    elo: 1000,
+                    position: 'playerInfoLeft',
+                    online: true
+                }),
+                View2D.create('PlayerInfo', {
+                    team: ChessTeam.BLACK,
+                    playerName: 'AnonymousPig',
+                    myTurn: false,
+                    time: -1,
+                    elo: 1000,
+                    position: 'playerInfoRight',
+                    online: true
+                }),
             ],
             rightbar: [
-                <CircleButton icon={HomeIcon} handleClick={View2D.methods.cameraHome(base)}></CircleButton>,
-                <CircleButton icon={UndoIcon} handleClick={View2D.methods.undo(base)}></CircleButton>,
-                <CircleButton icon={RedoIcon} handleClick={View2D.methods.redo(base)}></CircleButton>,
-                <CircleButton icon={ChatIcon} handleClick={View2D.methods.toggleChat(base)}></CircleButton>
+                View2D.create('CircleButton', { icon: HomeIcon, handleClick: View2D.methods.cameraHome(base) }),
+                View2D.create('CircleButton', { icon: UndoIcon, handleClick: View2D.methods.undo(base) }),
+                View2D.create('CircleButton', { icon: RedoIcon, handleClick: View2D.methods.redo(base) }),
+                View2D.create('CircleButton', { icon: ChatIcon, handleClick: View2D.methods.toggleChat(base) })
             ],
             leftbar: [],
             bottombar: [
@@ -223,17 +258,18 @@ View2D.BasicOverlayAddons = () => {
         },
         _game: null,
         setGame: View2D.methods.setGame(base),
-        update: () => {}
+        update: View2D.methods.addonsUpdate(base, () => {
+        })
     }
 
     return Object.assign(base, delta);
 }
 
-View2D.create = (type) => {
+View2D.create = (type, ...args) => {
     if (View2D[type]) {
-        return View2D[type]();
+        return View2D[type](...args);
     } else {
-        return new View2D();
+        return new View2D(...args);
     }
 }
 
@@ -253,19 +289,19 @@ class Overlay extends Component {
         return (
             <div className='overlay'>
                 <div className='overlay-topbar'>
-                    {this.state.topbar}
+                    {this.state.topbar.map(View2D.unwrap)}
                 </div>
 
                 <div className='overlay-leftbar'>
-                    {this.state.leftbar}
+                    {this.state.leftbar.map(View2D.unwrap)}
                 </div>
                 
                 <div className='overlay-rightbar'>
-                    {this.state.rightbar}
+                    {this.state.rightbar.map(View2D.unwrap)}
                 </div>
 
                 <div className='overlay-bottombar'>
-                    {this.state.bottombar}
+                    {this.state.bottombar.map(View2D.unwrap)}
                 </div>
             </div>
         );
