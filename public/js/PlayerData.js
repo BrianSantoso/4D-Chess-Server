@@ -1,6 +1,5 @@
-import ChessTeam from './ChessTeam.js';
-
 class PlayerData {
+    // bundles of locally cached data from the server
     constructor() {
         this.type;
         this._id;
@@ -48,3 +47,5 @@ PlayerData.create = (type, ...args) => {
         return new PlayerData(args);
     }
 }
+
+export default PlayerData;

@@ -4,6 +4,7 @@ import ChessTeam, { ChessStatus } from "./ChessTeam.js";
 import config from "./config.json";
 import Player from "./ChessPlayer.js";
 import Move from "./Move.js";
+import RoomData from "./RoomData.js";
 
 class ChessGame {
 	constructor() {
@@ -24,7 +25,7 @@ class ChessGame {
 		this._gameManager;
 		this._room;
 
-		this._roomData;
+		this._roomData = new RoomData();
 
 		this._cachedStatus = null;
 		this._gameOver = false;
@@ -260,7 +261,20 @@ class ChessGame {
 	}
 
 	setRoom(room) {
-		this._room = room;
+		room.onMessage('move', (data) => {
+			let move = Move.revive(data.move);
+			// TODO: Can optimize by instead, receiving precomputed
+			// moveData from server. This would remove the need
+			// to calculate possibleMovesBefore/After + status
+			// on the client side.
+			this.makeMove(move);
+		});
+
+		room.onMessage('roomData', (jsonData) => {
+			console.log('received roomData', jsonData);
+			let roomData = RoomData.revive(jsonData);
+		})
+		this._roomData.setRoom(room);
 	}
 
 	sendMessage(type, message) {
@@ -271,13 +285,13 @@ class ChessGame {
 		this._mode = mode;
 	}
 
-	setPlayerData(playerData) {
-		let whiteData = playerData._white;
-		let blackData = playerData._black;
-		this._white.setData(whiteData);
-		this._black.setData(blackData);
-		this._connectedUsers = playerData._connectedUsers;
-	}
+	// setPlayerData(playerData) {
+	// 	let whiteData = playerData._white;
+	// 	let blackData = playerData._black;
+	// 	this._white.setData(whiteData);
+	// 	this._black.setData(blackData);
+	// 	this._connectedUsers = playerData._connectedUsers;
+	// }
 
 	setPlayerControls(clientTeam) {
 		this._mode.setPlayerControls.call(this, clientTeam);
@@ -287,13 +301,13 @@ class ChessGame {
 		return this._roomData;
 	}
 
-	getPlayerData() {
-		return {
-			_white: this._white.toJSON(),
-			_black: this._black.toJSON(),
-			_connectedUsers: this._connectedUsers
-		}
-	}
+	// getPlayerData() {
+	// 	return {
+	// 		_white: this._white.toJSON(),
+	// 		_black: this._black.toJSON(),
+	// 		_connectedUsers: this._connectedUsers
+	// 	}
+	// }
 
 	getStatusMessage() {
 		return this._mode.getStatusMessage.call(this);

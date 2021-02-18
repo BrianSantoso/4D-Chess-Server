@@ -14,6 +14,14 @@ class RoomData {
         this._blackId;
     }
 
+    setRoom(room) {
+        this._room = room;
+    }
+
+    getRoom() {
+        return this._room;
+    }
+
     isWhiteId(id) {
         return id === this._whiteId;
     }
@@ -53,14 +61,6 @@ class RoomData {
     getConnectedUsers() {
         return this._users.values();
     }
-
-    setRoom() {
-        this._room = room;
-    }
-
-    room() {
-        return this._room;
-    }
 }
 
 RoomData.revive = (fields) => {
@@ -75,3 +75,5 @@ RoomData.revive = (fields) => {
         _users: users
     });
 };
+
+export default RoomData;

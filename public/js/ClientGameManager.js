@@ -13,15 +13,14 @@ import View2D from "./View2D.js"
 class ClientGameManager extends GameManager {
 	constructor(client) {
 		super();
-		// this._domElement = document.getElementById("embed");
+		
 		this._authToken = '';
+		this._client = client;
+		this._room = null;
+		
 		this._view3D; // initialized on mount
         this._controller = null;
-		this._client = client;
-		this._clientTeam = ChessTeam.SPECTATOR;
-		this._room = null;
 		this._view2D = View2D.create('Overlay');
-		// this._view2D = new View2D(this, this._client);
 
 		this._focus = '';
 
@@ -41,13 +40,21 @@ class ClientGameManager extends GameManager {
 				this.join(roomId);
 			} catch {
 				console.log('[App] No roomId parameter found');
-				this.join('standard');
+				this.join('standard'); // if authToken is unset (i.g. via logout), then joining is dangerous. Do not rely on promise.all after first join
 			}
 			this._startLoop();
 		});
 		
 		this.setAuthToken = this.setAuthToken.bind(this);
 	}
+
+	getId() {
+		return this.getDecoded()._id;
+	}
+
+	getDecoded() {
+        return jwt.decode(this._authToken, {complete: true}).payload;
+    }
 
 	setAuthToken(token) {
 		// TODO: may error if authToken is unloaded (via logout!)
@@ -57,9 +64,8 @@ class ClientGameManager extends GameManager {
 		this._authTokenSet();
 	}
 
-	setFocus(focus) {
+	setFocus(focus) { // TODO: is this needed here?
 		this._focus = focus;
-		// this._view2D.setFocus(focus);
 	}
 
 	mount(root) {
@@ -70,89 +76,34 @@ class ClientGameManager extends GameManager {
 
 	view2D() {
 		return this._view2D.view2D();
-		// return this._view2D.overlay();
-
-		// TODO: have view2d wrapper that has layerstack which has game's view2d
-		// if (this._game) {
-		// 	return this._game.view2D();
-		// }
 	}
 
 	async join(roomName) {
+		// TODO: require that authtoken is set
 		try {
 			let room = await this._client.joinOrCreate(roomName, {
 				authToken: this._authToken
 			});
 			this.setRoom(room);
 			console.log("[ClientGameManager] Joined room succesfully", room);
-
-			// this._room.send('move', new Pawn())
 		} catch (e) {
 			console.error("[ClientGameManager] Join error", e);
 		}
 	}
-	
+
 	setRoom(room) {
-		room.onMessage('chatMsg', (message) => {
-			// this._view2D.addMsg(message);
-		});
-
-		room.onMessage('move', (data) => {
-			let move = Move.revive(data.move);
-			// TODO: Can optimize by instead, receiving precomputed
-			// moveData from server. This would remove the need
-			// to calculate possibleMovesBefore/After + status
-			// on the client side.
-			this.makeMove(move);
-
-			this.setPlayerData(data.playerData);
-		});
-
-		// TODO: change to gameAssignment
-		room.onMessage('chessGame', (jsonData) => {
-			console.log('received chessGame');
-			this.loadFrom(jsonData);
-		});
-
-		room.onMessage('playerData', (jsonData) => {
-			console.log('received playerData', jsonData);
-			this.setPlayerData(jsonData);
-		})
-
 		if (this._room) {
 			this._room.leave();
 		}
 		this._room = room;
-		// this._view2D.setRoom(room);
-
 		if (this._game) {
 			this._game.setRoom(room);
 		}
-	}
-
-	setPlayerData(playerData) {
-		super.setPlayerData(playerData);
-
-		let decoded = jwt.decode(this._authToken, {complete: true});
-		let clientId = decoded.payload._id;
-		if (clientId === playerData._white._id) {
-			this._clientTeam = ChessTeam.WHITE;
-		} else if (clientId === playerData._black._id) {
-			this._clientTeam = ChessTeam.BLACK;
-		} else {
-			this._clientTeam = ChessTeam.SPECTATOR;
-		}
-		console.log('If this gets logged repeatedly then this is a huge performance cost.')
-		this._game.setPlayerControls(this.getClientTeam());
-		this.subscribePlayers();
-		
-		
-		// TODO: whose turn is it bruh
-		// this._view2D.setPlayerData(playerData, this.getClientTeam());
-	}
-
-	getClientTeam() {
-		return this._clientTeam;
+		// TODO: Move this inside ChessGame, and use Object.assign(this, revive(data)) to restore?
+		room.onMessage('chessGame', (jsonData) => {
+			console.log('received chessGame');
+			this.loadFrom(jsonData);
+		});
 	}
 
 	setGame(game) {
@@ -161,18 +112,14 @@ class ClientGameManager extends GameManager {
 			// Decouple current game from Scene Manager
 			this._view3D.remove(this.view3D());
 
-			// TODO: unsubscribe current game from mouse event handlers
-			this._game.getPlayers().forEach(player => {
-				if (player.needsClickEvent()) {
-					// TODO: is there a prettier way to do this?
-					this._view3D.unsubscribe(player, 'intentionalClick');
-				}
-			});
+			this.unsubscribePlayers();
 		}
 		
 		super.setGame(game);
 		game.initBoardGraphics();
 		game.initGUI();
+
+		game.setRoom(this._room);
 		
 		this._view2D.setAddons(game.view2D());
 
@@ -196,6 +143,15 @@ class ClientGameManager extends GameManager {
 			}
 		});
 	}
+
+	unsubscribePlayers() {
+		this._game.getPlayers().forEach(player => {
+			if (player.needsClickEvent()) {
+				// TODO: is there a prettier way to do this?
+				this._view3D.unsubscribe(player, 'intentionalClick');
+			}
+		});
+	}
 	
 	createGame(options) {
         let defaultOptions = {
@@ -207,7 +163,7 @@ class ClientGameManager extends GameManager {
 		}
 		options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
-		game.setRoom(this._room);
+		// game.setRoom(this._room); // TODO: move to setGame?
 		game.setNeedsValidation(false); // TODO: this is temporary, change to false later!
 		return game;
 	}
@@ -217,8 +173,7 @@ class ClientGameManager extends GameManager {
 	}
 
 	undo() {
-		// let str = JSON.stringify(this._game);
-		// console.log(str)
+		// TODO: move to a more appropriate place
 		// Set interactor's state to unselected
 		this._game.getPlayers().forEach(player => {
 			player.unselect();
@@ -227,6 +182,7 @@ class ClientGameManager extends GameManager {
 	}
 
 	redo() {
+		// TODO: move to a more appropriate place
 		// Set interactor's state to unselected
 		this._game.getPlayers().forEach(player => {
 			player.unselect();
@@ -258,13 +214,6 @@ class ClientGameManager extends GameManager {
 	_update(step) {
 		if (this._game) {
 			this._game.update(step);
-			let playerData = this.getPlayerData();
-			// this._view2D.setPlayerData(playerData, this.getClientTeam());
-			// this._view2D.setBannerMessage(this._game.getStatusMessage());
-			// if (this._game.gameOver()) {
-			// 	this._view2D.showGameOverWindow()
-			// }
-			// this.setPlayerData(playerData); // updates view2d with redundant side effect of setting game playerdata to itself
 		}
 
 		if (this._view3D) {
@@ -346,3 +295,68 @@ class Embed extends Component {
 	}
 }
 export { ClientGameManager, Embed }
+
+
+
+	// setRoom(room) {
+	// 	room.onMessage('chatMsg', (message) => {
+	// 		// this._view2D.addMsg(message);
+	// 	});
+
+	// 	room.onMessage('move', (data) => {
+	// 		let move = Move.revive(data.move);
+	// 		// TODO: Can optimize by instead, receiving precomputed
+	// 		// moveData from server. This would remove the need
+	// 		// to calculate possibleMovesBefore/After + status
+	// 		// on the client side.
+	// 		this.makeMove(move);
+
+	// 		this.setPlayerData(data.playerData);
+	// 	});
+
+	// 	// TODO: change to gameAssignment
+	// 	room.onMessage('chessGame', (jsonData) => {
+	// 		console.log('received chessGame');
+	// 		this.loadFrom(jsonData);
+	// 	});
+
+	// 	room.onMessage('playerData', (jsonData) => {
+	// 		console.log('received playerData', jsonData);
+	// 		this.setPlayerData(jsonData);
+	// 	})
+
+	// 	if (this._room) {
+	// 		this._room.leave();
+	// 	}
+	// 	this._room = room;
+	// 	// this._view2D.setRoom(room);
+
+	// 	if (this._game) {
+	// 		this._game.setRoom(room);
+	// 	}
+	// }
+
+	// setPlayerData(playerData) {
+	// 	super.setPlayerData(playerData);
+
+	// 	let decoded = jwt.decode(this._authToken, {complete: true});
+	// 	let clientId = decoded.payload._id;
+	// 	if (clientId === playerData._white._id) {
+	// 		this._clientTeam = ChessTeam.WHITE;
+	// 	} else if (clientId === playerData._black._id) {
+	// 		this._clientTeam = ChessTeam.BLACK;
+	// 	} else {
+	// 		this._clientTeam = ChessTeam.SPECTATOR;
+	// 	}
+	// 	console.log('If this gets logged repeatedly then this is a huge performance cost.')
+	// 	this._game.setPlayerControls(this.getClientTeam());
+	// 	this.subscribePlayers();
+		
+		
+	// 	// TODO: whose turn is it bruh
+	// 	// this._view2D.setPlayerData(playerData, this.getClientTeam());
+	// }
+
+	// getClientTeam() {
+	// 	return this._clientTeam;
+	// }
