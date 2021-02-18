@@ -97,14 +97,14 @@ View2D.methods = {
         }
     },
 
-    addonsUpdate: (self, updater) => {
-        return () => {
-            // Trigger parent component's setState
-            const result = updater();
-            self._parentComponent.setAddons(self);
-            return result;
-        }
-    },
+    // addonsUpdate: (self, updater) => {
+    //     return () => {
+    //         // Trigger parent component's setState
+    //         const result = updater();
+    //         self._parentComponent.setAddons(self);
+    //         return result;
+    //     }
+    // },
 
     layerStackAdd: (self) => {
         return (component, index) => {
@@ -212,28 +212,33 @@ View2D.Addons = () => {
 
 View2D.BasicOverlayAddons = () => {
     let base = View2D.create('Addons');
+
+    let playerLeft = View2D.create('PlayerInfo', {
+        team: ChessTeam.WHITE,
+        playerName: 'AnonCow',
+        myTurn: true,
+        time: 0,
+        elo: 1000,
+        position: 'playerInfoLeft',
+        online: true
+    });
+
+    let playerRight = View2D.create('PlayerInfo', {
+        team: ChessTeam.BLACK,
+        playerName: 'AnonymousPig',
+        myTurn: false,
+        time: -1,
+        elo: 1000,
+        position: 'playerInfoRight',
+        online: true
+    })
+
     const delta = {
         type: 'BasicOverlayAddons',
         _addons: {
             topbar: [
-                View2D.create('PlayerInfo', {
-                    team: ChessTeam.WHITE,
-                    playerName: 'AnonCow',
-                    myTurn: true,
-                    time: 0,
-                    elo: 1000,
-                    position: 'playerInfoLeft',
-                    online: true
-                }),
-                View2D.create('PlayerInfo', {
-                    team: ChessTeam.BLACK,
-                    playerName: 'AnonymousPig',
-                    myTurn: false,
-                    time: -1,
-                    elo: 1000,
-                    position: 'playerInfoRight',
-                    online: true
-                }),
+                playerLeft,
+                playerRight
             ],
             rightbar: [
                 View2D.create('CircleButton', { icon: HomeIcon, handleClick: View2D.methods.cameraHome(base) }),
@@ -257,9 +262,13 @@ View2D.BasicOverlayAddons = () => {
             ],
         },
         _game: null,
+        _playerLeft: playerLeft,
+        _playerRight: playerRight,
         setGame: View2D.methods.setGame(base),
-        update: View2D.methods.addonsUpdate(base, () => {
-        })
+        update: () => {
+            // get player data from base._game
+            // base._playerLeft.setState()
+        }
     }
 
     return Object.assign(base, delta);
