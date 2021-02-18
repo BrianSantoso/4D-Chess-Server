@@ -1,9 +1,33 @@
-.overlay-topbar {
+:root {
+    --margin-top: 2vh;
+    --margin-bottom: 2vh;
+    --margin-right: 2vw;
+    --margin-left: 2vw;
+}
 
+.overlay {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: 990;
+	pointer-events: none;
+
+    padding-top: var(--margin-top);
+    padding-left: var(--margin-left);
+    padding-right: var(--margin-right);
+    padding-bottom: var(--margin-bottom);
+}
+
+.overlay-topbar {
+    position: relative;
+    top: 0;
+    width: 100%;
 }
 
 .overlay-rightbar {
-
+    position: absolute;
+    right: var(--margin-right);
+    top: 30%;
 }
 
 .overlay-leftbar {
@@ -11,5 +35,5 @@
 }
 
 .overlay-bottombar {
-    
+
 }

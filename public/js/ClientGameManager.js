@@ -328,7 +328,12 @@ class Embed extends Component {
 		this.props.onMount();
 	}
 
+	componentDidUpdate() {
+		this.render();
+	}
+
 	render() {
+		console.log('Rerender: Embed is', this.props.focus)
 		let maximized = this.props.focus !== 'minimized';
 		this.props.gameManager.setFocus(this.props.focus);
 		return (

@@ -23,7 +23,6 @@ class ChessGame {
 
 		this._gameManager;
 		this._room;
-		this._connectedUsers;
 
 		this._cachedStatus = null;
 		this._gameOver = false;

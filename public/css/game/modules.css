@@ -1,7 +1,10 @@
 :root {
 	/* Define global variables */
-	--icon-size: 5em;
-	--chatMsg-font-size: 1em;
+	--icon-size: 4rem;
+	--button-size: 4rem;
+
+
+	--chatMsg-font-size: 1rem;
 	--chatMsg-paddingV: calc(var(--chatMsg-font-size) / 10);
 	--chatMsg-paddingH: var(--chatMsg-font-size);
 	/* The height of one line of chat message */
@@ -9,14 +12,6 @@
 
 	--chat-maxHeight: calc(var(--chatMsg-unitHeight) * 12);
 	--chat-width: 28vw;
-}
-
-.overlay {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-	z-index: 990;
 }
 
 .clickable {
@@ -28,10 +23,6 @@
 	position: absolute;
 	left: 50%;
 	transform: translate(-50%, 0%);
-	font-size: calc(var(--icon-size) / 3);
-
-	 /* This is messy. Change in playerText also, to margin*/
-	padding-top: calc(var(--icon-size) / 6);
 }
 
 .playerInfo {
@@ -42,8 +33,9 @@
 }
 
 .playerText {
+	margin: 0 1rem; /* Add a little space between icon and content */
+	display: inline-block;
 	vertical-align: middle;
-	padding-top: calc(var(--icon-size) / 4);
 }
 
 .playerInfoLeft .playerIcon {
@@ -67,7 +59,8 @@
 
 .playerIcon {
 	width: var(--icon-size);
-	margin: calc(var(--icon-size) / 6);
+	display: inline-block;
+	/* margin: calc(var(--icon-size) / 6); */
 }
 
 .playerFooter {
@@ -91,21 +84,18 @@
 	font-size: calc(var(--icon-size) / 3);
 }
 
-.sidebar {
-	position: absolute;
-	right: calc(var(--icon-size) / 4);
-	top: 30%;
-}
-
 .game-button {
 	/*	position: fixed;*/
-	margin: calc(var(--icon-size) / 8) 0;
-	display: block;
+	width: var(--button-size);
+	height: var(--button-size);
+	display: block; /* Different lines */
 	position: relative;
-	pointer-events: auto;
 
-	padding: calc(var(--icon-size) / 4);  /* Circle Radius */
+	margin: calc(var(--button-size) / 8) 0;
+	padding: calc(var(--button-size) / 4);  /* Circle Radius */
 	border-radius: 50%; /* Make circle */
+
+	pointer-events: auto;
 
 	background-color: #FFFFFF;
 	opacity: .6;
@@ -117,18 +107,15 @@
 }
 
 .game-button:active {
-/*				bottom: -0.2em;*/
 	box-shadow: none;
 }
 
 .game-button > img {
-	width: calc(var(--icon-size) / 2);
+	width: calc(var(--button-size) / 2);
 }
 
 .chat {
 	position: absolute;
-	bottom: calc(var(--icon-size) / 1);
-	right: calc(var(--icon-size) / 4);
 	width: var(--chat-width);
 	pointer-events: auto;
 	/* height: var(--chat-maxHeight); */

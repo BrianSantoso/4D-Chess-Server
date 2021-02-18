@@ -1,8 +1,9 @@
-import OnlineIcon from '../assets/player/online.svg';
-import OfflineIcon from '../assets/player/offline.svg';
-import WhiteIcon from '../assets/player/king_white.svg';
-import BlackIcon from '../assets/player/king_black.svg';
-import ChessTeam from './ChessTeam.js';
+import React, { Component } from 'react';
+import OnlineIcon from '../../assets/player/online.svg';
+import OfflineIcon from '../../assets/player/offline.svg';
+import WhiteIcon from '../../assets/player/king_white.svg';
+import BlackIcon from '../../assets/player/king_black.svg';
+import ChessTeam from '../ChessTeam.js';
 
 class PlayerInfo extends Component {
 	
@@ -49,7 +50,7 @@ class PlayerInfo extends Component {
 				{playerTime}
 			</div>
 		);
-			
+		
 		return (
 			<div className={className}>
 				{playerIcon}

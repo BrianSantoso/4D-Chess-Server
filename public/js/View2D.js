@@ -1,5 +1,8 @@
-import React, { Component } from 'react';
+import ChessTeam from './ChessTeam.js';
 import EventHandler from './EventHandler.js';
+
+
+import React, { Component } from 'react';
 import config from './config.json';
 import HomeIcon from '../assets/icons/home-black-rounded-24dp.svg';
 import UndoIcon from '../assets/icons/undo-black-24dp.svg';
@@ -9,6 +12,7 @@ import { Chat, ChatMessage } from './gui/Chat.jsx';
 import StatusBanner from './gui/StatusBanner.jsx';
 import CircleButton from './gui/CircleButton.jsx';
 import LayerStack from './gui/LayerStack.jsx';
+import PlayerInfo from './gui/PlayerInfo.jsx';
 import Home from './components/Home.jsx';
 
 class View2D {
@@ -57,7 +61,7 @@ View2D.methods = {
 
     cameraHome: (self) => {
         return () => {
-            self.cameraHome()
+            self._game._gameManager.cameraHome()
         }
     },
 
@@ -167,7 +171,7 @@ View2D.Addons = () => {
     const delta = {
         type: 'Addons',
         _parentComponent: null,
-        _addons: {},
+        _addons: {}, // Addons are attachments to a react component's state. Just extra fields in a state object.
         setParentComponent: View2D.methods.addonsSetParentComponent(base),
         getAddons: View2D.methods.getAddons(base),
         view2D: View2D.methods.addonsView2D(base)
@@ -180,7 +184,22 @@ View2D.BasicOverlayAddons = () => {
     const delta = {
         type: 'BasicOverlayAddons',
         _addons: {
-            topbar: [],
+            topbar: [
+                <PlayerInfo team={ChessTeam.WHITE} 
+						playerName={'AnonymousCow'} 
+						myTurn={true} 
+                        time={'--:--'} 
+						elo={1000} 
+						position={'playerInfoLeft'}
+						online={true}></PlayerInfo>,
+                <PlayerInfo team={ChessTeam.BLACK} 
+						playerName={'AnonymousPig'} 
+						myTurn={false} 
+                        time={'--:--'} 
+						elo={1000} 
+						position={'playerInfoRight'}
+						online={true}></PlayerInfo>
+            ],
             rightbar: [
                 <CircleButton icon={HomeIcon} handleClick={View2D.methods.cameraHome(base)}></CircleButton>,
                 <CircleButton icon={UndoIcon} handleClick={View2D.methods.undo(base)}></CircleButton>,
@@ -189,17 +208,17 @@ View2D.BasicOverlayAddons = () => {
             ],
             leftbar: [],
             bottombar: [
-                <Chat 
-					room={} 
-					client={} 
-					chatOpened={} 
-					handleMsg={} 
-					handleOpenChat={} 
-					handleCloseChat={} 
-					messages={} 
-					showing={} 
-					events={}
-				/>
+                // <Chat 
+				// 	room={} 
+				// 	client={} 
+				// 	chatOpened={} 
+				// 	handleMsg={} 
+				// 	handleOpenChat={} 
+				// 	handleCloseChat={} 
+				// 	messages={} 
+				// 	showing={} 
+				// 	events={}
+				// />
             ],
         },
         _game: null,
