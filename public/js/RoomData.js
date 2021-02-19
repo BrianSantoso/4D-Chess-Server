@@ -2,16 +2,24 @@ import PlayerData from './PlayerData.js';
 
 class RoomData {
 
-    // Contains data to synced
+    // Contains data/state to synced
     // TODO: use Colyseus Schema for automatic synchronization!
     // - Con: Would need an asymmetric implementation of decrementing player time for local multiplayer :< 
 
-    constructor(room) {
-        this._room = room; // Colyseus room
+    constructor() {
+        this._room; // Colyseus room, client-side only
 
         this._users = {}; // Map id to PlayerData
         this._whiteId;
         this._blackId;
+    }
+
+    toJSON() {
+        return {
+            _users: this._users,
+            _whiteId: this._whiteId,
+            _blackId: this._blackId
+        }
     }
 
     setRoom(room) {
@@ -42,6 +50,15 @@ class RoomData {
         return this._users.hasOwnProperty(id);
     }
 
+    addUser(playerData) {
+        let id = playerData.get('_id')
+        this._users[id] = playerData;
+    }
+
+    removeUser(id) {
+        delete this._users[id];
+    }
+
     setWhiteId(id) {
         this._whiteId = id;
     }
@@ -67,9 +84,9 @@ RoomData.revive = (fields) => {
     let roomData = new RoomData();
 
     let users = {};
-    for (let prop of fields._users) {
+    Object.keys(fields._users).forEach(prop => {
         users[prop] = PlayerData.revive(fields._users[props]);
-    }
+    });
     
     return Object.assign(roomData, fields, {
         _users: users

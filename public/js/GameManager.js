@@ -5,6 +5,11 @@ import { merge } from "lodash";
 class GameManager {
 	constructor() {
 		this._game;
+		this._room;
+	}
+
+	setRoom(room) {
+		this._room = room;
 	}
 
 	createAndSetGame(options) {

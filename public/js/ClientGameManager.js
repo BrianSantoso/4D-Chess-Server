@@ -92,13 +92,13 @@ class ClientGameManager extends GameManager {
 	}
 
 	setRoom(room) {
+		// TODO: perhaps handle room leaving and joining from inside ChessGame?
 		if (this._room) {
 			this._room.leave();
 		}
-		this._room = room;
-		if (this._game) {
-			this._game.setRoom(room);
-		}
+		// room needs to be saved as instance field because of the time between 
+		// joining a room and receiving the game data needed to create the game
+		super.setRoom(room);
 		// TODO: Move this inside ChessGame, and use Object.assign(this, revive(data)) to restore?
 		room.onMessage('chessGame', (jsonData) => {
 			console.log('received chessGame');
@@ -119,7 +119,7 @@ class ClientGameManager extends GameManager {
 		game.initBoardGraphics();
 		game.initGUI();
 
-		game.setRoom(this._room);
+		// game.setRoom(this._room);
 		
 		this._view2D.setAddons(game.view2D());
 
@@ -163,7 +163,23 @@ class ClientGameManager extends GameManager {
 		}
 		options = Object.assign(defaultOptions, options);
 		let game = super.createGame(options);
-		// game.setRoom(this._room); // TODO: move to setGame?
+		let room = this._room;
+		game.setRoom(room, function configureMessageHandlers() {
+			// Configure Client-side message handlers.
+			room.onMessage('move', (data) => {
+				let move = Move.revive(data.move);
+				// TODO: Can optimize by instead, receiving precomputed
+				// moveData from server. This would remove the need
+				// to calculate possibleMovesBefore/After + status
+				// on the client side.
+				this.makeMove(move);
+			});
+
+			room.onMessage('roomData', (jsonData) => {
+				console.log('received roomData', jsonData);
+				let roomData = RoomData.revive(jsonData);
+			});
+		});
 		game.setNeedsValidation(false); // TODO: this is temporary, change to false later!
 		return game;
 	}

@@ -5,6 +5,7 @@ import config from "./config.json";
 import Player from "./ChessPlayer.js";
 import Move from "./Move.js";
 import RoomData from "./RoomData.js";
+import { Room } from "colyseus.js";
 
 class ChessGame {
 	constructor() {
@@ -260,20 +261,8 @@ class ChessGame {
 		return this._gui.view2D();
 	}
 
-	setRoom(room) {
-		room.onMessage('move', (data) => {
-			let move = Move.revive(data.move);
-			// TODO: Can optimize by instead, receiving precomputed
-			// moveData from server. This would remove the need
-			// to calculate possibleMovesBefore/After + status
-			// on the client side.
-			this.makeMove(move);
-		});
-
-		room.onMessage('roomData', (jsonData) => {
-			console.log('received roomData', jsonData);
-			let roomData = RoomData.revive(jsonData);
-		})
+	setRoom(room, configureMessageHandlers) {
+		configureMessageHandlers.call(this);
 		this._roomData.setRoom(room);
 	}
 
@@ -342,7 +331,8 @@ ChessGame.revive = (fields) => {
 		_board: GameBoard.revive(fields._board),
 		_moveHistory: MoveHistory.revive(fields._moveHistory),
 		_white: fields._white, // this is just an Object.assign call
-		_black: fields._black
+		_black: fields._black,
+		_roomData: RoomData.revive(fields._roomData)
 	});
 };
 
