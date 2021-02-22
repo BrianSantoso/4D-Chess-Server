@@ -267,7 +267,7 @@ class ChessGame {
 	}
 
 	sendMessage(type, message) {
-		this._room.send(type, message);
+		this._roomData.send(type, message);
 	}
 
 	setMode(mode) {
@@ -282,12 +282,29 @@ class ChessGame {
 	// 	this._connectedUsers = playerData._connectedUsers;
 	// }
 
-	setPlayerControls(clientTeam) {
-		this._mode.setPlayerControls.call(this, clientTeam);
+	// setPlayerControls(clientTeam) {
+	// 	this._mode.setPlayerControls.call(this, clientTeam);
+	// }
+
+	setPlayerControls(controllerTypes) { // returns true if any types were changed
+		this._white.to(controllerTypes.white);
+		this._black.to(controllerTypes.black);
 	}
 
 	getRoomData() {
 		return this._roomData;
+	}
+
+	getTeam(id) {
+		return this._roomData.getTeam(id);
+	}
+
+	getRole(id) {
+		return this._roomData.getRole(id);
+	}
+
+	getMode() {
+		return this._mode;
 	}
 
 	// getPlayerData() {
@@ -390,7 +407,9 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		let playerCanInteract = this._moveHistory.atLast();
 		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, hasBegun, playerCanInteract); // TODO: determine better way to disable interaction
 		this._boardGraphics.update();
-		this._gui.update();
+		if (this._gui) { // TODO: create empty gui for server
+			this._gui.update();
+		}
 	},
 	function makeMove(move) {
 		// Check not game over and is legal
@@ -412,18 +431,18 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		}
 		return moveData;
 	},
-	function setPlayerControls(clientTeam) {
-		if (clientTeam === ChessTeam.WHITE) {
-			this._white.to('OnlinePlayer3D');
-			this._black.to('AbstractPlayer3D');
-		} else if (clientTeam === ChessTeam.BLACK) {
-			this._white.to('AbstractPlayer3D');
-			this._black.to('OnlinePlayer3D');
-		} else {
-			this._white.to('AbstractPlayer3D');
-			this._black.to('AbstractPlayer3D');
-		}
-	},
+	// function setPlayerControls(clientTeam) {
+	// 	if (clientTeam === ChessTeam.WHITE) {
+	// 		this._white.to('OnlinePlayer3D');
+	// 		this._black.to('AbstractPlayer3D');
+	// 	} else if (clientTeam === ChessTeam.BLACK) {
+	// 		this._white.to('AbstractPlayer3D');
+	// 		this._black.to('OnlinePlayer3D');
+	// 	} else {
+	// 		this._white.to('AbstractPlayer3D');
+	// 		this._black.to('AbstractPlayer3D');
+	// 	}
+	// },
 	function getStatusMessage() {
 		let status = this.status();
 		if (this._moveHistory.atLast()) {

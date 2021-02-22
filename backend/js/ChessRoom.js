@@ -57,8 +57,13 @@ class ChessRoom extends Room {
                         color: 'rgb(255, 251, 13)'
                     }
                 }, {});
+                let gameState = this._gameManager.toJSON();
+                client.send('chessGame', gameState);
+                console.log('Sent game state:', gameState)
             });
-        client.send('chessGame', this._gameManager.toJSON());
+        // let gameState = this._gameManager.toJSON();
+        // client.send('chessGame', gameState);
+        // console.log('Sent game state:', gameState)
     }
 
     // When a client leaves the room
@@ -87,6 +92,11 @@ class ChessRoom extends Room {
         this._sessionIdToUser.set(client.sessionId, user);
         this._roomData.addUser(user);
         console.log('User joined room:', user)
+        this.broadcast('roomData', this._roomData);
+        if (this._roomData.playersAssigned()) {
+            // Send roomData patch
+            // this.broadcast('roomData', this._roomData);
+        }
         return user;
     }
     

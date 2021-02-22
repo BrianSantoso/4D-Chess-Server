@@ -1,6 +1,18 @@
 import ChessGame from "./ChessGame.js";
 import ChessTeam from "./ChessTeam.js";
-import { merge } from "lodash";
+import { mergeWith, defaultsDeep } from "lodash";
+import RoomData from "./RoomData.js";
+
+const deepMerge = (a, b) => {
+	return _.mergeWith(a, b, (c, d) => {
+		// instanceof Object would cause infinite loop for 
+		// case where nested object and and its parent
+		// have references to each other
+		if (c instanceof RoomData || d instanceof RoomData) {
+			return deepMerge(c, d);
+		}
+	});
+}
 
 class GameManager {
 	constructor() {
@@ -25,11 +37,11 @@ class GameManager {
 		});
 		let delta = ChessGame.revive(jsonData);
 		// let newGame = Object.assign(template, ChessGame.revive(jsonData));
-		// WARNING: If the source has a key whose value is strictly equal to undefined, merge() will not overwrite that key in the destination.
-		let newGame = merge(template, delta); // need deep merge so that templated Players receive their fields.
-		console.log(template);
+		let newGame = deepMerge(template, delta); // need deep merge so that templated Players receive their fields.
+		console.log('Template:', template);
+		console.log('Delta:', delta)
 		this.setGame(newGame);
-		console.log('Loaded game:', newGame);
+		console.log('Finished loading game:', newGame);
 	}
 
 	toJSON() {

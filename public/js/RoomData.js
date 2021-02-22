@@ -1,3 +1,4 @@
+import ChessTeam from './ChessTeam.js';
 import PlayerData from './PlayerData.js';
 
 class RoomData {
@@ -14,6 +15,14 @@ class RoomData {
         this._blackId;
     }
 
+    send(type, message) {
+        this._room.send(type, message);
+    }
+
+    playersAssigned() {
+        return this._whiteId && this._blackId;
+    }
+
     toJSON() {
         return {
             _users: this._users,
@@ -28,6 +37,23 @@ class RoomData {
 
     getRoom() {
         return this._room;
+    }
+
+    getTeam(id) {
+        if (this.isWhiteId(id)) {
+            return ChessTeam.WHITE;
+        }
+        if (this.isBlackId(id)) {
+            return ChessTeam.BLACK;
+        }
+        return ChessTeam.SPECTATOR;
+    }
+
+    getRole(id) {
+        if (this.isWhiteId(id) || this.isBlackId(id)) {
+            return 'player';
+        }
+        return 'spectator';
     }
 
     isWhiteId(id) {
@@ -53,6 +79,12 @@ class RoomData {
     addUser(playerData) {
         let id = playerData.get('_id')
         this._users[id] = playerData;
+
+        if (!this.getWhiteId()) {
+            this._whiteId = id;
+        } else if (!this.getBlackId()) {
+            this._blackId = id;
+        }
     }
 
     removeUser(id) {
@@ -85,7 +117,7 @@ RoomData.revive = (fields) => {
 
     let users = {};
     Object.keys(fields._users).forEach(prop => {
-        users[prop] = PlayerData.revive(fields._users[props]);
+        users[prop] = PlayerData.revive(fields._users[prop]);
     });
     
     return Object.assign(roomData, fields, {

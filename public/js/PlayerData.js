@@ -56,7 +56,7 @@ PlayerData.create = (type, ...args) => {
 }
 
 PlayerData.revive = (fields) => {
-    let base = PlayerData.create(fields.type);
+    let base = PlayerData.create('');
     return Object.assign(base, fields);
 }
 

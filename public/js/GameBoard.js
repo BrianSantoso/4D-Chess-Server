@@ -12,7 +12,7 @@ class GameBoard {
 		// Then added pieces from overwritten history still remain in allPieces 
 		// and so also in serialized form.
 		this._allPieces = []; // all pieces ever instantiated
-		this._pieces = null; // pieces currently on the board
+		this._pieces; // pieces currently on the board
 	}
 
 	dims() {

@@ -1,4 +1,5 @@
 import GameManager from '../../public/js/GameManager.js';
+import Move from '../../public/js/Move.js';
 
 class ServerGameManager extends GameManager {
     // Handle's server-specific peripherals needed to
@@ -13,7 +14,8 @@ class ServerGameManager extends GameManager {
             room.onMessage('move', (client, message) => {
                 
                 let move = Move.revive(message);
-                // TODO: move validation
+                // let moveData = this.makeMove(move);
+                // TODO: move broadcast inside of Player?
                 try {
                     let moveData = this.makeMove(move);
                     // TODO: move broadcast inside of Player?
@@ -22,6 +24,8 @@ class ServerGameManager extends GameManager {
                         // playerData: this.getPlayerData()
                     }, { except: client });
                 } catch {
+                    // TODO: don't just catch any error. catch illegal move error. 
+                    // (don't want to accuse someone of cheating if the error is internal)
                     console.log('Invalid move.')
                 }
             })

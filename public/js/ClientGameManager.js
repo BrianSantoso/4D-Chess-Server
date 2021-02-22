@@ -3,6 +3,7 @@ import BoardGraphics3D from "./BoardGraphics3D.js";
 import ChessTeam from "./ChessTeam.js";
 import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
+import RoomData from "./RoomData.js";
 import Models from "./Models.js";
 import games from "./Games.json";
 import { Nav } from "react-bootstrap";
@@ -15,6 +16,7 @@ class ClientGameManager extends GameManager {
 		super();
 		
 		this._authToken = '';
+		this._decodedAuthToken;
 		this._client = client;
 		this._room = null;
 		
@@ -49,18 +51,31 @@ class ClientGameManager extends GameManager {
 	}
 
 	getId() {
-		return this.getDecoded()._id;
+		return this._decodedAuthToken._id;
 	}
 
-	getDecoded() {
-        return jwt.decode(this._authToken, {complete: true}).payload;
-    }
+	getClientTeam() {
+		if (this._game) {
+			let clientId = this.getId();
+			return this._game.getTeam(clientId);
+		}
+		return null;
+	}
+
+	getClientRole() {
+		if (this._game) {
+			let clientId = this.getId();
+			return this._game.getRole(clientId);
+		}
+		return null;
+	}
 
 	setAuthToken(token) {
 		// TODO: may error if authToken is unloaded (via logout!)
 		//  and user tries to join room before a new guest 
 		// token can be retrieved from the server
 		this._authToken = token;
+		this._decodedAuthToken = jwt.decode(this._authToken, {complete: true}).payload;
 		this._authTokenSet();
 	}
 
@@ -178,6 +193,7 @@ class ClientGameManager extends GameManager {
 			room.onMessage('roomData', (jsonData) => {
 				console.log('received roomData', jsonData);
 				let roomData = RoomData.revive(jsonData);
+				console.log('Revived roomData:', roomData)
 			});
 		});
 		game.setNeedsValidation(false); // TODO: this is temporary, change to false later!
@@ -211,14 +227,66 @@ class ClientGameManager extends GameManager {
 		return Promise.all([modelsPromise]);
 	}
 
+	getPeripherals(mode) {
+		const peripherals = {
+			'ONLINE_MULTIPLAYER': {
+				gui: 'BasicOverlayAddons',
+				controllers: {
+					player: 'OnlinePlayer3D',
+					opponent: 'AbstractPlayer3D',
+					spectator: 'AbstractPlayer3D'
+				}
+			},
+			'LOCAL_MULTIPLAYER': {
+				gui: 'BasicOverlayAddons',
+				controllers: {
+					player: 'OnlinePlayer3D',
+					opponent: 'OnlinePlayer3D',
+					spectator: 'AbstractPlayer3D'
+				}
+			},
+			'FREE_PLAY': {
+				gui: 'BasicOverlayAddons',
+				controllers: {
+					player: 'OnlinePlayer3D',
+					opponent: 'OnlinePlayer3D',
+					spectator: 'AbstractPlayer3D'
+				}
+			},
+		}
+		return peripherals[mode];
+	}
+
 	createGUI(mode) {
-		const guis = {
-			'ONLINE_MULTIPLAYER': 'BasicOverlayAddons',
-			'LOCAL_MULTIPLAYER': 'BasicOverlayAddons',
-			'FREE_PLAY': 'BasicOverlayAddons'
-		};
-		const guiType = guis[mode.type];
+		let peripherals = this.getPeripherals(mode.type);
+		const guiType = peripherals.gui;
 		return View2D.create(guiType);
+	}
+
+	getControllerTypes() {
+		let peripherals = this.getPeripherals(this._game.getMode().type);
+		const controllerTypes = peripherals.controllers;
+		let clientTeam = this.getClientTeam();
+		
+
+		let whiteControlsType, blackControlsType;
+		let role = this.getClientRole();
+		if (role === 'player') {
+			if (clientTeam === ChessTeam.WHITE) {
+				whiteControlsType = controllerTypes['player'];
+				blackControlsType = controllerTypes['opponent'];
+			} else if (clientTeam === ChessTeam.BLACK) {
+				whiteControlsType = controllerTypes['opponent'];
+				blackControlsType = controllerTypes['player'];
+			}
+		} else if(role === 'spectator') {
+			whiteControlsType = controllerTypes['spectator'];
+			blackControlsType = controllerTypes['spectator'];
+		}
+		return {
+			white: whiteControlsType,
+			black: blackControlsType
+		}
 	}
 	
 	_keyInputs() {
@@ -228,7 +296,12 @@ class ClientGameManager extends GameManager {
 	}
 	
 	_update(step) {
+		// TODO: playerassignment
 		if (this._game) {
+			this.unsubscribePlayers();
+			let controllerTypes = this.getControllerTypes();
+			this._game.setPlayerControls(controllerTypes);
+			this.subscribePlayers();
 			this._game.update(step);
 		}
 

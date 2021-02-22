@@ -22,12 +22,13 @@ class Player {
 		return this._time;
 	}
 
-	to(type) {
-		let delta = Player[type]();
-		delta._receiver = new delta._receiver(this._team, this._game, this);
-		delta._transmitter = new delta._transmitter(this._team, this._game, this);
-		Object.assign(this, delta);
-		// console.log('casted to:', this)
+	to(type) { // returns true if casted to different type
+		if (this.type != type) {
+			let delta = Player[type]();
+			delta._receiver = new delta._receiver(this._team, this._game, this);
+			delta._transmitter = new delta._transmitter(this._team, this._game, this);
+			Object.assign(this, delta);
+		}
 		return this;
 	}
 
