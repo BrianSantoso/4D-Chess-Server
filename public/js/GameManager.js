@@ -1,18 +1,6 @@
-import ChessGame from "./ChessGame.js";
+import ChessGame, { deepMerge } from "./ChessGame.js";
 import ChessTeam from "./ChessTeam.js";
-import { mergeWith, defaultsDeep } from "lodash";
 import RoomData from "./RoomData.js";
-
-const deepMerge = (a, b) => {
-	return _.mergeWith(a, b, (c, d) => {
-		// instanceof Object would cause infinite loop for 
-		// case where nested object and and its parent
-		// have references to each other
-		if (c instanceof RoomData || d instanceof RoomData) {
-			return deepMerge(c, d);
-		}
-	});
-}
 
 class GameManager {
 	constructor() {
@@ -71,14 +59,6 @@ class GameManager {
 
 	redo() {
 		this._game.redo();
-	}
-
-	setPlayerData(playerData) {
-		this._game.setPlayerData(playerData);
-	}
-
-	getPlayerData() {
-		return this._game.getPlayerData();
 	}
 }
 

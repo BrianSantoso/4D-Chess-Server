@@ -1,5 +1,3 @@
-import { Plane } from "three";
-
 class PlayerData {
     // bundles of locally cached data from the server
     constructor() {
@@ -23,20 +21,6 @@ PlayerData.User = (user) => {
         _elo: user.elo
     }
     return Object.assign(base, delta);
-}
-
-PlayerData.stripUnauthorizedData = (playerData) => {
-    let stripped = Object.assign(new PlayerData(), playerData);
-    
-    const unauthorizedFields = [
-        '_time'
-    ];
-
-    unauthorizedFields.forEach(field => {
-        delete stripped[field]
-    });
-    
-    return stripped;
 }
 
 PlayerData.Player = (...args) => {

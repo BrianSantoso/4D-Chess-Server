@@ -6,6 +6,18 @@ import Player from "./ChessPlayer.js";
 import Move from "./Move.js";
 import RoomData from "./RoomData.js";
 import { Room } from "colyseus.js";
+import { mergeWith } from "lodash";
+
+export const deepMerge = (a, b) => {
+	return mergeWith(a, b, (c, d) => {
+		// instanceof Object would cause infinite loop for 
+		// case where nested object and and its parent
+		// have references to each other
+		if (c instanceof RoomData || d instanceof RoomData) {
+			return deepMerge(c, d);
+		}
+	});
+}
 
 class ChessGame {
 	constructor() {
@@ -156,9 +168,9 @@ class ChessGame {
 		return this._board;
 	}
 	
-	makeMove(move) {
+	makeMove(move, time, timestamp) {
 		this.update();
-		return this._mode.makeMove.call(this, move);
+		return this._mode.makeMove.call(this, move, time, timestamp);
 	}
 
 	redo() {
@@ -407,13 +419,13 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		let playerCanInteract = this._moveHistory.atLast();
 		this._getCurrentPlayer().update(timeOfLastMove, timestampOfLastMove, hasBegun, playerCanInteract); // TODO: determine better way to disable interaction
 		this._boardGraphics.update();
-		if (this._gui) { // TODO: create empty gui for server
+		if (this._gui) { // TODO: create empty gui for server so we can get rid of this if statement
 			this._gui.update();
 		}
 	},
-	function makeMove(move) {
+	function makeMove(move, time, timestamp) {
 		// Check not game over and is legal
-		let time = this._getCurrentPlayer().getTime();
+		// let time = this._getCurrentPlayer().getTime();
 		let moveData;
 		if (this._moveHistory.atLast()) {
 			this.validate(move);
@@ -421,12 +433,12 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 			this._board.makeMove(move);
 			this._boardGraphics.makeMove(move, config.animFrames.move);
 			// add to history
-			moveData = this._moveHistory.add(move, time);
+			moveData = this._moveHistory.add(move, time, timestamp);
 
 			this.turnChange();
 		} else {
 			// If receiving a move while viewing past history
-			moveData = this._moveHistory.addToEnd(move, time); // add to history
+			moveData = this._moveHistory.addToEnd(move, time, timestamp); // add to history
 			this.turnChange();
 		}
 		return moveData;

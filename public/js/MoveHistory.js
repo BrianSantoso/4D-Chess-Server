@@ -21,21 +21,20 @@ class MoveHistory {
         return this.length() % 2 === 0 ? ChessTeam.WHITE : ChessTeam.BLACK;
     }
     
-    add(move, time) {
+    add(move, time, timestamp=null) {
         // Chop off future
         this._moves.splice(this._index + 1);
         // New future
-        this.addToEnd(move, time);
+        let result = this.addToEnd(move, time, timestamp);
         this._index += 1;
         console.log(this._moves);
+        return result;
     }
 
-    addToEnd(move, time) {
-        this._moves.push({
-            move: move,
-            time: time,
-            timestamp: new Date()
-        });
+    addToEnd(move, time, timestamp=null) {
+        let moveData = new MoveData(move, time, timestamp);
+        this._moves.push(moveData);
+        return moveData;
     }
 
     undo() {
@@ -99,12 +98,25 @@ class MoveHistory {
 
 MoveHistory.revive = (fields) => {
     return Object.assign(new MoveHistory(), fields, {
-        _moves: fields._moves.map((moveData) => ({
-            move: Move.revive(moveData.move),
-            timestamp: new Date(moveData.timestamp),
-            time: moveData.time
-        }))
+        _moves: fields._moves.map(MoveData.revive)
     });
 };
 
+class MoveData {
+    constructor(move, time, timestamp) {
+        this.move = move;
+        this.time = time;
+        this.timestamp = timestamp || new Date();
+    }
+}
+
+MoveData.revive = (fields) => {
+    return Object.assign(new MoveData(), fields, {
+        move: Move.revive(fields.move),
+        time: fields.time,
+        timestamp: new Date(fields.timestamp)
+    });
+}
+
 export default MoveHistory;
+export { MoveData };

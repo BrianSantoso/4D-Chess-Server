@@ -1,6 +1,7 @@
 import GameManager from "./GameManager.js";
 import BoardGraphics3D from "./BoardGraphics3D.js";
 import ChessTeam from "./ChessTeam.js";
+import { MoveData } from "./MoveHistory.js";
 import Move from "./Move.js";
 import SceneManager from "./SceneManager.js";
 import RoomData from "./RoomData.js";
@@ -181,13 +182,13 @@ class ClientGameManager extends GameManager {
 		let room = this._room;
 		game.setRoom(room, function configureMessageHandlers() {
 			// Configure Client-side message handlers.
-			room.onMessage('move', (data) => {
-				let move = Move.revive(data.move);
+			room.onMessage('moveData', (moveData) => {
+				moveData = MoveData.revive(moveData);
 				// TODO: Can optimize by instead, receiving precomputed
 				// moveData from server. This would remove the need
 				// to calculate possibleMovesBefore/After + status
 				// on the client side.
-				this.makeMove(move);
+				this.makeMove(moveData.move, moveData.time, moveData.timestamp);
 			});
 
 			room.onMessage('roomData', (jsonData) => {

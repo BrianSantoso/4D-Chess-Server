@@ -27,7 +27,7 @@ class RoomData {
         return {
             _users: this._users,
             _whiteId: this._whiteId,
-            _blackId: this._blackId
+            _blackId: this._blackId,
         }
     }
 
@@ -124,5 +124,19 @@ RoomData.revive = (fields) => {
         _users: users
     });
 };
+
+RoomData.stripUnauthorizedData = (roomData) => {
+    let stripped = Object.assign(new RoomData(), roomData);
+    
+    const unauthorizedFields = [
+        '_time'
+    ];
+
+    unauthorizedFields.forEach(field => {
+        delete stripped[field]
+    });
+    
+    return stripped;
+}
 
 export default RoomData;

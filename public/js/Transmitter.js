@@ -12,7 +12,7 @@ class AbstractTransmitter {
 
 class LocalTransmitter extends AbstractTransmitter {
     makeMove(move) {
-        this._game.makeMove(move);
+        return this._game.makeMove(move);
     }
 }
 
@@ -22,8 +22,9 @@ class OnlineTransmitter extends LocalTransmitter {
     }
 
     makeMove(move) {
-        super.makeMove(move);
-        this._game.sendMessage('move', move);
+        let moveData = super.makeMove(move);
+        console.log('Transmitting move:', moveData)
+        this._game.sendMessage('moveData', moveData);
     }
 }
 

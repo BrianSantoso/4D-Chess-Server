@@ -1,5 +1,6 @@
 import GameManager from '../../public/js/GameManager.js';
 import Move from '../../public/js/Move.js';
+import { MoveData } from '../../public/js/MoveHistory.js';
 
 class ServerGameManager extends GameManager {
     // Handle's server-specific peripherals needed to
@@ -11,18 +12,15 @@ class ServerGameManager extends GameManager {
             // Configure server-side room message handlers
             // 'this' is bound to the game
             room.onMessage('chatMsg', room._chatMsg);
-            room.onMessage('move', (client, message) => {
-                
-                let move = Move.revive(message);
+            room.onMessage('moveData', (client, moveData) => {
+                moveData = MoveData.revive(moveData); // TODO: WARNING: client can crash server if sending a moveData with wrong fields: '... is undefined'
                 // let moveData = this.makeMove(move);
                 // TODO: move broadcast inside of Player?
                 try {
-                    let moveData = this.makeMove(move);
+                    let authorizedMoveData = this.makeMove(moveData.move);
                     // TODO: move broadcast inside of Player?
-                    room.broadcast('move', {
-                        move: move,
-                        // playerData: this.getPlayerData()
-                    }, { except: client });
+                    room.broadcast('moveData', authorizedMoveData, { except: client });
+                    // TODO: resynchronize client
                 } catch {
                     // TODO: don't just catch any error. catch illegal move error. 
                     // (don't want to accuse someone of cheating if the error is internal)
