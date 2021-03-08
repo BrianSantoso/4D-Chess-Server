@@ -22,9 +22,10 @@ class OnlineTransmitter extends LocalTransmitter {
     }
 
     makeMove(move) {
-        let moveData = super.makeMove(move);
-        console.log('Transmitting move:', moveData)
-        this._game.sendMessage('moveData', moveData);
+        // this._game.simulateMove(move);
+        super.makeMove(move);
+        console.log('Submitting move:', move)
+        this._game.sendMessage('submitMove', move);
     }
 }
 

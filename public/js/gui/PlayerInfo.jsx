@@ -9,6 +9,8 @@ class PlayerInfo extends Component {
 	
 	constructor(props) {
 		super(props);
+		this.state = props;
+		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
 	}
 	
 	msToHMS(duration) {
@@ -37,12 +39,12 @@ class PlayerInfo extends Component {
 	}
 	
 	render() {
-		let className = 'playerInfo ' + this.props.position;
-		let isWhite = this.props.team === ChessTeam.WHITE;
-		let playerTime = <div className='playerTime'>{this.msToHMS(this.props.time)}</div>;
-		let playerStatus = <img className='playerStatus' src={this.props.online ? OnlineIcon : OfflineIcon} />
+		let className = 'playerInfo ' + this.state.position;
+		let isWhite = this.state.team === ChessTeam.WHITE;
+		let playerTime = <div className='playerTime'>{this.msToHMS(this.state.time)}</div>;
+		let playerStatus = <img className='playerStatus' src={this.state.online ? OnlineIcon : OfflineIcon} />
 		let playerIcon = <img className='playerIcon' src={isWhite ? WhiteIcon : BlackIcon}/>;
-		let elo = `(${this.props.elo})`;
+		let elo = `(${this.state.elo})`;
 		let footer = (
 			<div className='playerFooter'>
 				{elo}
@@ -56,7 +58,7 @@ class PlayerInfo extends Component {
 				{playerIcon}
 				<div className='playerText'>
 					<div className='playerName'>
-						{this.props.playerName}
+						{this.state.playerName}
 					</div>
 					{footer}
 				</div>

@@ -15,9 +15,9 @@
     "buildback": "webpack --mode=development --config webpack-back.config.cjs",
     "buildtesting": "webpack --mode=development --config webpack-testing.config.cjs",
     "build": "npm run buildback && npm run buildfront",
-    "testf": "npm run buildfront && npm run start",
-    "testb": "npm run buildback && npm run start",
-    "test": "npm run build && npm run start",
+    "devf": "npm run buildfront && npm run start",
+    "devb": "npm run buildback && npm run start",
+    "dev": "npm run build && npm run start",
     "testing": "npm run buildtesting && node testing/build/bundle-testing.js",
     "open": "google-chrome --incognito http://localhost:3000 &"
   },

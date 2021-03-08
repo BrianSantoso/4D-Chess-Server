@@ -17,6 +17,7 @@ import config from '../public/js/config.json';
 import { ChessMode } from '../public/js/ChessGame.js';
 import { DummyPlayer } from '../public/js/ChessPlayer.js';
 import BoardGraphics from '../public/js/BoardGraphics.js';
+import TimeControl from '../public/js/TimeControl.js';
 
 dotconfig();
 configurePassport(Passport);
@@ -69,7 +70,7 @@ class ServerInstance {
             BoardGraphics: BoardGraphics, // empty BoardGraphics
             whitePlayerType: 'AbstractPlayer',
             blackPlayerType: 'AbstractPlayer',
-            timeControl: 30000
+            timeControl: TimeControl.create('OneZero')
         }
         this.gameServer.define('standard', ChessRoom, standardOptions);
     }

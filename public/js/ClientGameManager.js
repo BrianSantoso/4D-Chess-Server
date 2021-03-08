@@ -182,7 +182,7 @@ class ClientGameManager extends GameManager {
 		let room = this._room;
 		game.setRoom(room, function configureMessageHandlers() {
 			// Configure Client-side message handlers.
-			room.onMessage('moveData', (moveData) => {
+			room.onMessage('makeMove', (moveData) => {
 				moveData = MoveData.revive(moveData);
 				// TODO: Can optimize by instead, receiving precomputed
 				// moveData from server. This would remove the need
@@ -190,6 +190,11 @@ class ClientGameManager extends GameManager {
 				// on the client side.
 				this.makeMove(moveData.move, moveData.time, moveData.timestamp);
 			});
+
+			room.onMessage('syncMoveData', (moveData) => {
+				moveData = MoveData.revive(moveData);
+				this.syncMoveData(moveData);
+			})
 
 			room.onMessage('roomData', (jsonData) => {
 				console.log('received roomData', jsonData);

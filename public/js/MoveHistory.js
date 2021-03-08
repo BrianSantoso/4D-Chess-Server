@@ -32,7 +32,8 @@ class MoveHistory {
     }
 
     addToEnd(move, time, timestamp=null) {
-        let moveData = new MoveData(move, time, timestamp);
+        let newIndex = this.length();
+        let moveData = new MoveData(move, time, timestamp, newIndex);
         this._moves.push(moveData);
         return moveData;
     }
@@ -94,6 +95,11 @@ class MoveHistory {
     atOrigin() {
         return this._index === -1;
     }
+
+    syncMoveData(moveData) {
+        let index = moveData.index;
+        this._moves[index] = moveData;
+    }
 }
 
 MoveHistory.revive = (fields) => {
@@ -103,10 +109,11 @@ MoveHistory.revive = (fields) => {
 };
 
 class MoveData {
-    constructor(move, time, timestamp) {
+    constructor(move, time, timestamp, index) {
         this.move = move;
         this.time = time;
         this.timestamp = timestamp || new Date();
+        this.index = index; // index is used to update history's state when receiving move from server.
     }
 }
 

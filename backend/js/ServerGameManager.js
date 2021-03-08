@@ -12,14 +12,15 @@ class ServerGameManager extends GameManager {
             // Configure server-side room message handlers
             // 'this' is bound to the game
             room.onMessage('chatMsg', room._chatMsg);
-            room.onMessage('moveData', (client, moveData) => {
-                moveData = MoveData.revive(moveData); // TODO: WARNING: client can crash server if sending a moveData with wrong fields: '... is undefined'
+            room.onMessage('submitMove', (client, move) => {
+                move = Move.revive(move); // TODO: WARNING: client can crash server if sending a moveData with wrong fields: '... is undefined'
                 // let moveData = this.makeMove(move);
                 // TODO: move broadcast inside of Player?
                 try {
-                    let authorizedMoveData = this.makeMove(moveData.move);
+                    let authorizedMoveData = this.makeMove(move);
                     // TODO: move broadcast inside of Player?
-                    room.broadcast('moveData', authorizedMoveData, { except: client });
+                    room.broadcast('makeMove', authorizedMoveData, { except: client });
+                    client.send('syncMoveData', authorizedMoveData);
                     // TODO: resynchronize client
                 } catch {
                     // TODO: don't just catch any error. catch illegal move error. 

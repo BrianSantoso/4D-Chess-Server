@@ -7,6 +7,7 @@ import Move from "./Move.js";
 import RoomData from "./RoomData.js";
 import { Room } from "colyseus.js";
 import { mergeWith } from "lodash";
+import TimeControl from "./TimeControl.js";
 
 export const deepMerge = (a, b) => {
 	return mergeWith(a, b, (c, d) => {
@@ -31,6 +32,7 @@ class ChessGame {
 		this._black = Player.create(ChessGame.BLACK);
 		this._needsValidation = true;
 		this._boardGraphics;
+		this._timeControl;
 		this._gui;
 
 		this._moveHistory = new MoveHistory();
@@ -52,7 +54,8 @@ class ChessGame {
 			_white: this._white,
 			_black: this._black,
 			_gameOver: this._gameOver,
-			_roomData: this._roomData
+			_roomData: this._roomData,
+			_timeControl: this._timeControl
 		};
 	}
 
@@ -119,6 +122,8 @@ class ChessGame {
 		if (!this._needsValidation) {
 			return true;
 		}
+		// TODO: Check not game over and is legal
+		// TODO: Check that it is the correct team!
 		let legalMoves = this.getPossibleMoves(move.pieceId);
 		let inLegalMoves = legalMoves.some(possibleMove => Move.isEqual(possibleMove, move));
 		if (inLegalMoves) {
@@ -166,6 +171,10 @@ class ChessGame {
 
 	board() {
 		return this._board;
+	}
+
+	syncMoveData(moveData) {
+		return this._mode.syncMoveData.call(this, moveData)
 	}
 	
 	makeMove(move, time, timestamp) {
@@ -319,6 +328,9 @@ class ChessGame {
 		return this._mode;
 	}
 
+	setTimeControl(timeControl) {
+		this._timeControl = timeControl;
+	}
 	// getPlayerData() {
 	// 	return {
 	// 		_white: this._white.toJSON(),
@@ -349,6 +361,11 @@ ChessGame.create = (options) => {
 	game.setBlack(black);
 	
 	game.setMode(options.mode);
+
+	if (options.timeControl) { // Example: when ClientGameManager creates template, timeControl is not specified
+		let timeControl = TimeControl.revive(options.timeControl);
+		game.setTimeControl(timeControl);
+	}
 	return game;
 };
 
@@ -361,14 +378,16 @@ ChessGame.revive = (fields) => {
 		_moveHistory: MoveHistory.revive(fields._moveHistory),
 		_white: fields._white, // this is just an Object.assign call
 		_black: fields._black,
-		_roomData: RoomData.revive(fields._roomData)
+		_roomData: RoomData.revive(fields._roomData),
+		_timeControl: TimeControl.revive(fields._timeControl)
 	});
 };
 
 class ChessMode {
-	constructor(type, update, makeMove, setPlayerControls, getStatusMessage) {
+	constructor(type, update, syncMoveData, makeMove, setPlayerControls, getStatusMessage) {
 		this.type = type;
 		this.update = update;
+		this.syncMoveData = syncMoveData;
 		this.makeMove = makeMove;
 		this.setPlayerControls = setPlayerControls;
 		this.getStatusMessage = getStatusMessage;
@@ -423,8 +442,10 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 			this._gui.update();
 		}
 	},
-	function makeMove(move, time, timestamp) {
-		// Check not game over and is legal
+	function syncMoveData(moveData) {
+		this._moveHistory.syncMoveData(moveData)
+	},
+	function makeMove(move, time, timestamp) {		
 		// let time = this._getCurrentPlayer().getTime();
 		let moveData;
 		if (this._moveHistory.atLast()) {
@@ -443,18 +464,6 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 		}
 		return moveData;
 	},
-	// function setPlayerControls(clientTeam) {
-	// 	if (clientTeam === ChessTeam.WHITE) {
-	// 		this._white.to('OnlinePlayer3D');
-	// 		this._black.to('AbstractPlayer3D');
-	// 	} else if (clientTeam === ChessTeam.BLACK) {
-	// 		this._white.to('AbstractPlayer3D');
-	// 		this._black.to('OnlinePlayer3D');
-	// 	} else {
-	// 		this._white.to('AbstractPlayer3D');
-	// 		this._black.to('AbstractPlayer3D');
-	// 	}
-	// },
 	function getStatusMessage() {
 		let status = this.status();
 		if (this._moveHistory.atLast()) {

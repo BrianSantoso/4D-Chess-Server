@@ -152,7 +152,7 @@ View2D.Component = () => {
     let base = View2D.create('');
     let delta = {
         type: 'Component',
-        _reactComponent: null,
+        _reactComponent: null, // TODO: automatically configure _stateHelper?
         _stateHelper: {
 			setStateHandler: (state) => console.log('setStateHandler not configured'),
 			onStateChange: function(callback) {
@@ -182,7 +182,7 @@ View2D.PlayerInfo = (props) => {
     let base = View2D.create('Component');
     let delta = {
         type: 'PlayerInfo',
-        _reactComponent: <PlayerInfo {...props}></PlayerInfo>,
+        _reactComponent: <PlayerInfo {...props} stateHelper={base._stateHelper}></PlayerInfo>,
     }
     return Object.assign(base, delta);
 }
@@ -268,6 +268,23 @@ View2D.BasicOverlayAddons = () => {
         update: () => {
             // get player data from base._game
             // base._playerLeft.setState()
+
+            const game = base._game;
+            let roomData = game.getRoomData();
+            let white = roomData.getWhite();
+            let black = roomData.getBlack();
+            
+            if (white) { 
+                base._playerLeft.setState({
+                    playerName: white._username
+                });
+            }
+
+            if (black) { // may be undefined if a user has not joined
+                base._playerRight.setState({
+                    playerName: black._username
+                });
+            }
         }
     }
 
