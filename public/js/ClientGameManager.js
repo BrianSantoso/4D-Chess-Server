@@ -200,6 +200,11 @@ class ClientGameManager extends GameManager {
 				console.log('received roomData', jsonData);
 				let roomData = RoomData.revive(jsonData);
 				console.log('Revived roomData:', roomData)
+				this.syncRoomData(roomData);
+			});
+
+			room.onMessage('chatMsg', (message) => {
+				this.chatMsg(message);
 			});
 		});
 		game.setNeedsValidation(false); // TODO: this is temporary, change to false later!

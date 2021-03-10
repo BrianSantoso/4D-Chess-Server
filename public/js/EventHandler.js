@@ -3,7 +3,7 @@ class EventHandler {
         this._domElement = domElement;
 		this._subscribers = {};
 		this._keyBinds = {};
-		this._focus = '';
+		this._focus = 'focused';
 	}
 
 	focused() {
@@ -15,10 +15,12 @@ class EventHandler {
 	}
 
     subscribe(obj, event) {
+		console.log('subscribed', obj, 'to', event)
 		this._subscribers[event].add(obj);
 	}
 	
 	unsubscribe(obj) {
+		console.log('unsubscribe', obj)
 		Object.keys(this._subscribers).forEach(event => {
 			this._subscribers[event].delete(obj);
 		});

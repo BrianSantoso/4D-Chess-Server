@@ -1,25 +1,29 @@
 import React, { Component } from 'react';
 import { CSSTransitionGroup } from 'react-transition-group';
 import FocusLock from 'react-focus-lock';
+import config from '../config.json'
 
 class Chat extends Component {
 	constructor(props) {
 		super(props);
+		this.state = props;
+		this.props.stateHelper.onStateChange((state) => {this.setState(state)});
 	}
 
 	render() {
 		return (
 			<div className='chat'>
-				{ this.props.chatOpened ? 
+				{ this.state.chatOpened ? 
 					<ChatOpened 
-					room={this.props.room}
-					client={this.props.client}
-					handleCloseChat={this.props.handleCloseChat}
-					handleMsg={this.props.handleMsg} 
-					messages={this.props.messages} 
-					events={this.props.events}></ChatOpened> 
+					handleCloseChat={() => this.setState({ chatOpened: false })}
+					handleMsg={this.state.handleMsg} 
+					messages={this.state.messages} 
+					events={this.state.events}></ChatOpened> 
 				: 
-					<ChatClosed handleOpenChat={this.props.handleOpenChat} showing={this.props.showing} events={this.props.events}></ChatClosed> 
+					<ChatClosed 
+					handleOpenChat={() => this.setState({ chatOpened: true })} 
+					showing={this.state.showing} 
+					events={this.state.events}></ChatClosed> 
 				}
 			</div>
 		);
@@ -48,6 +52,7 @@ class ChatClosed extends Component {
 	}
 
 	openChat(event) {
+		console.log('trying to open chat')
 		event.preventDefault();
 		console.log(event)
 		this.props.handleOpenChat();
@@ -91,7 +96,7 @@ class ChatMessage extends Component {
 	}
 
 	componentDidMount() {
-		setTimeout(this.props.handleHide, 4000);
+		setTimeout(this.props.handleHide, 4000); // TODO add display time to config.json
 	}
 
 	render() {
@@ -139,14 +144,16 @@ class ChatInput extends Component {
 
 			let message = {
 				msg: text,
+				// NOTE: this can likely be removed as client is not passed in as a prop anymore
 				sender: this.props.client // This field is only necessary for local games. Is overwritten by server if online
 			}
 
-			if (this.props.room) {
-				this.props.room.send('chatMsg', message);
-			} else {
-				this.props.handleMsg(message);
-			}
+			this.props.handleMsg(message);
+			// if (this.props.room) {
+			// 	this.props.room.send('chatMsg', message);
+			// } else {
+			// 	this.props.handleMsg(message);
+			// }
 
 			this._clear();
 		} else {

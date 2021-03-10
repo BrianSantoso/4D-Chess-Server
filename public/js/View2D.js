@@ -71,7 +71,11 @@ View2D.methods = {
 
     toggleChat: (self) => {
         return () => {
-            self._parentComponent.setState(prevState => ({
+            // self._parentComponent.setState(prevState => ({
+            //     // chatOpened: !prevState.chatOpened
+            //     bottombar: [self._chat]
+            // }));
+            self._chat.setState(prevState => ({
                 chatOpened: !prevState.chatOpened
             }));
         }
@@ -187,6 +191,15 @@ View2D.PlayerInfo = (props) => {
     return Object.assign(base, delta);
 }
 
+View2D.Chat = (props) => {
+    let base = View2D.create('Component');
+    let delta = {
+        type: 'Chat',
+        _reactComponent: <Chat {...props} stateHelper={base._stateHelper}></Chat>
+    }
+    return Object.assign(base, delta);
+}
+
 View2D.CircleButton = (props) => {
     let base = View2D.create('Component');
     let delta = {
@@ -213,6 +226,10 @@ View2D.Addons = () => {
 View2D.BasicOverlayAddons = () => {
     let base = View2D.create('Addons');
 
+    let events = new EventHandler(document);
+    events.defineKeyboardEvent('openChat', ['Enter', 'KeyC', 'KeyT', 'KeyY']);
+	events.defineKeyboardEvent('closeChat', ['Escape']);
+
     let playerLeft = View2D.create('PlayerInfo', {
         team: ChessTeam.WHITE,
         playerName: 'AnonCow',
@@ -231,7 +248,77 @@ View2D.BasicOverlayAddons = () => {
         elo: 1000,
         position: 'playerInfoRight',
         online: true
-    })
+    });
+
+    const handleChatMsg = (message) => {
+        base._game.getRoomData().send('chatMsg', message)
+    }
+
+    const displayChatMsg = (message) => {
+        console.log('Displaying:', message)
+        let key = message.msg + Date.now();
+		let handleHide = () => {
+            chat.setState(prevState => ({
+				// remove message from showing
+				showing: prevState.showing.filter(el => el.key !== key)
+			}));
+        }
+		let chatMsg = (
+			<ChatMessage 
+				key={key} 
+				text={message.msg} 
+				style={message.style} 
+				sender={message.sender} 
+				handleHide={handleHide} 
+			/>);
+		chat.setState(prevState => ({
+			messages: prevState.messages.concat([chatMsg]),
+			showing: prevState.showing.concat([chatMsg])
+		}));
+    }
+
+    let chat = View2D.create('Chat', {
+        chatOpened: false,
+        handleMsg: handleChatMsg,
+        messages: [],
+        showing: [],
+        events: events
+    });
+
+    const calcCurrPlayerTime = () => {
+        let game = base._game;
+        let moveHistory = game._moveHistory;
+        let lastMoveData = moveHistory.getLast();
+        let whoseTurn = moveHistory.currTurn();
+        let timeLeftOfLastMove, timestampOfLastMove;
+        if (lastMoveData) {
+            timeLeftOfLastMove = lastMoveData.time;
+            timestampOfLastMove = lastMoveData.timestamp;
+        } else {
+            timestampOfLastMove = Date.now();
+            if (whoseTurn === ChessTeam.WHITE) {
+                timeLeftOfLastMove = game._timeControl._whiteStartTime;
+            } else {
+                timeLeftOfLastMove = game._timeControl._blackStartTime;
+            }
+        }
+        let curr = timeLeftOfLastMove - (Date.now() - timestampOfLastMove);
+        // return {
+        //     currPlayer: whoseTurn,
+        //     currTime: curr
+        // }
+        if (whoseTurn === ChessTeam.WHITE) {
+            base._playerLeft.setState({
+                time: curr
+            });
+        } else {
+            base._playerRight.setState({
+                time: curr
+            });
+        }
+    }
+
+
 
     const delta = {
         type: 'BasicOverlayAddons',
@@ -247,24 +334,15 @@ View2D.BasicOverlayAddons = () => {
                 View2D.create('CircleButton', { icon: ChatIcon, handleClick: View2D.methods.toggleChat(base) })
             ],
             leftbar: [],
-            bottombar: [
-                // <Chat 
-				// 	room={} 
-				// 	client={} 
-				// 	chatOpened={} 
-				// 	handleMsg={} 
-				// 	handleOpenChat={} 
-				// 	handleCloseChat={} 
-				// 	messages={} 
-				// 	showing={} 
-				// 	events={}
-				// />
-            ],
+            bottombar: [chat],
         },
         _game: null,
+        _events: events,
+        _chat: chat,
         _playerLeft: playerLeft,
         _playerRight: playerRight,
         setGame: View2D.methods.setGame(base),
+        chatMsg: displayChatMsg,
         update: () => {
             // get player data from base._game
             // base._playerLeft.setState()
@@ -276,13 +354,15 @@ View2D.BasicOverlayAddons = () => {
             
             if (white) { 
                 base._playerLeft.setState({
-                    playerName: white._username
+                    playerName: white._username,
+                    time: game.getTimeTeam(ChessTeam.WHITE)
                 });
             }
 
             if (black) { // may be undefined if a user has not joined
                 base._playerRight.setState({
-                    playerName: black._username
+                    playerName: black._username,
+                    time: game.getTimeTeam(ChessTeam.BLACK)
                 });
             }
         }

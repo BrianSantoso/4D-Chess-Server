@@ -7,6 +7,15 @@ class MoveHistory {
         this._moves = [];
     }
 
+    getLastMoveTeam(team) {
+        let whoseTurn = this.currTurn();
+        if (whoseTurn === team) {
+            return this.getPenultimate();
+        } else {
+            return this.getLast();
+        }
+    }
+
     englishViewingTurnNum() {
         let total = Math.ceil(this.length() / 2);
         let turnNum = Math.ceil((this._index + 2) / 2);
@@ -65,6 +74,10 @@ class MoveHistory {
 
     getLast() {
         return this.get(this.length() - 1);
+    }
+
+    getPenultimate() {
+        return this.get(this.length() - 2);
     }
 
     curr() {

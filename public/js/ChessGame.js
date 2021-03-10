@@ -295,18 +295,6 @@ class ChessGame {
 		this._mode = mode;
 	}
 
-	// setPlayerData(playerData) {
-	// 	let whiteData = playerData._white;
-	// 	let blackData = playerData._black;
-	// 	this._white.setData(whiteData);
-	// 	this._black.setData(blackData);
-	// 	this._connectedUsers = playerData._connectedUsers;
-	// }
-
-	// setPlayerControls(clientTeam) {
-	// 	this._mode.setPlayerControls.call(this, clientTeam);
-	// }
-
 	setPlayerControls(controllerTypes) { // returns true if any types were changed
 		this._white.to(controllerTypes.white);
 		this._black.to(controllerTypes.black);
@@ -331,16 +319,42 @@ class ChessGame {
 	setTimeControl(timeControl) {
 		this._timeControl = timeControl;
 	}
-	// getPlayerData() {
-	// 	return {
-	// 		_white: this._white.toJSON(),
-	// 		_black: this._black.toJSON(),
-	// 		_connectedUsers: this._connectedUsers
-	// 	}
-	// }
+
+	chatMsg(message) {
+		this._gui.chatMsg(message);
+	}
 
 	getStatusMessage() {
 		return this._mode.getStatusMessage.call(this);
+	}
+
+	getTimeTeam(team) {
+		let lastMoveData = this._moveHistory.getLastMoveTeam(team);
+        let whoseTurn = this.currTurn();
+		
+        let timeLeftOfLastMove, timestampOfLastMove;
+        if (lastMoveData) {
+            timeLeftOfLastMove = lastMoveData.time;
+			if (whoseTurn === team) {
+				timestampOfLastMove = lastMoveData.timestamp;
+			} else {
+				timestampOfLastMove = Date.now();
+			}
+        } else {
+            timestampOfLastMove = Date.now();
+            if (whoseTurn === ChessTeam.WHITE) {
+                timeLeftOfLastMove = this._timeControl._whiteStartTime;
+            } else {
+                timeLeftOfLastMove = this._timeControl._blackStartTime;
+            }
+        }
+        let curr = timeLeftOfLastMove - (Date.now() - timestampOfLastMove);
+		return curr;
+	}
+
+	syncRoomData(roomData) {
+		console.log('Aplying roomData patch using', roomData);
+		deepMerge(this._roomData, roomData);
 	}
 }
 
@@ -447,6 +461,7 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 	},
 	function makeMove(move, time, timestamp) {		
 		// let time = this._getCurrentPlayer().getTime();
+		time = time || this.getTimeTeam(this.currTurn()); // TODO: edgecase time=0
 		let moveData;
 		if (this._moveHistory.atLast()) {
 			this.validate(move);

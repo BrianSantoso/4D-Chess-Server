@@ -16,14 +16,14 @@ dotconfig();
 class ChessRoom extends Room {
     // When room is initialized
     onCreate (options) {
+        this._chatMsg = this._chatMsg.bind(this)
+
         this._sessionIdToUser = new Map();
 
         this._gameManager = new ServerGameManager(); // The gameManager originally used to create this game
         this._gameManager.setRoom(this);
         this._game = this._gameManager.createAndSetGame(options); // The game associated with this room. Communicate thru here.
         this._roomData = this._game.getRoomData(); // Synchronized state will be set via roomData
-
-        this._chatMsg = this._chatMsg.bind(this)
     }
 
     // Authorize client based on provided options before WebSocket handshake is complete
@@ -72,8 +72,11 @@ class ChessRoom extends Room {
         let username = user.get('_username');
         this._removeUser(client.sessionId);
 
-        let reason = consented ? 'has left the room' : 'was kicked from the room';
-        let color = consented ? 'rgb(255, 251, 13)' : 'rgb(176, 46, 38)';
+        // TODO: forcibly disconnecting (closing the tab) will say kicked from room
+        // let reason = consented ? 'has left the room' : 'was kicked from the room';
+        // let color = consented ? 'rgb(255, 251, 13)' : 'rgb(176, 46, 38)';
+        let reason = 'has left the room';
+        let color = 'rgb(255, 251, 13)';
         this._chatMsg(null, {
 			msg: `${username} ${reason}`,
 			style: {
@@ -112,7 +115,8 @@ class ChessRoom extends Room {
         // TODO: rate limit messages and filter for spam/abuse
         // TODO: authenticate user (make sure they are said user) before sending message?
         if (client) {
-            let username = this._sessionIdToUser.get(client.sessionId).get('_username');
+            let user = this._sessionIdToUser.get(client.sessionId);
+            let username = user.get('_username');
             message.sender = username;
         }
         this.broadcast("chatMsg", message, options);
