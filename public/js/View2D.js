@@ -232,20 +232,20 @@ View2D.BasicOverlayAddons = () => {
 
     let playerLeft = View2D.create('PlayerInfo', {
         team: ChessTeam.WHITE,
-        playerName: 'AnonCow',
+        playerName: '--',
         myTurn: true,
-        time: 0,
-        elo: 1000,
+        time: -1,
+        elo: '----',
         position: 'playerInfoLeft',
         online: true
     });
 
     let playerRight = View2D.create('PlayerInfo', {
         team: ChessTeam.BLACK,
-        playerName: 'AnonymousPig',
+        playerName: '--',
         myTurn: false,
         time: -1,
-        elo: 1000,
+        elo: '----',
         position: 'playerInfoRight',
         online: true
     });
@@ -394,21 +394,27 @@ class Overlay extends Component {
     render() {
         return (
             <div className='overlay'>
-                <div className='overlay-topbar'>
+                <header className='overlay-topbar'>
                     {this.state.topbar.map(View2D.unwrap)}
-                </div>
+                </header>
 
-                <div className='overlay-leftbar'>
-                    {this.state.leftbar.map(View2D.unwrap)}
+                <div className='overlay-body'>
+                    <div className='overlay-leftbar'>
+                        {this.state.leftbar.map(View2D.unwrap)}
+                    </div>
+
+                    <div className='overlay-center'>
+
+                    </div>
                 </div>
                 
                 <div className='overlay-rightbar'>
                     {this.state.rightbar.map(View2D.unwrap)}
                 </div>
 
-                <div className='overlay-bottombar'>
+                <footer className='overlay-bottombar'>
                     {this.state.bottombar.map(View2D.unwrap)}
-                </div>
+                </footer>
             </div>
         );
     }

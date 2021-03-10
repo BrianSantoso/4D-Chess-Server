@@ -459,9 +459,9 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 	function syncMoveData(moveData) {
 		this._moveHistory.syncMoveData(moveData)
 	},
-	function makeMove(move, time, timestamp) {		
-		// let time = this._getCurrentPlayer().getTime();
-		time = time || this.getTimeTeam(this.currTurn()); // TODO: edgecase time=0
+	function makeMove(move) {		
+		// time and timestamp are optional parameters 
+		let time = this.getTimeTeam(this.currTurn());
 		let moveData;
 		if (this._moveHistory.atLast()) {
 			this.validate(move);
@@ -469,12 +469,12 @@ ChessMode.ONLINE_MULTIPLAYER = new ChessMode('ONLINE_MULTIPLAYER',
 			this._board.makeMove(move);
 			this._boardGraphics.makeMove(move, config.animFrames.move);
 			// add to history
-			moveData = this._moveHistory.add(move, time, timestamp);
+			moveData = this._moveHistory.add(move, time);
 
 			this.turnChange();
 		} else {
 			// If receiving a move while viewing past history
-			moveData = this._moveHistory.addToEnd(move, time, timestamp); // add to history
+			moveData = this._moveHistory.addToEnd(move, time); // add to history
 			this.turnChange();
 		}
 		return moveData;
