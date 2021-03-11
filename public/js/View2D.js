@@ -14,6 +14,7 @@ import CircleButton from './gui/CircleButton.jsx';
 import LayerStack from './gui/LayerStack.jsx';
 import PlayerInfo from './gui/PlayerInfo.jsx';
 import Home from './components/Home.jsx';
+import Game from './components/Game.jsx';
 
 class View2D {
     constructor() {
@@ -136,7 +137,7 @@ View2D.methods = {
                 }
             });
         }
-    }
+    },
 };
 
 View2D.LayerStack = () => {
@@ -171,6 +172,21 @@ View2D.Component = () => {
         view2D: View2D.methods.componentView2D(base)
     };
     return Object.assign(base, delta);
+}
+
+View2D.Game = (gameManager, props) => {
+    let base = View2D.create('Component');
+
+    let delta = {
+        type: 'Embed',
+        _reactComponent: <Game {...props} stateHelper={base._stateHelper} gameManager={gameManager}></Game>,
+        _gameManager: gameManager,
+        setAuthToken: (authToken) => {
+            base._gameManager.setAuthToken(authToken);
+        }
+    }
+    Object.assign(base, delta);
+    return base;
 }
 
 View2D.Overlay = () => {

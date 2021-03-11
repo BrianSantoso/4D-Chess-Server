@@ -329,14 +329,16 @@ class ChessGame {
 	}
 
 	getTimeTeam(team) {
-		let lastMoveData = this._moveHistory.getLastMoveTeam(team);
+		let teamsLastMove = this._moveHistory.getLastMoveTeam(team);
+		let lastMove = this._moveHistory.getLast();
         let whoseTurn = this.currTurn();
 		
-        let timeLeftOfLastMove, timestampOfLastMove;
-        if (lastMoveData) {
-            timeLeftOfLastMove = lastMoveData.time;
+        let timeLeftOfLastMove, timestampOfLastMove; // TODO: BUG: should count down of timestamp of last move by ANY player
+        if (teamsLastMove) {
+            timeLeftOfLastMove = teamsLastMove.time;
 			if (whoseTurn === team) {
-				timestampOfLastMove = lastMoveData.timestamp;
+				// lastMove will always be defined as long as teamsLastMove, which comes before in the history, is defined
+				timestampOfLastMove = lastMove.timestamp;
 			} else {
 				timestampOfLastMove = Date.now();
 			}
