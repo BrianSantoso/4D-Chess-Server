@@ -178,12 +178,22 @@ View2D.Game = (gameManager, props) => {
     let base = View2D.create('Component');
 
     let delta = {
-        type: 'Embed',
+        type: 'Game',
         _reactComponent: <Game {...props} stateHelper={base._stateHelper} gameManager={gameManager}></Game>,
         _gameManager: gameManager,
         setAuthToken: (authToken) => {
             base._gameManager.setAuthToken(authToken);
-        }
+        },
+        // init: (clientGameManager, authToken) => {
+        //     if (base.initialized()) {
+        //         throw 'Attempted to initialize Game but Game already initialized';
+        //     }
+        //     base._gameManager = clientGameManager;
+        //     base.setAuthToken(authToken);
+        // },
+        // initialized: () => {
+        //     return !!base._gameManager;
+        // }
     }
     Object.assign(base, delta);
     return base;

@@ -11,17 +11,18 @@ import { Nav } from "react-bootstrap";
 import React, { Component } from "react";
 import jwt from 'jsonwebtoken';
 import View2D from "./View2D.js"
+import * as Colyseus from "colyseus.js";
 
 class ClientGameManager extends GameManager {
-	constructor(client) {
+	constructor() {
 		super();
 		
 		this._authToken = '';
 		this._decodedAuthToken;
-		this._client = client;
+		this._client = new Colyseus.Client("ws://localhost:3000");
 		this._room = null;
 		
-		this._view3D; // initialized on mount
+		this._view3D = new SceneManager(); // initialized on mount
         this._controller = null;
 		this._view2D = View2D.create('Overlay');
 
@@ -75,6 +76,7 @@ class ClientGameManager extends GameManager {
 		// TODO: may error if authToken is unloaded (via logout!)
 		//  and user tries to join room before a new guest 
 		// token can be retrieved from the server
+		if (!token) return;
 		this._authToken = token;
 		this._decodedAuthToken = jwt.decode(this._authToken, {complete: true}).payload;
 		this._authTokenSet();
@@ -85,7 +87,6 @@ class ClientGameManager extends GameManager {
 	}
 
 	mount(root) {
-		this._view3D = new SceneManager();
 		this._view3D.mount(root);
 		this._mounted();
 	}
