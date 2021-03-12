@@ -15,6 +15,8 @@ import LayerStack from './gui/LayerStack.jsx';
 import PlayerInfo from './gui/PlayerInfo.jsx';
 import Home from './components/Home.jsx';
 import Game from './components/Game.jsx';
+import { Alert } from 'react-bootstrap';
+import Alerter from './components/Alerter.jsx';
 
 class View2D {
     constructor() {
@@ -174,6 +176,38 @@ View2D.Component = () => {
     return Object.assign(base, delta);
 }
 
+View2D.Alerter = (props) => {
+    let base = View2D.create('Component');
+
+    let delta = {
+        type: 'Alerter',
+        _reactComponent: <Alerter {...props} stateHelper={base._stateHelper}></Alerter>,
+        alert: (alertProps) => {
+            let key = Date.now() + '';
+            let handleHide = () => {
+                base.setState(prevState => ({
+                    // remove alert from showing
+                    showing: prevState.showing.filter(el => el.key !== key)
+                }));
+            }
+            let alert = <Alert 
+                {...alertProps}
+                key={key} 
+                className="alert-banner" 
+                onClose={handleHide} 
+                dismissible>
+                    {alertProps.content}
+                </Alert>;
+
+            base.setState(prevState => ({
+                showing: prevState.showing.concat([alert])
+            }));
+        }
+    }
+
+    return Object.assign(base, delta);
+}
+
 View2D.Game = (gameManager, props) => {
     let base = View2D.create('Component');
 
@@ -184,16 +218,6 @@ View2D.Game = (gameManager, props) => {
         setAuthToken: (authToken) => {
             base._gameManager.setAuthToken(authToken);
         },
-        // init: (clientGameManager, authToken) => {
-        //     if (base.initialized()) {
-        //         throw 'Attempted to initialize Game but Game already initialized';
-        //     }
-        //     base._gameManager = clientGameManager;
-        //     base.setAuthToken(authToken);
-        // },
-        // initialized: () => {
-        //     return !!base._gameManager;
-        // }
     }
     Object.assign(base, delta);
     return base;

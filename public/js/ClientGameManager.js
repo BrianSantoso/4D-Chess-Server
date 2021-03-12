@@ -14,9 +14,10 @@ import View2D from "./View2D.js"
 import * as Colyseus from "colyseus.js";
 
 class ClientGameManager extends GameManager {
-	constructor() {
+	constructor(authenticator) {
 		super();
 		
+		this._authenticator = authenticator;
 		this._authToken = '';
 		this._decodedAuthToken;
 		this._client = new Colyseus.Client("ws://localhost:3000");
