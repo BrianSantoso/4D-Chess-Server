@@ -161,7 +161,7 @@ View2D.Component = () => {
         type: 'Component',
         _reactComponent: null, // TODO: automatically configure _stateHelper?
         _stateHelper: {
-			setStateHandler: (state) => console.log('setStateHandler not configured'),
+			setStateHandler: (state) => console.log('setStateHandler not configured for', base),
 			onStateChange: function(callback) {
 				this.setStateHandler = callback;
 			},
@@ -215,10 +215,14 @@ View2D.Game = (gameManager, props) => {
         type: 'Game',
         _reactComponent: <Game {...props} stateHelper={base._stateHelper} gameManager={gameManager}></Game>,
         _gameManager: gameManager,
-        setAuthToken: (authToken) => {
-            base._gameManager.setAuthToken(authToken);
-        },
+        setFocus: (focusState) => {
+            base.setState({
+                focusState: focusState
+            });
+            // base._gameManager.setFocus(focusState);
+        }
     }
+    // gameManager.setFocus(props.focusState);
     Object.assign(base, delta);
     return base;
 }
@@ -335,41 +339,6 @@ View2D.BasicOverlayAddons = () => {
         events: events
     });
 
-    const calcCurrPlayerTime = () => {
-        let game = base._game;
-        let moveHistory = game._moveHistory;
-        let lastMoveData = moveHistory.getLast();
-        let whoseTurn = moveHistory.currTurn();
-        let timeLeftOfLastMove, timestampOfLastMove;
-        if (lastMoveData) {
-            timeLeftOfLastMove = lastMoveData.time;
-            timestampOfLastMove = lastMoveData.timestamp;
-        } else {
-            timestampOfLastMove = Date.now();
-            if (whoseTurn === ChessTeam.WHITE) {
-                timeLeftOfLastMove = game._timeControl._whiteStartTime;
-            } else {
-                timeLeftOfLastMove = game._timeControl._blackStartTime;
-            }
-        }
-        let curr = timeLeftOfLastMove - (Date.now() - timestampOfLastMove);
-        // return {
-        //     currPlayer: whoseTurn,
-        //     currTime: curr
-        // }
-        if (whoseTurn === ChessTeam.WHITE) {
-            base._playerLeft.setState({
-                time: curr
-            });
-        } else {
-            base._playerRight.setState({
-                time: curr
-            });
-        }
-    }
-
-
-
     const delta = {
         type: 'BasicOverlayAddons',
         _addons: {
@@ -415,10 +384,16 @@ View2D.BasicOverlayAddons = () => {
                     time: game.getTimeTeam(ChessTeam.BLACK)
                 });
             }
+
+            if (base._parentComponent) { // if mounted, need to update persistent state.
+                base._parentComponent.setAddons(game.view2D());
+            }
+            // 
         }
     }
 
-    return Object.assign(base, delta);
+    Object.assign(base, delta);
+    return base;
 }
 
 View2D.create = (type, ...args) => {
@@ -438,7 +413,17 @@ class Overlay extends Component {
             rightbar: [],
             bottombar: []
         };
-        this.props.stateHelper.onStateChange((state) => {this.setState(state)});
+        this.addons = this.state; // persist state between renders
+        this.props.stateHelper.onStateChange((state) => {
+            this.setState(state, (state) => {
+                this.addons = state;
+            })
+        });
+    }
+
+    componentDidMount() {
+        console.log('Overlay reappeairng...', this.addons)
+        this.setState(this.addons);
     }
 
     render() {

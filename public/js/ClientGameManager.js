@@ -12,14 +12,12 @@ import React, { Component } from "react";
 import jwt from 'jsonwebtoken';
 import View2D from "./View2D.js"
 import * as Colyseus from "colyseus.js";
+import FocusState from "./FocusState.js";
 
 class ClientGameManager extends GameManager {
 	constructor(authenticator) {
 		super();
-		
-		this._authenticator = authenticator;
-		this._authToken = '';
-		this._decodedAuthToken;
+
 		this._client = new Colyseus.Client("ws://localhost:3000");
 		this._room = null;
 		
@@ -27,7 +25,7 @@ class ClientGameManager extends GameManager {
         this._controller = null;
 		this._view2D = View2D.create('Overlay');
 
-		this._focus = '';
+		// this._focusState = null;
 
 		this._ready = [
 			this.loadAssets(), 
@@ -49,12 +47,19 @@ class ClientGameManager extends GameManager {
 			}
 			this._startLoop();
 		});
-		
-		this.setAuthToken = this.setAuthToken.bind(this);
+
+		this._authenticator = authenticator;
+		if (this._authenticator) {
+			this._authenticator.subscribe(this);
+		}
+	}
+
+	onAccountChange() {
+		this._authTokenSet();
 	}
 
 	getId() {
-		return this._decodedAuthToken._id;
+		return this._authenticator.getDecodedAuthToken('_id');
 	}
 
 	getClientTeam() {
@@ -73,19 +78,10 @@ class ClientGameManager extends GameManager {
 		return null;
 	}
 
-	setAuthToken(token) {
-		// TODO: may error if authToken is unloaded (via logout!)
-		//  and user tries to join room before a new guest 
-		// token can be retrieved from the server
-		if (!token) return;
-		this._authToken = token;
-		this._decodedAuthToken = jwt.decode(this._authToken, {complete: true}).payload;
-		this._authTokenSet();
-	}
-
-	setFocus(focus) { // TODO: is this needed here?
-		this._focus = focus;
-	}
+	// TODO: is this even needed anymore? keyboard events already unsubscribe on component unmount
+	// setFocus(focusState) {
+	// 	this._focusState = focusState;
+	// }
 
 	mount(root) {
 		this._view3D.mount(root);
@@ -93,14 +89,14 @@ class ClientGameManager extends GameManager {
 	}
 
 	view2D() {
-		return this._view2D.view2D();
+		return View2D.unwrap(this._view2D);
 	}
 
 	async join(roomName) {
 		// TODO: require that authtoken is set
 		try {
 			let room = await this._client.joinOrCreate(roomName, {
-				authToken: this._authToken
+				authToken: this._authenticator.getAuthToken()
 			});
 			this.setRoom(room);
 			console.log("[ClientGameManager] Joined room succesfully", room);
@@ -139,7 +135,7 @@ class ClientGameManager extends GameManager {
 
 		// game.setRoom(this._room);
 		
-		this._view2D.setAddons(game.view2D());
+		this._view2D.setAddons(game.view2D()); // TODO: should remove addons when unmounting a game.
 
 		this._view3D.add(game.view3D());
 		this._view3D.configureCamera(game._boardGraphics, ChessTeam.WHITE);

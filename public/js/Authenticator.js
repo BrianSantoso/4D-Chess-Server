@@ -3,21 +3,30 @@ import jwt from 'jsonwebtoken';
 
 class Authenticator {
 
+    // Account manager
+
     constructor() {
         this._subscribers = [];
     }
-    
     subscribe(obj) {
+        // TODO: dispatchAccountChange on subscription to trigger update within obj?
         this._subscribers.push(obj);
+        this._dispatchTo(obj, 'onSubscribe');
     }
 
-    _dispatchAccountChange(newToken) {
+    _dispatch(event, ...args) {
         this._subscribers.forEach(subscriber => {
-            let method = subscriber.onAccountChange;
-            if (method) {
-                method.call(subscriber, newToken);
-            }
+            this._dispatchTo(subscriber, event, ...args);
         });
+    }
+
+    _dispatchTo(subscriber, event, ...args) {
+        let method = subscriber[event];
+        if (method) {
+            method.call(subscriber, ...args);
+        } else {
+            console.log(event, 'method not found on', subscriber)
+        }
     }
 
     async init() {
@@ -140,7 +149,7 @@ class Authenticator {
 
         }
 
-        this._dispatchAccountChange(token);
+        this._dispatch('onAccountChange', token);
         
         return token;
 	}
@@ -148,6 +157,30 @@ class Authenticator {
     getAuthToken() {
         return localStorage.getItem('authToken');
     }
+
+    getDecodedAuthToken(property) {
+        let token = this.getAuthToken();
+        let decoded = Authenticator.decode(token);
+        if (decoded) {
+            if (property) {
+                return decoded[property];
+            } else {
+                return decoded;
+            }
+        } else {
+            return null;
+        }
+    }
 }
+
+Authenticator.decode = (authToken) => {
+    const decoded = jwt.decode(authToken, {complete: true});
+    if (decoded) {
+        return decoded.payload;
+    } else {
+        console.log('Malformed authToken:', token);
+        return null;
+    }
+};
 
 export default Authenticator;

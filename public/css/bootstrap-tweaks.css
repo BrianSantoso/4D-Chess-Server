@@ -2,6 +2,7 @@
     min-height: var(--nav-height);
     /* height: var(--nav-height); */
     background-color: white;
+    z-index: 990;
 }
 
 /* Add Spacing between navbar items */
