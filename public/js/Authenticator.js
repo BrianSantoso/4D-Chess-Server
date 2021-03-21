@@ -64,6 +64,7 @@ class Authenticator {
                 variant: 'success',
                 content: response.data.message
             });
+            this.setAuthToken(response.data.authToken);
             // this.props.onSuccess(response);
             return response;
         }).catch(err => {
@@ -99,11 +100,13 @@ class Authenticator {
             password: password
         }).then(response => {
             console.log(response)
+            let token = response.data.token;
+            this.setAuthToken(token);
             onSuccess({
                 variant: 'success',
                 content: response.data.message
             });
-            return response.data.token;
+            return token;
         }).catch(err => {
             if (err.response) {
                 // client received an error response (5xx, 4xx)
@@ -170,6 +173,11 @@ class Authenticator {
         } else {
             return null;
         }
+    }
+
+    loggedIn() {
+        let decoded = this.getDecodedAuthToken();
+        return decoded && decoded.registered;
     }
 }
 

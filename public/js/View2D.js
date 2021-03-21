@@ -17,6 +17,7 @@ import Home from './components/Home.jsx';
 import Game from './components/Game.jsx';
 import { Alert } from 'react-bootstrap';
 import Alerter from './components/Alerter.jsx';
+import ChessNavbar from './components/Navbar.jsx';
 
 class View2D {
     constructor() {
@@ -206,6 +207,26 @@ View2D.Alerter = (props) => {
     }
 
     return Object.assign(base, delta);
+}
+
+View2D.ChessNavbar = (authenticator, props) => {
+    let base = View2D.create('Component');
+
+    let delta = {
+        type: 'ChessNavbar',
+        _reactComponent: <ChessNavbar {...props} stateHelper={base._stateHelper}></ChessNavbar>,
+        _authenticator: authenticator,
+        onAccountChange: (token) => {
+            let loggedIn = base._authenticator.loggedIn();
+            base.setState({
+                loggedIn: loggedIn
+            });
+        }
+    }
+
+    Object.assign(base, delta);
+    authenticator.subscribe(base);
+    return base;
 }
 
 View2D.Game = (gameManager, props) => {

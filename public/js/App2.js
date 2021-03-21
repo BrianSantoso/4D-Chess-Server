@@ -8,20 +8,25 @@ import FocusState from './FocusState.js';
 
 import ChessNavbar from './components/Navbar.jsx';
 import Home from './components/Home.jsx';
+import Login from './components/Login.jsx';
+import GameSelect from "./components/GameSelect.jsx";
 
 
 class App extends Component {
 	constructor(props) {
 		super(props);
+
+        this.authenticator = new Authenticator();
+        console.log('Authenticator:', this.authenticator)
+
 		this.state = {
 			loggedIn: false,
 			alerter: View2D.create('Alerter', { showing: [] }),
+            navbar: View2D.create('ChessNavbar', this.authenticator, { loggedIn: false }),
             game: null // store game as state so that it will be rendered on creation. TODO: not pretty???
 		};
 
-        this.authenticator = new Authenticator();
-
-        console.log('Authenticator:', this.authenticator)
+        console.log('App', this);
 	}
 
     initGame() {
@@ -63,7 +68,8 @@ class App extends Component {
 	render() {
         return (
             <>
-                <ChessNavbar loggedIn={false}/>
+                {/* <ChessNavbar loggedIn={false} authenticator={this.authenticator}/> */}
+                {View2D.unwrap(this.state.navbar)}
                 {View2D.unwrap(this.state.alerter)}
                 <Router>
                     <Route path="/home">

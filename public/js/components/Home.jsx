@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Leaderboard from './Leaderboard.jsx';
+import GameSelect from './GameSelect.jsx';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import Particles from './Particles.jsx';
 import { Link } from 'react-router-dom';
@@ -17,6 +18,7 @@ function Home(props) {
                 </div>
                 {/* <Particles></Particles> */}
             </div>
+            <GameSelect></GameSelect>
             <Leaderboard></Leaderboard>
         </div>
     );

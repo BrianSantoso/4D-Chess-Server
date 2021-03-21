@@ -11,6 +11,7 @@
     "dbstop": "sudo systemctl stop mongod",
     "dbstatus": "sudo systemctl status mongod",
     "start": "npm run dbrestart && trap 'npm run dbstop' INT && npm run open && nodemon backend/build/bundle-back.js",
+    "watch": "webpack --watch",
     "buildfront": "webpack --mode=development --config webpack-front.config.cjs",
     "buildback": "webpack --mode=development --config webpack-back.config.cjs",
     "buildtesting": "webpack --mode=development --config webpack-testing.config.cjs",
