@@ -1,0 +1,34 @@
+{
+    "boards": {
+        "classic": {
+            "dims": [8, 1, 8, 1],
+            "initializer": "initTeam8181"
+        },
+        "classic4d": {
+            "dims": [4, 4, 4, 4],
+            "initializer": "initTeam4444"
+        }
+    },
+    "chat": {
+        "maxLength": 200
+    },
+    "animFrames": {
+        "highlight": 0,
+        "unhighlight": 6,
+        "showMoves": 6,
+        "hideMoves": 6,
+        "move": 24,
+        "explain": 64,
+        "shrinkGrow": 16
+    },
+    "banner": {
+        "msPerMsg": 500,
+        "whitesTurn": ["White to Move"],
+        "blacksTurn": ["Black to Move"],
+        "noOpponent": ["Waiting for opponent to join", "Waiting for opponent to join.", "Waiting for opponent to join..", "Waiting for opponent to join..."]
+    },
+    "schema": {
+        "white": "white",
+        "black": "black"
+    }
+}

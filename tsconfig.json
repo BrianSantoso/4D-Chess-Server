@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "./",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "es2017",
+      "esnext.asynciterable",
+      "dom"
+    ],
+    "allowJs": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true, // Allow importing of .json files
+    "esModuleInterop": true, // Allow default import of .json files
+    "skipLibCheck": true, // avoid checking .d.ts files inside node_modules https://stackoverflow.com/questions/49906424/rxjs5-typescript-typings-fail
+  },
+  "exclude": [
+    "node_modules",
+    "./backend/db/scripts"
+
+  ]
+}

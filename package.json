@@ -20,7 +20,17 @@
     "devb": "npm run buildback && npm run start",
     "dev": "npm run build && npm run start",
     "testing": "npm run buildtesting && node testing/build/bundle-testing.js",
-    "open": "google-chrome --incognito http://localhost:3000 &"
+    "open": "google-chrome --incognito http://localhost:3000 &",
+    "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "compile": "tsc -b",
+    "start-ts": "node --require dotenv/config dist/backend/index.js",
+    "dev-ts": "npm run compile && npm run dbrestart && trap 'npm run dbstop' INT && npm run open && npm run start-ts"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run prettier-format && npm run lint"
+    }
   },
   "author": "Brian Santoso",
   "license": "ISC",
@@ -61,10 +71,14 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-react": "^7.10.4",
+    "@types/node": "^16.10.3",
     "babel-loader": "^8.1.0",
     "css-loader": "^4.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "mongodb": "^3.6.3",
     "nodemon": "^2.0.7",
+    "prettier": "^2.4.1",
     "style-loader": "^1.2.1",
     "svg-url-loader": "^6.0.0",
     "webpack": "^4.43.0",
