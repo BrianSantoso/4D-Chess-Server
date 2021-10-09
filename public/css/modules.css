@@ -74,10 +74,6 @@
     padding: .20em .32em;
 }
 
-.home {
-
-}
-
 .greeting {
     width: 100%;
     height: 100vh;
@@ -246,4 +242,14 @@
 .gameSelect {
     display: flex;
     justify-content: center;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+}
+
+.entireScreen {
+    min-width: 100vw;
+    min-height: 100vh;
 }

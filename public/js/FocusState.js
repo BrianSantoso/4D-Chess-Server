@@ -1,6 +1,11 @@
 class FocusState {
-    constructor(maximized) {
+    constructor(maximized, showing) {
         this._maximized = maximized;
+        this._showing = showing;
+    }
+
+    showing() {
+        return this._showing;
     }
 
     maximized() {
@@ -12,7 +17,8 @@ class FocusState {
     }
 }
 
-FocusState.MINIMIZED = new FocusState(false);
-FocusState.GAMING = new FocusState(true);
+FocusState.MINIMIZED = new FocusState(false, true);
+FocusState.GAMING = new FocusState(true, true);
+FocusState.CLOSED = new FocusState(false, false);
 
 export default FocusState;

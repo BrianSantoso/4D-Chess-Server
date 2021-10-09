@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 function Home(props) {
     return (
-        <div className='home'>
+        <div className='entireScreen'>
             <div className='greeting'>
                 <div className='greetingContent'>
                     <div className='greetingText'>New ways to play Chess</div>

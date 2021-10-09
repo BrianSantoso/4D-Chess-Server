@@ -10,11 +10,38 @@ import ChessNavbar from './components/Navbar.jsx';
 import Home from './components/Home.jsx';
 import Login from './components/Login.jsx';
 import GameSelect from "./components/GameSelect.jsx";
+import Leaderboard from "./components/Leaderboard.jsx";
 
+class AppStateManager {
+    constructor(initialState) {
+        this.history = [initialState]
+    }
+
+    setState(props) {
+        const newState = {
+            ...this.getState(),
+            ...props
+        }
+        this.history.push(newState)
+        return newState
+    }
+
+    getState() {
+        return {
+            ...this.history[this.history.length - 1]
+        }
+    }
+}
 
 class App extends Component {
 	constructor(props) {
 		super(props);
+
+        // this.appState = new AppStateManager({
+        //     greeting: true,
+        //     gameSelect: false,
+        //     focusState: FocusState.MINIMIZED,
+        // })
 
         this.authenticator = new Authenticator();
         console.log('Authenticator:', this.authenticator)
@@ -32,7 +59,7 @@ class App extends Component {
     initGame() {
         // must be called before authenticator.init
         let game = View2D.create('Game', new ClientGameManager(this.authenticator), {
-            focusState: FocusState.GAMING
+            focusState: FocusState.CLOSED
         }); // TODO: only initialize clientgamemanager when requested;
 
         this.setState({
@@ -76,7 +103,8 @@ class App extends Component {
                         <OnEnter f={() => {
                             this.state.game.setFocus(FocusState.MINIMIZED);
                         }}></OnEnter>
-                        <Home></Home>
+                        <GameSelect></GameSelect>
+                        <Leaderboard></Leaderboard>
                     </Route>
                     {this.state.game ? View2D.unwrap(this.state.game) : ''}
                     <Route path="/play">
