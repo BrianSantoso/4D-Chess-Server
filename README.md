@@ -3,10 +3,6 @@ An Online Multiplayer Web game in JS with Node, React, socket.io, and three.js
 
 Play Online: https://chess4d.herokuapp.com/  
 
-# Source Code has moved
-Development has moved to a new repository.  
-See the reworked source: [https://github.com/BrianSantoso/4D-Chess-Server](https://github.com/BrianSantoso/4D-Chess-Server/tree/develop)
-
 ![alt tag](https://raw.githubusercontent.com/BrianSantoso/images/master/4D-Chess/gallery_3.png)
 ![alt tag](https://raw.githubusercontent.com/BrianSantoso/images/master/4D-Chess/gallery_1.png)
 ![alt tag](https://raw.githubusercontent.com/BrianSantoso/images/master/4D-Chess/gallery_4.png)
